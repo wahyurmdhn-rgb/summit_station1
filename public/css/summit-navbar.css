@@ -1,0 +1,866 @@
+/* ============================================================
+   Summit Station - Interactive Navbar
+   Dimuat SETELAH css halaman agar menimpa style header lama.
+   ============================================================ */
+
+:root {
+    --nav-green: #16532d;
+    --nav-green-dark: #0f3d20;
+    --nav-accent: #9ce6a6;
+}
+
+/* ---------- Base layout navbar: SUMBER TUNGGAL untuk seluruh halaman user ----------
+   Layout dasar (non-interaktif) dipusatkan di sini agar tampilan navbar IDENTIK
+   di semua halaman (Beranda, Katalog, Detail, Keranjang, Pembayaran, Riwayat,
+   Profil, Lokasi Toko, Hubungi Admin). Css halaman TIDAK lagi mendefinisikan
+   style header/navbar sendiri. */
+
+/* ---------- Garis biru di atas navbar (sentralisasi semua halaman) ---------- */
+.top-banner-line {
+    width: 100%;
+    height: 4px;
+    background-color: #0084ff;
+}
+
+/* ---------- Header: base + elevasi saat scroll ---------- */
+.site-header {
+    background-color: #e4e7e4;
+    border-bottom: 1px solid #d5d9d5;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: background-color 0.35s ease, box-shadow 0.35s ease;
+    will-change: box-shadow;
+}
+
+/* ---------- Container header ---------- */
+.header-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 12px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+/* ---------- Logo ---------- */
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 20px;
+    color: #174e2b;
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    white-space: nowrap;
+    transition: transform 0.25s ease;
+}
+
+.logo-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: transparent;
+}
+
+.logo-badge img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* ---------- Navigasi utama ---------- */
+.main-nav {
+    display: flex;
+    align-items: center;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    list-style: none;
+}
+
+.nav-links a {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4a524c;
+    position: relative;
+    padding: 6px 2px;
+    transition: color 0.25s ease;
+}
+
+/* ---------- Aksi header (keranjang, notifikasi, user, hamburger) ---------- */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ---------- Site header (scroll) : overrides base ---------- */
+.site-header.is-scrolled {
+    background-color: rgba(228, 231, 228, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 24px rgba(20, 45, 28, 0.14);
+}
+
+/* ---------- Logo: hover ---------- */
+.brand-logo:hover {
+    transform: translateY(-1px);
+}
+
+.brand-logo .logo-badge {
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.brand-logo:hover .logo-badge {
+    transform: rotate(-8deg) scale(1.08);
+}
+
+.brand-logo:active .logo-badge {
+    transform: rotate(0deg) scale(0.95);
+}
+
+/* ---------- Teks brand: gradien + efek hover ---------- */
+.header-container .brand-logo span {
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    background: linear-gradient(95deg, #0f3d20 0%, #1d7a40 55%, #35a45c 100%);
+    background-size: 180% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: background-position 0.45s ease, letter-spacing 0.3s ease;
+}
+
+.brand-logo:hover span,
+.brand-logo:focus-visible span {
+    background-position: right center;
+    letter-spacing: 0.045em;
+}
+
+/* ---------- Nav link: underline animasi + warna ---------- */
+.nav-links a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--nav-green), var(--nav-accent));
+    transform: scaleX(0);
+    transform-origin: right center;
+    transition: transform 0.32s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.nav-links a:hover::after,
+.nav-links a.active::after,
+.nav-links a:focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left center;
+}
+
+.nav-links a:hover,
+.nav-links a.active,
+.nav-links a:focus-visible {
+    color: #123d22;
+}
+
+.nav-links a:focus-visible {
+    outline: 2px solid var(--nav-green);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+/* ---------- Icon button: lift + tekan ---------- */
+.header-actions .icon-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+/* Ikon outline (stroke) seperti login: jangan dipaksa fill solid */
+.header-actions .icon-btn svg.icon-stroke,
+.header-actions .icon-stroke {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+}
+
+.header-actions .icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--nav-green);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    position: relative;
+    overflow: visible;
+    transition: background-color 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+}
+
+.header-actions .icon-btn:hover {
+    background-color: var(--nav-green-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(15, 61, 32, 0.35);
+}
+
+.header-actions .icon-btn:active {
+    transform: translateY(0) scale(0.92);
+    box-shadow: none;
+}
+
+.header-actions .icon-btn:focus-visible {
+    outline: 2px solid var(--nav-green-dark);
+    outline-offset: 2px;
+}
+
+/* ---------- User avatar di navbar (Matching Style Profile FP) ---------- */
+.header-actions .icon-btn.user-toggle-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e2e8f0;
+    color: #475569;
+    padding: 0;
+    overflow: hidden;
+    border: none;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+
+.header-actions .icon-btn.user-toggle-avatar:hover {
+    background-color: #cbd5e1;
+    color: #334155;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(71, 85, 105, 0.2);
+}
+
+.user-avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+.user-avatar-initial {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Plus Jakarta Sans', 'Outfit', Inter, sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1;
+    background: #e2e8f0;
+    color: #475569;
+    pointer-events: none;
+    text-transform: uppercase;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.site-header button {
+    font: inherit;
+}
+
+.user-toggle-avatar:hover .user-avatar-initial,
+.user-menu-wrapper.open .user-toggle-avatar .user-avatar-initial {
+    background-color: #cbd5e1;
+    color: #334155;
+}
+
+/* ---------- Badge keranjang ---------- */
+.cart-badge,
+.notif-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #e04f3f;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1;
+    box-sizing: border-box;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.cart-badge {
+    animation: badge-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.notif-badge {
+    transform-origin: center;
+    transition: transform 0.25s ease, box-shadow 0.3s ease;
+    animation: notif-pulse 3.2s ease-in-out infinite;
+}
+
+.notif-toggle:hover .notif-badge {
+    transform: scale(1.12);
+}
+
+.notif-toggle:active .notif-badge {
+    transform: scale(0.9);
+    transition-duration: 0.12s;
+}
+
+@keyframes notif-pulse {
+    0%, 100% {
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(224, 79, 63, 0.18), 0 2px 6px rgba(0, 0, 0, 0.25);
+    }
+}
+
+.badge-bounce {
+    animation: badge-bounce 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes badge-bounce {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.25); }
+    60%  { transform: scale(0.94); }
+    100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .notif-badge {
+        animation: none;
+        transition: none;
+    }
+    .notif-toggle:hover .notif-badge,
+    .notif-toggle:active .notif-badge {
+        transform: none;
+    }
+    .badge-bounce {
+        animation: none;
+    }
+}
+
+@keyframes badge-pop {
+    0% { transform: scale(0); }
+    70% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+}
+
+.cart-btn:hover .cart-badge {
+    animation: badge-wiggle 0.5s ease;
+}
+
+@keyframes badge-wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    30% { transform: rotate(-12deg) scale(1.1); }
+    60% { transform: rotate(10deg) scale(1.1); }
+}
+
+/* ---------- Dropdown user: animasi buka/tutup via klik ---------- */
+.user-menu-wrapper {
+    position: relative;
+}
+
+.user-menu-wrapper .user-dropdown {
+    position: absolute;
+    right: 0;
+    top: 48px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    min-width: 160px;
+    z-index: 101;
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+    transform-origin: top right;
+    pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s;
+    border: 1px solid var(--border-light, #e4e2dd);
+}
+
+.user-menu-wrapper.open .user-dropdown,
+.user-menu-wrapper:hover .user-dropdown {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.user-menu-wrapper.open .user-toggle {
+    background-color: var(--nav-green-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(15, 61, 32, 0.35);
+}
+
+.user-menu-wrapper.open .user-toggle.user-toggle-avatar {
+    background-color: #cbd5e1;
+    color: #334155;
+    box-shadow: 0 4px 12px rgba(71, 85, 105, 0.2);
+}
+
+/* ---------- Isi dropdown profil ---------- */
+.user-dropdown .user-name {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #174e2b;
+    border-bottom: 1px solid #eee;
+}
+
+.user-dropdown button,
+.user-dropdown a {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    text-align: left;
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+}
+
+.user-dropdown button:hover,
+.user-dropdown a:hover {
+    background: #f0f4f1;
+    padding-left: 20px;
+    color: var(--nav-green);
+}
+
+.user-dropdown form {
+    margin: 0;
+}
+
+/* ---------- Hamburger ---------- */
+.nav-hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 42px;
+    height: 42px;
+    padding: 9px;
+    border: none;
+    border-radius: 10px;
+    background-color: var(--nav-green);
+    cursor: pointer;
+    transition: background-color 0.25s ease, transform 0.25s ease;
+}
+
+.nav-hamburger:hover {
+    background-color: var(--nav-green-dark);
+}
+
+.nav-hamburger:active {
+    transform: scale(0.92);
+}
+
+.nav-hamburger span {
+    display: block;
+    width: 100%;
+    height: 2.5px;
+    border-radius: 2px;
+    background-color: #ffffff;
+    transition: transform 0.3s ease, opacity 0.2s ease;
+}
+
+.nav-hamburger.is-active span:nth-child(1) {
+    transform: translateY(7.5px) rotate(45deg);
+}
+
+.nav-hamburger.is-active span:nth-child(2) {
+    opacity: 0;
+}
+
+.nav-hamburger.is-active span:nth-child(3) {
+    transform: translateY(-7.5px) rotate(-45deg);
+}
+
+/* ---------- Mode mobile: panel slide-down ---------- */
+@media (max-width: 900px) {
+    .header-container {
+        flex-wrap: nowrap;
+        gap: 8px;
+        padding: 10px 16px;
+    }
+
+    .header-container .brand-logo {
+        min-width: 0;
+        gap: 8px;
+    }
+
+    .header-container .brand-logo span {
+        font-size: 16px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .header-actions {
+        gap: 8px;
+        flex-shrink: 1;
+        min-width: 0;
+    }
+
+    .header-actions .icon-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    .header-actions .icon-btn svg,
+    .header-actions .icon-btn svg.icon-stroke,
+    .header-actions .icon-stroke {
+        width: 17px;
+        height: 17px;
+    }
+
+    .nav-hamburger {
+        display: flex;
+        width: 38px;
+        height: 38px;
+    }
+
+    .nav-hamburger.is-active span:nth-child(1) {
+        transform: translateY(6.75px) rotate(45deg);
+    }
+
+    .nav-hamburger.is-active span:nth-child(3) {
+        transform: translateY(-6.75px) rotate(-45deg);
+    }
+
+    .main-nav {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        border-bottom: 1px solid var(--border-light, #e4e2dd);
+        box-shadow: 0 18px 30px rgba(20, 45, 28, 0.16);
+        max-height: 0;
+        overflow: hidden;
+        visibility: hidden;
+        transition: max-height 0.38s cubic-bezier(0.65, 0, 0.35, 1), visibility 0.38s;
+    }
+
+    .main-nav.menu-open {
+        max-height: 340px;
+        visibility: visible;
+        box-shadow: 0 18px 30px rgba(20, 45, 28, 0.16);
+    }
+
+    .nav-links {
+        display: flex !important;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        padding: 10px 20px 16px;
+    }
+
+    .nav-links li {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    .main-nav.menu-open .nav-links li {
+        animation: nav-item-in 0.35s ease forwards;
+    }
+
+    .main-nav.menu-open .nav-links li:nth-child(1) { animation-delay: 0.05s; }
+    .main-nav.menu-open .nav-links li:nth-child(2) { animation-delay: 0.1s; }
+    .main-nav.menu-open .nav-links li:nth-child(3) { animation-delay: 0.15s; }
+    .main-nav.menu-open .nav-links li:nth-child(4) { animation-delay: 0.2s; }
+    .main-nav.menu-open .nav-links li:nth-child(5) { animation-delay: 0.25s; }
+
+    .nav-links a {
+        display: block;
+        padding: 13px 10px;
+        font-size: 15px;
+        border-bottom: 1px dashed #e7ebe7;
+    }
+
+    .nav-links li:last-child a {
+        border-bottom: none;
+    }
+
+    .nav-links a::after {
+        display: none;
+    }
+
+    .nav-links a.active {
+        color: var(--nav-green);
+        background: linear-gradient(90deg, rgba(156, 230, 166, 0.18), transparent);
+        border-left: 3px solid var(--nav-green);
+        border-radius: 6px 0 0 6px;
+    }
+}
+
+@keyframes nav-item-in {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ---------- Aksesibilitas: kurangi gerakan ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .site-header,
+    .brand-logo,
+    .brand-logo .logo-badge,
+    .header-container .brand-logo span,
+    .nav-links a,
+    .nav-links a::after,
+    .header-actions .icon-btn,
+    .user-menu-wrapper .user-dropdown,
+    .main-nav,
+    .nav-hamburger span {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* ---------- Notifications bell & dropdown (user) ---------- */
+.notif-wrapper { position: relative; }
+
+.notif-dropdown {
+    position: absolute;
+    right: 0;
+    top: 48px;
+    width: 340px;
+    max-width: 92vw;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+    border: 1px solid #e2e8f0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px) scale(0.98);
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+    z-index: 60;
+    overflow: hidden;
+}
+
+.notif-wrapper.open .notif-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.notif-dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.notif-dropdown-header strong {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.notif-mark-all {
+    background: none;
+    border: none;
+    color: #185d31;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+}
+
+.notif-list {
+    max-height: 340px;
+    overflow-y: auto;
+}
+
+.notif-item {
+    display: flex;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: left;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.notif-item:hover { background: #f8fafc; }
+
+.notif-item.unread { background: #f0fdf4; }
+
+.notif-item.unread:hover { background: #dcfce7; }
+
+.notif-item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notif-item-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: #ecfdf5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.notif-item-title { font-size: 13px; font-weight: 800; color: #0f172a; }
+.notif-item-body { font-size: 12px; color: #475569; line-height: 1.45; margin-top: 2px; }
+.notif-item-time { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+
+.notif-empty { padding: 32px 20px; text-align: center; color: #64748b; font-size: 13px; }
+
+/* ---------- Mode mobile: dropdown notifikasi tetap di dalam layar ---------- */
+@media (max-width: 900px) {
+    .notif-dropdown {
+        position: fixed;
+        top: 116px;
+        left: 16px;
+        right: 16px;
+        width: auto;
+        max-width: none;
+    }
+}/* ---------- Aturan global: elemen bercatribut hidden harus benar-benar tersembunyi ----------
+   Penting: tanpa ini, hidden kalah oleh CSS author (mis. .logout-modal { display: grid })
+   sehingga modal terlihat padahal dinyatakan hidden. */
+[hidden] { display: none !important; }
+
+/* ---------- Modal Konfirmasi Keluar (global navbar) ---------- */
+body.modal-open { overflow: hidden; }
+
+.logout-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+}
+
+.logout-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 1001;
+    background: rgba(10, 25, 15, 0.55);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+.logout-dialog {
+    position: relative;
+    z-index: 1002;
+    width: 100%;
+    max-width: 400px;
+    background: #fff;
+    border-radius: 18px;
+    padding: 34px 28px 28px;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(10, 25, 15, 0.35);
+}
+
+.logout-dialog .logout-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: #fdecec;
+    color: #c0392b;
+}
+
+.logout-dialog .logout-icon svg {
+    width: 30px;
+    height: 30px;
+}
+
+.logout-dialog h2 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    font-weight: 800;
+    color: #152520;
+}
+
+.logout-dialog p {
+    margin: 0 0 22px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #5c6d63;
+}
+
+.logout-dialog .confirm-logout {
+    width: 100%;
+    padding: 13px 18px;
+    border: none;
+    border-radius: 12px;
+    background: #c0392b;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    box-shadow: 0 6px 16px rgba(192, 57, 43, 0.25);
+}
+
+.logout-dialog .confirm-logout:hover {
+    background: #a93226;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(192, 57, 43, 0.32);
+}
+
+.logout-dialog .cancel-logout {
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px 18px;
+    border: 1px solid #d7e0da;
+    border-radius: 12px;
+    background: #fff;
+    color: #2e4338;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.logout-dialog .cancel-logout:hover {
+    background: #f3f7f4;
+    border-color: #b9cdc1;
+}

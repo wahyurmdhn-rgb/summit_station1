@@ -1,0 +1,490 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@400..800&display=swap');
+
+:root {
+    --green: #185d31;
+    --green-dark: #104421;
+    --paper: #f7f6f2;
+    --panel: #ffffff;
+    --soft: #efeee9;
+    --text: #202321;
+    --muted: #5b625d;
+    --line: #e0ddd6;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: var(--paper);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', 'Outfit', Inter, ui-sans-serif, system-ui, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button {
+    font: inherit;
+}
+
+/* ===================== HERO ===================== */
+.contact-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 36px 32px 20px;
+    width: 100%;
+}
+
+.contact-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    background: linear-gradient(135deg, #174e2b, #0e3d20);
+    border-radius: 18px;
+    padding: 40px 44px;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+}
+
+.contact-hero::after {
+    content: '';
+    position: absolute;
+    right: -60px;
+    top: -60px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .05);
+}
+
+.contact-hero > div {
+    position: relative;
+    z-index: 1;
+    max-width: 640px;
+}
+
+.contact-hero .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #d3b58f;
+    margin-bottom: 10px;
+}
+
+.contact-hero .eyebrow span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d3b58f;
+    box-shadow: 0 0 0 3px rgba(211, 181, 143, .3);
+}
+
+.contact-hero h1 {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+}
+
+.contact-hero .lead {
+    font-size: 14px;
+    color: rgba(255, 255, 255, .8);
+    line-height: 1.65;
+}
+
+.contact-hero > img {
+    width: min(230px, 30%);
+    height: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    animation: contact-logo-float 4.5s ease-in-out infinite, contact-logo-glow 3.5s ease-in-out infinite;
+}
+
+@keyframes contact-logo-float {
+    0%, 100% {
+        transform: translateY(0) rotate(-1deg);
+    }
+    50% {
+        transform: translateY(-12px) rotate(1deg);
+    }
+}
+
+@keyframes contact-logo-glow {
+    0%, 100% {
+        filter: drop-shadow(0 16px 32px rgba(0, 0, 0, .35)) drop-shadow(0 0 0 rgba(255, 255, 255, 0));
+    }
+    50% {
+        filter: drop-shadow(0 16px 32px rgba(0, 0, 0, .35)) drop-shadow(0 0 22px rgba(255, 255, 255, .35));
+    }
+}
+
+/* ===================== CONTACT GRID ===================== */
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+    margin-top: 26px;
+    align-items: start;
+}
+
+/* -------------------- Dispatch Card -------------------- */
+.dispatch-card {
+    background: var(--panel);
+    border: 1px solid #ebe9e3;
+    border-radius: 16px;
+    padding: 30px 30px;
+    box-shadow: 0 10px 26px rgba(30, 36, 32, .04);
+}
+
+.dispatch-title {
+    font-size: 19px;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.dispatch-lead {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 22px;
+    max-width: 520px;
+}
+
+.contact-channel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.contact-channel {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fbfaf7;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+}
+
+.contact-channel:hover {
+    border-color: var(--green);
+    background: #f3f8f4;
+    transform: translateY(-1px);
+}
+
+.contact-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.contact-icon.mail {
+    background: #e4eee7;
+    color: var(--green);
+}
+
+.contact-icon.chat {
+    background: #eef1e4;
+    color: #7d8f2e;
+}
+
+.contact-channel span:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.contact-channel small {
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+    color: #8a9188;
+}
+
+.contact-channel strong {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text);
+    word-break: break-all;
+}
+
+.dispatch-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+    background: var(--soft);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.dispatch-note svg {
+    color: var(--green);
+    flex-shrink: 0;
+}
+
+/* -------------------- Contact Side -------------------- */
+.contact-side {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.contact-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.contact-cards article {
+    background: var(--panel);
+    border: 1px solid #ebe9e3;
+    border-radius: 14px;
+    padding: 20px 18px;
+    box-shadow: 0 10px 26px rgba(30, 36, 32, .04);
+}
+
+.contact-cards article .contact-icon {
+    width: 38px;
+    height: 38px;
+    margin-bottom: 12px;
+}
+
+.contact-cards article small {
+    display: block;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1.4px;
+    color: #8a9188;
+    margin-bottom: 3px;
+}
+
+.contact-cards article h2 {
+    font-size: 15px;
+    font-weight: 900;
+    margin-bottom: 4px;
+}
+
+.contact-cards article p {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.basecamp-card {
+    background: var(--panel);
+    border: 1px solid #ebe9e3;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 26px rgba(30, 36, 32, .04);
+}
+
+.basecamp-card iframe {
+    width: 100%;
+    height: 200px;
+    border: 0;
+    display: block;
+    filter: saturate(0.9);
+}
+
+.basecamp-body {
+    padding: 22px 22px;
+}
+
+.basecamp-body h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 1.4px;
+    color: var(--green);
+    margin-bottom: 10px;
+}
+
+.basecamp-body h2 svg {
+    color: var(--green);
+}
+
+.basecamp-body > p {
+    font-size: 13px;
+    color: #3d423e;
+    line-height: 1.6;
+    margin-bottom: 14px;
+}
+
+.basecamp-body .address-text-block {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.basecamp-body .address-venue {
+    font-size: 14px;
+    font-weight: 800;
+    color: #1a241c;
+    line-height: 1.4;
+    display: block;
+}
+
+.basecamp-body .address-line {
+    font-size: 12.5px;
+    color: #4b524c;
+    line-height: 1.55;
+    margin: 0;
+}
+
+.basecamp-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-top: 1px dashed var(--line);
+    padding-top: 14px;
+}
+
+.basecamp-meta > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.basecamp-meta span {
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+    color: #8a9188;
+}
+
+.basecamp-meta strong {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--text);
+    text-align: right;
+}
+
+.basecamp-meta small {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.basecamp-meta .logistics-icons {
+    color: var(--green);
+    letter-spacing: 3px;
+}
+
+/* ===================== FOOTER ===================== */
+.site-footer {
+    background-color: #eae7e1;
+    border-top: 1px solid #dcd9d2;
+    padding: 48px 32px 24px;
+    margin-top: 48px;
+}
+
+.footer-container {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 20px;
+    font-weight: 800;
+    color: #174e2b;
+    margin-bottom: 12px;
+}
+
+.footer-subtitle {
+    font-size: 13px;
+    color: #555d57;
+    max-width: 400px;
+    margin-bottom: 32px;
+    line-height: 1.5;
+}
+
+.footer-divider {
+    height: 1px;
+    background-color: #d8d4cb;
+    margin-bottom: 24px;
+}
+
+.footer-copyright {
+    font-size: 11px;
+    color: #727a73;
+}
+
+/* ===================== RESPONSIVE ===================== */
+@media (max-width: 980px) {
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-side {
+        flex-direction: row;
+        align-items: stretch;
+    }
+
+    .contact-cards {
+        flex: 1;
+    }
+
+    .basecamp-card {
+        flex: 1.2;
+    }
+}
+
+@media (max-width: 720px) {
+    .contact-page {
+        padding: 22px 16px 16px;
+    }
+
+    .contact-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 30px 26px;
+    }
+
+    .contact-hero > img {
+        width: min(190px, 62%);
+        height: auto;
+    }
+
+    .contact-hero h1 {
+        font-size: 26px;
+    }
+
+    .contact-side {
+        flex-direction: column;
+    }
+
+    .contact-cards {
+        grid-template-columns: 1fr;
+    }
+}
