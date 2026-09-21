@@ -172,4 +172,82 @@ class AdminPenyewaanTest extends TestCase
         $response->assertStatus(200);
         $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
     }
+
+    public function test_detail_modal_contains_pickup_data(): void
+    {
+        $user = User::first();
+        Order::create([
+            'code' => 'RS-DET-PICKUP',
+            'user_id' => $user->id,
+            'rent_start' => now()->startOfDay(),
+            'rent_end' => now()->addDays(2)->endOfDay(),
+            'subtotal' => 100000,
+            'total' => 100000,
+            'status' => 'completed',
+            'delivery_method' => 'pickup',
+        ]);
+
+        $response = $this->withSession([
+            'account_id' => 1,
+            'account_name' => 'Admin Summit',
+            'account_role' => 'admin',
+        ])->get('/admin/penyewaan');
+
+        $response->assertStatus(200);
+        $html = $response->getContent();
+
+        // Data delivery ter-serialisasi ke modal dari DB (bukan dummy).
+        $this->assertStringContainsString('"delivery_method":"pickup"', $html);
+        $this->assertStringContainsString('"recipient_name":null', $html);
+        $this->assertStringContainsString('"delivery_address":null', $html);
+
+        // Render modal mendukung kondisi pickup.
+        $this->assertStringContainsString('Metode Pengambilan', $html);
+        $this->assertStringContainsString('Ambil di Tempat', $html);
+        $this->assertStringContainsString('Pesanan akan diambil langsung oleh penyewa di Summit Station.', $html);
+    }
+
+    public function test_detail_modal_contains_delivery_data(): void
+    {
+        $user = User::first();
+        $order = Order::create([
+            'code' => 'RS-DET-DELIVERY',
+            'user_id' => $user->id,
+            'rent_start' => now()->startOfDay(),
+            'rent_end' => now()->addDays(2)->endOfDay(),
+            'subtotal' => 100000,
+            'total' => 100000,
+            'status' => 'active',
+            'delivery_method' => 'delivery',
+            'recipient_name' => 'Wahyu Ramadhan',
+            'recipient_phone' => '081234567890',
+            'delivery_address' => 'Jalan Barokah, RT 4 RW 10 Pardak',
+            'delivery_note' => 'Patokan gerbang putih',
+        ]);
+
+        $response = $this->withSession([
+            'account_id' => 1,
+            'account_name' => 'Admin Summit',
+            'account_role' => 'admin',
+        ])->get('/admin/penyewaan');
+
+        $response->assertStatus(200);
+        $html = $response->getContent();
+
+        // Data yang tampil di admin = data yang disimpan user saat checkout.
+        $this->assertStringContainsString('"delivery_method":"delivery"', $html);
+        $this->assertStringContainsString('"recipient_name":"Wahyu Ramadhan"', $html);
+        $this->assertStringContainsString('"recipient_phone":"081234567890"', $html);
+        $this->assertStringContainsString('"delivery_address":"Jalan Barokah, RT 4 RW 10 Pardak"', $html);
+        $this->assertStringContainsString('"delivery_note":"Patokan gerbang putih"', $html);
+        $this->assertSame('delivery', $order->fresh()->delivery_method);
+
+        // Render modal mendukung kondisi delivery + label field.
+        $this->assertStringContainsString('Dikirim ke Lokasi', $html);
+        $this->assertStringContainsString('Nama Penerima', $html);
+        $this->assertStringContainsString('No. WhatsApp', $html);
+        $this->assertStringContainsString('Alamat Pengiriman', $html);
+        $this->assertStringContainsString('Catatan', $html);
+        $this->assertStringContainsString('Pesanan akan dikirim menggunakan mobil Summit Station.', $html);
+    }
 }

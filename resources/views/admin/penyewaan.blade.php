@@ -495,6 +495,40 @@
             const paymentMethod = payment ? payment.method.toUpperCase() : 'QRIS';
             const paymentStatus = payment ? payment.status.toUpperCase() : 'PAID';
 
+            const deliveryMethod = order.delivery_method || 'pickup';
+            let deliveryHtml = '';
+            if (deliveryMethod === 'delivery') {
+                deliveryHtml = `
+                    <div style="background: #f8faf8; padding: 14px; border-radius: 10px; border: 1px solid #e8e6e1;">
+                        <div style="font-size: 11px; font-weight: 800; color: #185d31; text-transform: uppercase; margin-bottom: 8px;">Metode Pengambilan</div>
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; color: #1a1d1a;">
+                            <span>🚚</span><span>Dikirim ke Lokasi</span>
+                        </div>
+                        <div style="font-size: 12px; color: #64748b; margin: 2px 0 10px;">Pesanan akan dikirim menggunakan mobil Summit Station.</div>
+                        <div style="display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; font-size: 12.5px;">
+                            <span style="color: #64748b; font-weight: 600;">Nama Penerima</span>
+                            <span style="font-weight: 700; color: #1a1d1a;">${order.recipient_name || '-'}</span>
+                            <span style="color: #64748b; font-weight: 600;">No. WhatsApp</span>
+                            <span style="font-weight: 700; color: #1a1d1a;">${order.recipient_phone || '-'}</span>
+                            <span style="color: #64748b; font-weight: 600;">Alamat Pengiriman</span>
+                            <span style="font-weight: 600; color: #374151;">${order.delivery_address || '-'}</span>
+                            <span style="color: #64748b; font-weight: 600;">Catatan</span>
+                            <span style="font-weight: 600; color: #374151;">${order.delivery_note || 'Tidak ada catatan'}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                deliveryHtml = `
+                    <div style="background: #f8faf8; padding: 14px; border-radius: 10px; border: 1px solid #e8e6e1;">
+                        <div style="font-size: 11px; font-weight: 800; color: #185d31; text-transform: uppercase; margin-bottom: 8px;">Metode Pengambilan</div>
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; color: #1a1d1a;">
+                            <span>📦</span><span>Ambil di Tempat</span>
+                        </div>
+                        <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Pesanan akan diambil langsung oleh penyewa di Summit Station.</div>
+                    </div>
+                `;
+            }
+
             const html = `
                 <div style="display: flex; flex-direction: column; gap: 14px;">
                     <div style="background: #f8faf8; padding: 14px; border-radius: 10px; border: 1px solid #e8e6e1;">
@@ -513,6 +547,8 @@
                         <span>Periode Sewa:</span>
                         <span style="font-weight: 700; color: #1a1d1a;">${order.rent_start ? order.rent_start.substring(0, 10) : '-'} s/d ${order.rent_end ? order.rent_end.substring(0, 10) : '-'}</span>
                     </div>
+
+                    ${deliveryHtml}
 
                     <div style="display: flex; justify-content: space-between; font-size: 13px; color: #4b5563;">
                         <span>Metode Pembayaran:</span>
