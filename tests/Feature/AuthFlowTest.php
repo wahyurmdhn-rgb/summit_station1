@@ -84,7 +84,7 @@ class AuthFlowTest extends TestCase
         ])->get('/admin');
 
         $response->assertStatus(200);
-        $response->assertSee('ADMIN');
+        $response->assertSee('Admin Panel');
         $response->assertSee('Dashboard');
     }
 
@@ -146,6 +146,7 @@ class AuthFlowTest extends TestCase
             'email' => 'newcustomer@example.com',
             'phone' => '081234567890',
             'domicile' => 'Jakarta',
+            'date_of_birth' => '2000-01-01',
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'terms' => '1',
@@ -167,6 +168,7 @@ class AuthFlowTest extends TestCase
             'email' => 'tricky@example.com',
             'phone' => '081298765432',
             'domicile' => 'Bogor',
+            'date_of_birth' => '2001-02-02',
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'terms' => '1',
@@ -219,6 +221,7 @@ class AuthFlowTest extends TestCase
             'email' => 'profileuser@example.com',
             'phone' => '0812345678',
             'domicile' => 'Jakarta',
+            'date_of_birth' => '1998-03-03',
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'terms' => '1',

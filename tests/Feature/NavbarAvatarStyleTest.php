@@ -10,7 +10,7 @@ class NavbarAvatarStyleTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_navbar_avatar_displays_single_username_initial_and_profile_displays_full_initials(): void
+    public function test_navbar_avatar_displays_single_username_initial_and_profile_displays_username_initial(): void
     {
         // 1. User Fajar Pratama (@fajar_peaks)
         $fajar = User::create([
@@ -38,7 +38,7 @@ class NavbarAvatarStyleTest extends TestCase
         ])->get('/profile');
 
         $resFajarProfile->assertStatus(200);
-        $resFajarProfile->assertSee('FP'); // Full name initials in Profile
+        $resFajarProfile->assertSee('<span class="cp-avatar-initial">F</span>', false); // Username initial in Profile
         $resFajarProfile->assertSee('<span class="user-avatar-initial">F</span>', false); // Navbar in Profile page
 
         // 2. User Wahyu Pratama (@wahyu)

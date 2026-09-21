@@ -205,6 +205,7 @@ class CatalogController extends Controller
         ], true))->values()->all();
 
         $isSuspended = $this->checkIsSuspended();
+        $isConsentPending = $this->checkIsConsentPending();
 
         $productReviews = collect();
         $realReviewsCount = 0;
@@ -247,7 +248,7 @@ class CatalogController extends Controller
             'features' => $features,
         ];
 
-        return view('products.show', compact('product', 'isSuspended', 'productReviews'));
+        return view('products.show', compact('product', 'isSuspended', 'isConsentPending', 'productReviews'));
     }
 
     /**
@@ -322,6 +323,7 @@ class CatalogController extends Controller
         }
 
         $isSuspended = $this->checkIsSuspended();
+        $isConsentPending = $this->checkIsConsentPending();
 
         $product = [
             'id' => $bundle->id,
@@ -347,6 +349,7 @@ class CatalogController extends Controller
             'product' => $product,
             'bundle' => $bundle,
             'isSuspended' => $isSuspended,
+            'isConsentPending' => $isConsentPending,
             'productReviews' => $bundleReviews,
         ]);
     }
@@ -356,6 +359,15 @@ class CatalogController extends Controller
         if (session('account_id') && session('account_role') === 'customer') {
             $sessionUser = User::find(session('account_id'));
             return $sessionUser && ($sessionUser->status === 'suspended' || $sessionUser->status === 'inactive');
+        }
+        return false;
+    }
+
+    private function checkIsConsentPending(): bool
+    {
+        if (session('account_id') && session('account_role') === 'customer') {
+            $sessionUser = User::find(session('account_id'));
+            return $sessionUser && $sessionUser->is_consent_pending;
         }
         return false;
     }

@@ -89,6 +89,8 @@ class CartController extends Controller
             return $this->handleSuspendedUser($request);
         }
 
+        $consentPending = $this->isConsentPending($request);
+
         $cart = session()->get('cart_items', []);
         $stockWarnings = [];
         $hasInsufficientStock = false;
@@ -152,7 +154,8 @@ class CartController extends Controller
             'totalPayable',
             'stockWarnings',
             'hasInsufficientStock',
-            'selectedCount'
+            'selectedCount',
+            'consentPending'
         ));
     }
 
@@ -164,6 +167,11 @@ class CartController extends Controller
         // Validasi status user jika sedang login
         if ($this->isSuspendedUser($request)) {
             return $this->handleSuspendedUser($request);
+        }
+
+        // User di bawah umur belum boleh menyewa sebelum persetujuan diverifikasi admin.
+        if ($this->isConsentPending($request)) {
+            return $this->consentBlock($request);
         }
 
         $productId = $request->input('product_id');
@@ -221,6 +229,11 @@ class CartController extends Controller
         // Validasi status user jika sedang login
         if ($this->isSuspendedUser($request)) {
             return $this->handleSuspendedUser($request);
+        }
+
+        // User di bawah umur belum boleh menyewa sebelum persetujuan diverifikasi admin.
+        if ($this->isConsentPending($request)) {
+            return $this->consentBlock($request);
         }
 
         $bundleId = $request->input('bundle_id');
@@ -291,6 +304,10 @@ class CartController extends Controller
                 return response()->json(['success' => false, 'message' => 'Akun Anda ditangguhkan.'], 403);
             }
             return $this->handleSuspendedUser($request);
+        }
+
+        if ($this->isConsentPending($request)) {
+            return $this->consentBlock($request);
         }
 
         $cart = session()->get('cart_items', []);
@@ -396,6 +413,10 @@ class CartController extends Controller
             return $this->handleSuspendedUser($request);
         }
 
+        if ($this->isConsentPending($request)) {
+            return $this->consentBlock($request);
+        }
+
         $cart = session()->get('cart_items', []);
         $checked = $request->boolean('checked');
 
@@ -496,6 +517,38 @@ class CartController extends Controller
     {
         $request->session()->forget(['account_id', 'account_name', 'account_username', 'account_role', 'account_avatar', 'cart_items']);
         return redirect()->route('login')->withErrors(['email' => 'Akun Anda telah ditangguhkan (SUSPENDED). Silakan hubungi Administrator.']);
+    }
+
+    /**
+     * True bila user di bawah umur dan persetujuan orang tua/wali
+     * belum diverifikasi (disetujui) admin, sehingga belum boleh menyewa.
+     */
+    private function isConsentPending(Request $request): bool
+    {
+        if ($request->session()->has('account_id') && $request->session()->get('account_role') === 'customer') {
+            $user = User::find($request->session()->get('account_id'));
+            return $user && $user->is_consent_pending;
+        }
+        return false;
+    }
+
+    /**
+     * Blokir aksi penyewaan untuk user di bawah umur yang persetujuannya
+     * belum disetujui admin. Response JSON untuk panggilan AJAX, redirect
+     * kembali untuk form biasa.
+     */
+    private function consentBlock(Request $request): JsonResponse|RedirectResponse
+    {
+        $message = 'Persetujuan orang tua Anda belum diverifikasi admin. Anda belum dapat melakukan penyewaan alat.';
+
+        if ($request->wantsJson() || $request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => $message,
+            ], 403);
+        }
+
+        return back()->withErrors(['error' => $message]);
     }
 
     /**

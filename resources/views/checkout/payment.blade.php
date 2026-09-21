@@ -91,8 +91,11 @@
             </div>
         </div>
 
-        <!-- Right Column: Select Payment Method -->
-        <div class="payment-methods-card">
+        <!-- Right Column: Select Payment Method + Metode Pengambilan -->
+        <form method="POST" action="{{ route('payment.qris') }}" class="payment-methods-card" id="payment-form">
+            @csrf
+            <input type="hidden" name="payment_method" id="payment-method-input" value="qris">
+
             <div>
                 <h2 class="pm-title">Pilih Metode Pembayaran</h2>
                 <p class="pm-subtitle">Pilih dompet digital favorit Anda atau pindai QRIS.</p>
@@ -143,11 +146,120 @@
                 @endforeach
             </div>
 
+            <!-- ─── Metode Pengambilan ─── -->
+            @php
+                $selectedDelivery = $delivery['delivery_method'] ?? '';
+                $dName = trim((string) ($delivery['recipient_name'] ?? ''));
+                $dPhone = trim((string) ($delivery['recipient_phone'] ?? ''));
+                $dAddress = trim((string) ($delivery['delivery_address'] ?? ''));
+                $dNote = trim((string) ($delivery['delivery_note'] ?? ''));
+            @endphp
+
+            <div class="delivery-section">
+                <div class="delivery-head">
+                    <h3 class="dm-title">Metode Pengambilan</h3>
+                    <p class="dm-subtitle">Bagaimana Anda ingin menerima perlengkapan rental?</p>
+                </div>
+
+                <input type="hidden" name="delivery_method" id="delivery-method-input" value="{{ $selectedDelivery }}">
+
+                <div class="delivery-grid">
+                    <!-- A. Ambil di Tempat -->
+                    <div class="delivery-option {{ $selectedDelivery === 'pickup' ? 'selected' : '' }}"
+                         data-delivery="pickup"
+                         onclick="selectDelivery(this)"
+                         role="radio"
+                         aria-checked="{{ $selectedDelivery === 'pickup' ? 'true' : 'false' }}"
+                         style="cursor: pointer;">
+                        <div class="delivery-icon delivery-icon-store">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 10h16l-1.5 11h-13L4 10z"></path>
+                                <path d="M2 7l2-4h16l2 4H2z"></path>
+                                <path d="M4 10v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9"></path>
+                                <path d="M12 10v11"></path>
+                            </svg>
+                        </div>
+                        <div class="delivery-info">
+                            <div class="delivery-name">Ambil di Tempat</div>
+                            <div class="delivery-desc">Ambil langsung di Summit Station</div>
+                        </div>
+                        <small class="delivery-note">Anda dapat mengambil perlengkapan langsung di lokasi kami.</small>
+                    </div>
+
+                    <!-- B. Dikirim ke Lokasi -->
+                    <div class="delivery-option {{ $selectedDelivery === 'delivery' ? 'selected' : '' }}"
+                         data-delivery="delivery"
+                         onclick="selectDelivery(this)"
+                         role="radio"
+                         aria-checked="{{ $selectedDelivery === 'delivery' ? 'true' : 'false' }}"
+                         style="cursor: pointer;">
+                        <div class="delivery-icon delivery-icon-car">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 3h15v13H1z"></path>
+                                <path d="M16 8h4l3 3v5h-7V8z"></path>
+                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                            </svg>
+                        </div>
+                        <div class="delivery-info">
+                            <div class="delivery-name">Dikirim ke Lokasi</div>
+                            <div class="delivery-desc">Perlengkapan diantar menggunakan mobil Summit Station</div>
+                        </div>
+                        <small class="delivery-note">Perlengkapan akan dikirim ke alamat yang Anda tentukan.</small>
+                    </div>
+                </div>
+
+                <p class="delivery-error" id="delivery-error" style="display: none;"></p>
+
+                <!-- Pengambilan di Tempat -->
+                <div class="delivery-pickup-info" id="delivery-pickup-info" style="display: none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <path d="M9 12l2 2 4-4"></path>
+                    </svg>
+                    <div>
+                        <strong>Pengambilan di Summit Station</strong>
+                        <p>Silakan ambil perlengkapan sesuai jadwal rental yang telah dipilih.</p>
+                    </div>
+                </div>
+
+                <!-- Form Alamat Pengiriman (muncul saat Dikirim dipilih) -->
+                <div class="delivery-form" id="delivery-form">
+                    <div class="delivery-form-inner">
+                        <h4>Alamat Pengiriman</h4>
+
+                        <div class="delivery-field">
+                            <label for="recipient_name">Nama Penerima</label>
+                            <input type="text" id="recipient_name" name="recipient_name" value="{{ $dName }}"
+                                   placeholder="Nama lengkap penerima barang" autocomplete="name">
+                        </div>
+
+                        <div class="delivery-field">
+                            <label for="recipient_phone">Nomor WhatsApp</label>
+                            <input type="tel" id="recipient_phone" name="recipient_phone" value="{{ $dPhone }}"
+                                   placeholder="Contoh: 08123456789" autocomplete="tel">
+                        </div>
+
+                        <div class="delivery-field">
+                            <label for="delivery_address">Alamat Lengkap</label>
+                            <textarea id="delivery_address" name="delivery_address" rows="3"
+                                      placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan, kecamatan, kota, provinsi" autocomplete="street-address">{{ $dAddress }}</textarea>
+                        </div>
+
+                        <div class="delivery-field">
+                            <label for="delivery_note">Catatan / Patokan <span class="delivery-optional">(opsional)</span></label>
+                            <input type="text" id="delivery_note" name="delivery_note" value="{{ $dNote }}"
+                                   placeholder="Patokan: dekat minimarket, gerbang kompleks, dll.">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Pay Now Button -->
-            <button type="button" class="btn-pay-now" id="btn-pay" onclick="proceedPayment()">
+            <button type="submit" class="btn-pay-now" id="btn-pay">
                 <span>Bayar Rp {{ number_format($order['total'], 0, ',', '.') }}</span> &nbsp;&rarr;
             </button>
-        </div>
+        </form>
 
     </main>
 
@@ -156,16 +268,116 @@
 
     <script>
         let selectedMethod = 'qris';
+        let selectedDelivery = '';
 
         function selectPayment(el) {
             document.querySelectorAll('.pm-option').forEach(o => o.classList.remove('selected'));
             el.classList.add('selected');
             selectedMethod = el.getAttribute('data-id');
+            document.getElementById('payment-method-input').value = selectedMethod;
         }
 
-        function proceedPayment() {
-            window.location.href = "{{ route('payment.qris') }}?method=" + encodeURIComponent(selectedMethod);
+        function selectDelivery(el) {
+            document.querySelectorAll('.delivery-option').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedDelivery = el.getAttribute('data-delivery');
+            document.getElementById('delivery-method-input').value = selectedDelivery;
+            document.querySelectorAll('.delivery-option').forEach(o => {
+                o.setAttribute('aria-checked', o === el ? 'true' : 'false');
+            });
+            clearDeliveryErrors();
+            updateDeliveryUI();
         }
+
+        function updateDeliveryUI() {
+            var pickupInfo = document.getElementById('delivery-pickup-info');
+            var deliveryForm = document.getElementById('delivery-form');
+
+            if (pickupInfo) {
+                pickupInfo.style.display = selectedDelivery === 'pickup' ? 'flex' : 'none';
+            }
+            if (deliveryForm) {
+                deliveryForm.classList.toggle('open', selectedDelivery === 'delivery');
+            }
+        }
+
+        function showDeliveryError(message) {
+            var box = document.getElementById('delivery-error');
+            box.textContent = message;
+            box.style.display = 'block';
+        }
+
+        function clearDeliveryErrors() {
+            var box = document.getElementById('delivery-error');
+            if (box) {
+                box.style.display = 'none';
+                box.textContent = '';
+            }
+            document.querySelectorAll('.delivery-field.invalid').forEach(f => f.classList.remove('invalid'));
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var hidden = document.getElementById('delivery-method-input');
+            selectedDelivery = hidden ? hidden.value : '';
+
+            if (selectedDelivery) {
+                document.querySelectorAll('.delivery-option').forEach(o => {
+                    var isSel = o.getAttribute('data-delivery') === selectedDelivery;
+                    o.classList.toggle('selected', isSel);
+                    o.setAttribute('aria-checked', isSel ? 'true' : 'false');
+                });
+            }
+
+            updateDeliveryUI();
+        });
+
+        document.getElementById('payment-form').addEventListener('submit', function (e) {
+            clearDeliveryErrors();
+
+            if (!selectedMethod) {
+                showDeliveryError('Silakan pilih metode pembayaran terlebih dahulu.');
+                e.preventDefault();
+                return;
+            }
+
+            if (!selectedDelivery) {
+                showDeliveryError('Silakan pilih metode pengambilan terlebih dahulu.');
+                e.preventDefault();
+                return;
+            }
+
+            if (selectedDelivery === 'delivery') {
+                var valid = true;
+
+                var name = document.getElementById('recipient_name').value.trim();
+                var phone = document.getElementById('recipient_phone').value.trim();
+                var address = document.getElementById('delivery_address').value.trim();
+
+                if (!name) {
+                    document.getElementById('recipient_name').closest('.delivery-field').classList.add('invalid');
+                    valid = false;
+                }
+                if (!address) {
+                    document.getElementById('delivery_address').closest('.delivery-field').classList.add('invalid');
+                    valid = false;
+                }
+
+                var digits = phone.replace(/[^0-9]/g, '');
+                if (digits.indexOf('62') === 0) {
+                    digits = '0' + digits.slice(2);
+                }
+                if (!/^08\d{8,13}$/.test(digits)) {
+                    document.getElementById('recipient_phone').closest('.delivery-field').classList.add('invalid');
+                    valid = false;
+                }
+
+                if (!valid) {
+                    showDeliveryError('Lengkapi alamat pengiriman terlebih dahulu.');
+                    e.preventDefault();
+                    return;
+                }
+            }
+        });
     </script>
     <script src="{{ asset('js/summit-navbar.js') }}"></script>
 </body>

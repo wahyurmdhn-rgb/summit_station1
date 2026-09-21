@@ -48,7 +48,7 @@ class AdminLogoutTest extends TestCase
         // 2. Open Admin Dashboard
         $dashboardResponse = $this->get('/admin');
         $dashboardResponse->assertStatus(200);
-        $dashboardResponse->assertSee('ADMIN');
+        $dashboardResponse->assertSee('Admin Panel');
         $dashboardResponse->assertSee('Keluar');
 
         // 3. Logout via POST /logout with CSRF

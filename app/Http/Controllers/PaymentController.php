@@ -39,6 +39,11 @@ class PaymentController extends Controller
             return $this->handleSuspendedUser($request);
         }
 
+        // User di bawah umur belum boleh checkout sebelum persetujuan diverifikasi admin.
+        if ($this->isConsentPending($request)) {
+            return $this->consentBlock($request);
+        }
+
         $cart = $this->selectedCart();
         if (empty($cart)) {
             return redirect()->route('cart')->withErrors(['error' => 'Belum ada barang yang dipilih. Centang minimal satu barang untuk melanjutkan.']);
@@ -70,11 +75,16 @@ class PaymentController extends Controller
             'order' => $order,
             'cartItems' => $cartItems,
             'payment_methods' => $paymentMethods,
+            'delivery' => session('checkout_delivery', []),
         ]);
     }
 
     /**
      * Halaman Bayar QRIS (Konfirmasi & Upload Bukti)
+     *
+     * Menerima POST dari halaman pembayaran untuk menyimpan "Metode Pengambilan"
+     * (pickup/delivery) beserta data alamat pengiriman ke dalam sesi, lalu
+     * menampilkan halaman konfirmasi pembayaran. Juga dapat diakses via GET.
      */
     public function qris(Request $request): View|RedirectResponse
     {
@@ -82,12 +92,43 @@ class PaymentController extends Controller
             return $this->handleSuspendedUser($request);
         }
 
+        // User di bawah umur belum boleh checkout sebelum persetujuan diverifikasi admin.
+        if ($this->isConsentPending($request)) {
+            return $this->consentBlock($request);
+        }
+
         $cart = $this->selectedCart();
         if (empty($cart)) {
             return redirect()->route('cart')->withErrors(['error' => 'Belum ada barang yang dipilih. Centang minimal satu barang untuk melanjutkan.']);
         }
 
-        $method = $request->query('method', 'qris');
+        if ($request->isMethod('post')) {
+            $deliveryMethod = (string) $request->input('delivery_method', 'pickup');
+            if (! in_array($deliveryMethod, ['pickup', 'delivery'], true)) {
+                $deliveryMethod = 'pickup';
+            }
+
+            $delivery = [
+                'delivery_method' => $deliveryMethod,
+                'recipient_name' => trim((string) $request->input('recipient_name')),
+                'recipient_phone' => trim((string) $request->input('recipient_phone')),
+                'delivery_address' => trim((string) $request->input('delivery_address')),
+                'delivery_note' => trim((string) $request->input('delivery_note')),
+            ];
+
+            if ($deliveryMethod === 'delivery') {
+                $error = $this->deliveryFieldsError($delivery);
+                if ($error !== null) {
+                    return redirect()->route('payment')->withErrors(['delivery_method' => $error]);
+                }
+            }
+
+            session(['checkout_delivery' => $delivery]);
+        } else {
+            $delivery = (array) session('checkout_delivery', []);
+        }
+
+        $method = $request->query('method', $request->input('payment_method', 'qris'));
         if (! in_array($method, self::ALLOWED_METHODS, true)) {
             $method = 'qris';
         }
@@ -102,6 +143,7 @@ class PaymentController extends Controller
             'cartItems' => $cartItems,
             'payment_method' => $method,
             'payment_deadline' => $paymentDeadline,
+            'delivery' => $delivery,
         ]);
     }
 
@@ -112,6 +154,11 @@ class PaymentController extends Controller
     {
         if ($this->isSuspendedUser($request)) {
             return $this->handleSuspendedUser($request);
+        }
+
+        // User di bawah umur belum boleh membuat order sebelum persetujuan diverifikasi admin.
+        if ($this->isConsentPending($request)) {
+            return $this->consentBlock($request);
         }
 
         $cart = $this->selectedCart();
@@ -131,6 +178,28 @@ class PaymentController extends Controller
         $proofRejection = $this->validateProof($request);
         if ($proofRejection !== null) {
             return $proofRejection;
+        }
+
+        // Metode Pengambilan: default "pickup" agar tetap kompatibel dengan alur lama.
+        $deliveryMethod = (string) $request->input('delivery_method', 'pickup');
+        if (! in_array($deliveryMethod, ['pickup', 'delivery'], true)) {
+            $deliveryMethod = 'pickup';
+        }
+
+        $delivery = [
+            'delivery_method' => $deliveryMethod,
+            'recipient_name' => trim((string) $request->input('recipient_name')),
+            'recipient_phone' => trim((string) $request->input('recipient_phone')),
+            'delivery_address' => trim((string) $request->input('delivery_address')),
+            'delivery_note' => trim((string) $request->input('delivery_note')),
+        ];
+
+        // Saat pengiriman dipilih, data alamat wajib lengkap & nomor WA valid.
+        if ($deliveryMethod === 'delivery') {
+            $deliveryError = $this->deliveryFieldsError($delivery);
+            if ($deliveryError !== null) {
+                return $this->fail($request, $deliveryError, 'delivery_address');
+            }
         }
 
         // Strict Stock Check before finalizing order (produk satuan & paket sewa)
@@ -187,7 +256,7 @@ class PaymentController extends Controller
         // Buat Order, Order Items, Payment, dan notifikasi dalam SATU transaksi agar
         // tidak ada orok (partial) write: bila ada error apa pun, semua dibatalkan
         // sehingga retry tidak menghasilkan order/payment ganda.
-        [$order, $payment] = DB::transaction(function () use ($orderCode, $userId, $rentStart, $rentEnd, $orderCalc, $cart, $days, $request, $method, $existingUser) {
+        [$order, $payment] = DB::transaction(function () use ($orderCode, $userId, $rentStart, $rentEnd, $orderCalc, $cart, $days, $request, $method, $existingUser, $delivery) {
             $order = Order::create([
                 'code' => $orderCode,
                 'user_id' => $userId,
@@ -198,6 +267,11 @@ class PaymentController extends Controller
                 'discount' => $orderCalc['discount'],
                 'total' => $orderCalc['total'],
                 'status' => 'pending',
+                'delivery_method' => $delivery['delivery_method'],
+                'recipient_name' => $delivery['recipient_name'] !== '' ? $delivery['recipient_name'] : null,
+                'recipient_phone' => $delivery['recipient_phone'] !== '' ? $delivery['recipient_phone'] : null,
+                'delivery_address' => $delivery['delivery_address'] !== '' ? $delivery['delivery_address'] : null,
+                'delivery_note' => $delivery['delivery_note'] !== '' ? $delivery['delivery_note'] : null,
                 'created_at' => now(),
             ]);
 
@@ -253,6 +327,7 @@ class PaymentController extends Controller
         // Reset Cart & Window Pembayaran
         session()->forget('cart_items');
         session()->forget('payment_deadline');
+        session()->forget('checkout_delivery');
 
         return redirect()->route('history')
             ->with('status', "Pesanan #{$order->code} berhasil diajukan! Menunggu verifikasi tim admin.");
@@ -299,6 +374,38 @@ class PaymentController extends Controller
             return $user && ($user->status === 'suspended' || $user->status === 'inactive');
         }
         return false;
+    }
+
+    /**
+     * True bila user di bawah umur dan persetujuan orang tua/wali
+     * belum diverifikasi (disetujui) admin, sehingga belum boleh menyewa.
+     */
+    private function isConsentPending(Request $request): bool
+    {
+        if ($request->session()->has('account_id') && $request->session()->get('account_role') === 'customer') {
+            $user = User::find($request->session()->get('account_id'));
+            return $user && $user->is_consent_pending;
+        }
+        return false;
+    }
+
+    /**
+     * Blokir checkout/order untuk user di bawah umur yang persetujuannya
+     * belum disetujui admin. Response JSON untuk pemanggilan API,
+     * redirect kembali dengan error untuk form biasa.
+     */
+    private function consentBlock(Request $request): RedirectResponse|JsonResponse
+    {
+        $message = 'Persetujuan orang tua Anda belum diverifikasi admin. Anda belum dapat melakukan penyewaan alat.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => $message,
+            ], 403);
+        }
+
+        return back()->withErrors(['error' => $message]);
     }
 
     /**
@@ -356,6 +463,41 @@ class PaymentController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Validasi field data pengiriman. Mengembalikan pesan error (string) bila
+     * pengiriman wajib dipenuhi, atau null bila semua field valid.
+     */
+    private function deliveryFieldsError(array $delivery): ?string
+    {
+        if (($delivery['recipient_name'] ?? '') === '' || ($delivery['delivery_address'] ?? '') === '') {
+            return 'Lengkapi alamat pengiriman terlebih dahulu.';
+        }
+
+        if (! $this->isValidWhatsApp((string) ($delivery['recipient_phone'] ?? ''))) {
+            return 'Nomor WhatsApp tidak valid.';
+        }
+
+        return null;
+    }
+
+    /**
+     * Validasi sederhana nomor WhatsApp Indonesia (08xxxxxxxxxx / 628xxxxxxxxxx / +62...).
+     */
+    private function isValidWhatsApp(string $phone): bool
+    {
+        $digits = preg_replace('/[^0-9]/', '', $phone) ?? '';
+
+        if ($digits === '') {
+            return false;
+        }
+
+        if (str_starts_with($digits, '62')) {
+            $digits = '0' . substr($digits, 2);
+        }
+
+        return str_starts_with($digits, '08') && strlen($digits) >= 10 && strlen($digits) <= 15;
     }
 
     /**

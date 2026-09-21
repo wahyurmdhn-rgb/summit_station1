@@ -549,6 +549,27 @@ button {
     flex-shrink: 0;
 }
 
+.order-delivery-meta {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4c5a51;
+    background: #f2f7f4;
+    border: 1px solid #e2ece6;
+    border-radius: 8px;
+    padding: 7px 10px;
+    margin-bottom: 8px;
+    line-height: 1.45;
+}
+
+.order-delivery-meta svg {
+    color: var(--green);
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
 .order-items-summary .items-count-tag {
     display: inline-flex;
     align-items: center;

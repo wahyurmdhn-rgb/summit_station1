@@ -4218,6 +4218,22 @@ button.menu-link {
     background-color: #d97706;
 }
 
+.user-badge-success {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+.user-badge-success .badge-dot {
+    background-color: #10b981;
+}
+
+.user-badge-info {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+.user-badge-info .badge-dot {
+    background-color: #3b82f6;
+}
+
 /* Action Buttons */
 .user-action-buttons {
     display: flex;
@@ -4253,6 +4269,17 @@ button.menu-link {
 .user-action-btn.delete:hover {
     background-color: #fef2f2;
     color: #dc2626;
+}
+
+.user-action-btn.consent:hover {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.user-status-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 /* Empty State */

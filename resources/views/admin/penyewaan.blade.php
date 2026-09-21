@@ -242,7 +242,11 @@
                                                 @if ($order->status === 'active')
                                                     Berakhir {{ $order->rent_end ? $order->rent_end->format('M d') : 'Segera' }}
                                                 @elseif ($order->status === 'pending')
-                                                    Menunggu pengambilan
+                                                    @if (($order->delivery_method ?? '') === 'delivery')
+                                                        Menunggu pengiriman
+                                                    @else
+                                                        Menunggu pengambilan
+                                                    @endif
                                                 @elseif ($order->status === 'completed')
                                                     Selesai
                                                 @else

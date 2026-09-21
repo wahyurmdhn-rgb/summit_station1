@@ -20,6 +20,7 @@ class ProfileDomicileTest extends TestCase
             'email' => 'domisili.member.' . $unique . '@summit.id',
             'phone' => '081234567890',
             'domicile' => 'Bogor',
+            'date_of_birth' => '2000-04-04',
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'terms' => '1',

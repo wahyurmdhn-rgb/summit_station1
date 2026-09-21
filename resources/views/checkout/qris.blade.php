@@ -75,6 +75,23 @@
                         <span>Total Pembayaran</span>
                         <strong>Rp {{ number_format($order['total'], 0, ',', '.') }}</strong>
                     </div>
+
+                    @php $deliveryMethod = $delivery['delivery_method'] ?? 'pickup'; @endphp
+                    <div class="summary-delivery">
+                        <span class="summary-delivery-label">Metode Pengambilan</span>
+                        @if ($deliveryMethod === 'delivery')
+                            <strong>Dikirim ke Lokasi</strong>
+                            <span>Penerima: {{ $delivery['recipient_name'] ?? '-' }}</span>
+                            <span>WhatsApp: {{ $delivery['recipient_phone'] ?? '-' }}</span>
+                            <span>Alamat: {{ $delivery['delivery_address'] ?? '-' }}</span>
+                            @if (!empty($delivery['delivery_note']))
+                                <span>Catatan: {{ $delivery['delivery_note'] }}</span>
+                            @endif
+                        @else
+                            <strong>Ambil di Tempat</strong>
+                            <span>Silakan ambil perlengkapan sesuai jadwal rental yang telah dipilih.</span>
+                        @endif
+                    </div>
                 </aside>
 
                 <div class="secure-note">
@@ -89,6 +106,11 @@
             <form method="POST" action="{{ route('payment.process') }}" enctype="multipart/form-data" class="qris-card" id="qris-form">
                 @csrf
                 <input type="hidden" name="payment_method" value="{{ $payment_method ?? 'qris' }}">
+                <input type="hidden" name="delivery_method" value="{{ $delivery['delivery_method'] ?? 'pickup' }}">
+                <input type="hidden" name="recipient_name" value="{{ $delivery['recipient_name'] ?? '' }}">
+                <input type="hidden" name="recipient_phone" value="{{ $delivery['recipient_phone'] ?? '' }}">
+                <input type="hidden" name="delivery_address" value="{{ $delivery['delivery_address'] ?? '' }}">
+                <input type="hidden" name="delivery_note" value="{{ $delivery['delivery_note'] ?? '' }}">
 
                 @if (($payment_method ?? 'qris') === 'qris')
                     <div class="scan-icon">
@@ -129,11 +151,10 @@
                     <strong>Upload Bukti Pembayaran</strong>
                     <span id="proof-label">Klik untuk memilih file atau tarik dan lepas file di sini</span>
                     <small>FORMAT YANG DIDUKUNG: JPG, JPEG, PNG, PDF | MAKS. 5MB</small>
+                    <span class="proof-image-preview-wrap" id="proof-image-preview-wrap" style="display: none;">
+                        <img id="proof-image-preview" src="" alt="Preview bukti pembayaran" style="pointer-events: none;">
+                    </span>
                 </label>
-
-                <div class="proof-image-preview-wrap" id="proof-image-preview-wrap" style="display: none;">
-                    <img id="proof-image-preview" src="" alt="Preview bukti pembayaran">
-                </div>
 
                 <div class="proof-preview" id="proof-preview" style="display: none;">
                     <span class="proof-preview-icon" id="proof-preview-icon">
@@ -258,6 +279,7 @@
                 proofLabel.textContent = 'Klik untuk memilih file atau tarik dan lepas file di sini';
                 proofPreview.style.display = 'none';
                 dropzone.classList.remove('has-file');
+                dropzone.classList.remove('has-image');
                 imagePreviewWrap.style.display = 'none';
                 imagePreviewWrap.classList.remove('show');
                 imagePreview.removeAttribute('src');
@@ -326,6 +348,14 @@
                     proofLabel.textContent = 'Klik untuk memilih file atau tarik dan lepas file di sini';
                     proofPreview.style.display = 'none';
                     dropzone.classList.remove('has-file');
+                    dropzone.classList.remove('has-image');
+                    imagePreviewWrap.style.display = 'none';
+                    imagePreviewWrap.classList.remove('show');
+                    imagePreview.removeAttribute('src');
+                    if (currentObjectURL) {
+                        URL.revokeObjectURL(currentObjectURL);
+                        currentObjectURL = null;
+                    }
                     refreshButton();
                     return;
                 }
@@ -336,6 +366,14 @@
                     proofLabel.textContent = 'Klik untuk memilih file atau tarik dan lepas file di sini';
                     proofPreview.style.display = 'none';
                     dropzone.classList.remove('has-file');
+                    dropzone.classList.remove('has-image');
+                    imagePreviewWrap.style.display = 'none';
+                    imagePreviewWrap.classList.remove('show');
+                    imagePreview.removeAttribute('src');
+                    if (currentObjectURL) {
+                        URL.revokeObjectURL(currentObjectURL);
+                        currentObjectURL = null;
+                    }
                     refreshButton();
                     return;
                 }
@@ -354,6 +392,7 @@
                     }
                     currentObjectURL = URL.createObjectURL(file);
                     imagePreview.onload = function () {
+                        dropzone.classList.add('has-image');
                         imagePreviewWrap.style.display = 'flex';
                         requestAnimationFrame(function () {
                             imagePreviewWrap.classList.add('show');
@@ -361,6 +400,7 @@
                     };
                     imagePreview.src = currentObjectURL;
                 } else {
+                    dropzone.classList.remove('has-image');
                     imagePreviewWrap.style.display = 'none';
                     imagePreviewWrap.classList.remove('show');
                     imagePreview.removeAttribute('src');

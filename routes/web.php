@@ -71,6 +71,7 @@ Route::middleware(['admin'])->group(function () {
     Route::put('/admin/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
     Route::patch('/admin/users/{id}/status', [AdminController::class, 'changeUserStatus'])->name('admin.users.status');
     Route::delete('/admin/users/{id}', [AdminController::class, 'destroyUser'])->name('admin.users.destroy');
+    Route::post('/admin/users/{id}/parent-consent', [AdminController::class, 'updateParentConsent'])->name('admin.users.parentConsent');
     Route::get('/admin/users/export', [AdminController::class, 'exportCsvUsers'])->name('admin.users.export');
 
     // Website & CMS Routes
@@ -121,7 +122,7 @@ Route::middleware(['customer_auth'])->group(function () {
 // Payment Routes (requires customer authentication)
 Route::middleware(['customer_auth'])->group(function () {
     Route::get('/payment', [PaymentController::class, 'index'])->name('payment');
-    Route::get('/payment/qris', [PaymentController::class, 'qris'])->name('payment.qris');
+    Route::match(['get', 'post'], '/payment/qris', [PaymentController::class, 'qris'])->name('payment.qris');
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 });
 
@@ -157,6 +158,9 @@ Route::get('/store-location', function () {
 // File Bukti Terkontrol (admin / pemilik booking) — penyajian dari storage privat.
 Route::get('/files/payment-proof/{payment}', [FileController::class, 'paymentProof'])->name('file.payment-proof');
 Route::get('/files/return-proof/{return}', [FileController::class, 'returnProof'])->name('file.return-proof');
+Route::get('/files/parent-consent/{user}', [FileController::class, 'parentConsent'])->name('file.parent-consent');
+Route::get('/files/ktp-guardian/{user}', [FileController::class, 'ktpGuardian'])->name('file.ktp-guardian');
+Route::get('/files/student-card/{user}', [FileController::class, 'studentCard'])->name('file.student-card');
 
 Route::get('/contact-admin', function () {
     return view('home.contact-admin');

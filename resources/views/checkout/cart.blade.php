@@ -185,6 +185,15 @@
             </div>
         @endif
 
+        @if (!empty($consentPending))
+            <div style="margin-bottom: 20px; padding: 14px 18px; border-radius: 10px; background-color: #fef3c7; border: 1px solid #fcd34d; color: #92400e; font-size: 13px; font-weight: 700; line-height: 1.6;">
+                Persetujuan orang tua Anda masih menunggu verifikasi admin. Anda belum dapat menyewa alat sampai akun dikonfirmasi admin.
+                <span style="display: block; margin-top: 6px;">
+                    <a href="{{ route('profile') }}" style="color: #92400e; font-weight: 800; text-decoration: underline;">Cek Status Verifikasi &rarr;</a>
+                </span>
+            </div>
+        @endif
+
         @if (!empty($stockWarnings))
             <div class="stock-alert-box">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
@@ -350,6 +359,10 @@
                         <button type="button" class="btn-ajukan-peminjaman" id="btn-ajukan" disabled style="background: #9ca3af; cursor: not-allowed;">
                             <span>Pilih minimal satu barang untuk melanjutkan</span>
                         </button>
+                    @elseif (!empty($consentPending))
+                        <button type="button" class="btn-ajukan-peminjaman" id="btn-ajukan" disabled style="background: #9ca3af; cursor: not-allowed;">
+                            <span>Menunggu verifikasi persetujuan orang tua</span>
+                        </button>
                     @elseif ($hasInsufficientStock)
                         <button type="button" class="btn-ajukan-peminjaman" id="btn-ajukan" disabled style="background: #9ca3af; cursor: not-allowed;">
                             <span>Stok alat tidak mencukupi</span>
@@ -394,6 +407,7 @@
         // ── Konfigurasi ──
         var SERVICE_FEE = 25000;
         var insufficientStock = {{ isset($hasInsufficientStock) && $hasInsufficientStock ? 'true' : 'false' }};
+        var consentPending = {{ isset($consentPending) && $consentPending ? 'true' : 'false' }};
 
         // ── SUMBER KEBENARAN LOKAL (frontend) ──
         // Semua Ringkasan Pemesanan dihitung instan dari state ini.
@@ -499,8 +513,8 @@
             var current = document.getElementById('btn-ajukan');
             if (!current) return;
 
-            var enabled = !insufficientStock && selected > 0;
-            var reason = insufficientStock ? 'stock' : (selected === 0 ? 'empty' : '');
+            var enabled = !insufficientStock && !consentPending && selected > 0;
+            var reason = consentPending ? 'consent' : (insufficientStock ? 'stock' : (selected === 0 ? 'empty' : ''));
 
             var isEnabledEl = current.tagName === 'A';
             if (enabled === isEnabledEl) return; // sudah benar
@@ -522,9 +536,11 @@
                 newEl.setAttribute('disabled', '');
                 newEl.style.background = '#9ca3af';
                 newEl.style.cursor = 'not-allowed';
-                newEl.textContent = reason === 'stock'
-                    ? 'Stok alat tidak mencukupi'
-                    : 'Pilih minimal satu barang untuk melanjutkan';
+                newEl.textContent = reason === 'consent'
+                    ? 'Menunggu verifikasi persetujuan orang tua'
+                    : (reason === 'stock'
+                        ? 'Stok alat tidak mencukupi'
+                        : 'Pilih minimal satu barang untuk melanjutkan');
             }
 
             container.replaceChild(newEl, current);

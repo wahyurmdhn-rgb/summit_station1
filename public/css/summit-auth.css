@@ -227,10 +227,9 @@ select:focus {
 
 .password-toggle {
     position: absolute;
-    top: 0;
+    top: 50%;
     right: 4px;
-    bottom: 0;
-    margin: auto 0;
+    transform: translateY(-50%);
     width: 36px;
     height: 36px;
     display: flex;
@@ -243,6 +242,7 @@ select:focus {
     box-shadow: none;
     color: #8a8a86;
     cursor: pointer;
+    z-index: 1;
 }
 
 .password-toggle:hover {
@@ -738,6 +738,19 @@ button {
     outline: none !important;
 }
 
+.reg-input-wrap input[type="password"] {
+    padding-right: 46px;
+}
+
+.reg-input-wrap input[type="date"] {
+    min-height: 44px;
+}
+
+.reg-input-wrap input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.55;
+}
+
 .reg-input-wrap select {
     width: 100%;
     height: 44px;
@@ -889,6 +902,10 @@ button {
     animation: fieldErrorSlide 0.22s ease-out both;
 }
 
+.reg-field-error[hidden] {
+    display: none;
+}
+
 @keyframes fieldErrorSlide {
     from {
         opacity: 0;
@@ -898,6 +915,39 @@ button {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Age Hint (tanggal lahir / umur otomatis) */
+.age-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #6b756d;
+    margin-top: 3px;
+    min-height: 16px;
+    line-height: 1.4;
+    transition: color 0.2s ease;
+}
+
+.age-hint.is-ok {
+    color: #1e7a3a;
+}
+
+.age-hint.is-minor {
+    color: #b45309;
+    font-weight: 700;
+}
+
+.age-hint.is-minor::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+    flex-shrink: 0;
 }
 
 /* Terms Checkbox */
@@ -1116,9 +1166,13 @@ button {
     letter-spacing: 0.8px;
 }
 
-.topbar-logo-icon {
-    color: #52b788;
-    font-size: 13px;
+.topbar-logo-img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    border-radius: 5px;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+    flex-shrink: 0;
 }
 
 .modal-topbar nav {
@@ -1472,10 +1526,15 @@ button {
 
 .terms-end-mark {
     text-align: center;
-    color: #2d6a4f;
-    font-size: 13px;
-    opacity: 0.35;
-    margin-top: 2px;
+    margin-top: 4px;
+    opacity: 0.45;
+}
+
+.terms-end-logo {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    border-radius: 4px;
 }
 
 /* Footer & Actions */
@@ -1491,6 +1550,7 @@ button {
 }
 
 .custom-accept {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -1503,6 +1563,12 @@ button {
 
 .custom-accept input {
     position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    margin: 0;
     opacity: 0;
     pointer-events: none;
 }
@@ -1964,6 +2030,142 @@ button {
     box-shadow: 0 8px 20px rgba(23,94,48,0.25);
 }
 
+/* ============================================================
+   Upload Dokumen Berbasis Umur (< 17: KTP orang tua + kartu pelajar)
+   ============================================================ */
+[data-ktp-minor] {
+    width: 100%;
+    max-width: 480px;
+    text-align: left;
+}
+
+[data-ktp-minor] h2 {
+    text-align: center;
+}
+
+.idoc-callout {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 4px 0 18px;
+    padding: 10px 14px;
+    border: 1px solid #dce9df;
+    border-left: 4px solid #1e7a3a;
+    border-radius: 10px;
+    background: #f4f9f4;
+    color: #2f5d3c;
+    font-size: 11.5px;
+    line-height: 1.55;
+}
+
+.idoc-callout svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: #1e7a3a;
+}
+
+.idoc-callout p {
+    margin: 0;
+}
+
+.idoc-callout strong {
+    color: #175e30;
+}
+
+.idoc-section {
+    margin-bottom: 22px;
+}
+
+.idoc-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 10px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #1f2a22;
+    letter-spacing: 0.4px;
+}
+
+.idoc-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #175e30;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.idoc-title-label {
+    flex: 1;
+}
+
+.idoc-ok-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: #e7f6ec;
+    border: 1px solid #bfe3cb;
+    color: #1e7a3a;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+}
+
+.idoc-section .upload-box {
+    width: 100%;
+    max-width: 100%;
+}
+
+.idoc-section .upload-file {
+    text-align: left;
+}
+
+.idoc-preview {
+    max-width: 100%;
+}
+
+.ktp-preview-size {
+    display: block;
+    padding: 0 36px 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #7b857e;
+    background: #f8f8f5;
+    border-top: 0;
+    margin: 0;
+}
+
+.ktp-progress {
+    width: 100%;
+    max-width: 100%;
+    height: 4px;
+    margin: 6px 0 0;
+    border-radius: 999px;
+    background: #e3e9e4;
+    overflow: hidden;
+}
+
+.ktp-progress-bar {
+    display: block;
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #2d7a47, #1e5631);
+    transition: width 0.15s ease;
+}
+
+.ktp-progress-bar.is-success {
+    background: #1e8a3c;
+}
+
 @media (max-width: 760px) {
     .register-page {
         grid-template-columns: 1fr;
@@ -2127,6 +2329,525 @@ button {
 
     .terms-hint {
         display: none;
+    }
+}
+
+/* ============================================================
+   Parent Consent Modal - Persetujuan Orang Tua
+   ============================================================ */
+
+/* Drag & drop hilight pada upload box */
+.upload-box.is-dragover,
+.parent-upload-box.is-dragover {
+    border-color: #175e30;
+    background: #eef5ef;
+    box-shadow: 0 0 0 4px rgba(23, 94, 48, 0.14);
+}
+
+/* Step chip pada header modal */
+.modal-step-chip {
+    margin-left: 4px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: #1e5631;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* Loading spinner pada tombol lanjut */
+@keyframes btnSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.btn-terms-proceed.is-loading,
+.complete-btn.is-loading {
+    pointer-events: none;
+    opacity: 0.85;
+}
+
+.btn-terms-proceed.is-loading::before,
+.complete-btn.is-loading::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: btnSpin 0.6s linear infinite;
+    flex-shrink: 0;
+}
+
+.parent-shell {
+    width: 100%;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+/* Kartu dua kolom: dokumen (kiri) + form (kanan) */
+.parent-card {
+    width: min(94vw, 1020px) !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    grid-template-columns: minmax(0, 46%) minmax(0, 54%);
+    align-self: center;
+    justify-self: center;
+    max-height: calc(100vh - 110px);
+}
+
+.parent-info,
+.parent-form {
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #c9cfc9 transparent;
+    scrollbar-gutter: stable;
+    overscroll-behavior: contain;
+}
+
+.parent-info {
+    padding: 26px 24px 22px;
+    border-right: 1px solid #edf1ed;
+}
+
+.parent-info-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.round-close {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 50%;
+    background: #f1f1ec;
+    color: #57615a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.round-close:hover {
+    background: #ffebe9;
+    color: #b42318;
+}
+
+.parent-info > h2 {
+    font-size: 21px;
+    font-weight: 850;
+    color: #13271b;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+}
+
+.parent-intro {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #5b665e;
+    margin: 0 0 16px;
+}
+
+.parent-intro strong {
+    color: #b45309;
+}
+
+/* Kartu dokumen surat persetujuan */
+.parent-doc-card {
+    border-radius: 16px;
+    background: linear-gradient(180deg, #0f2a1a 0%, #163c26 100%);
+    padding: 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 12px 28px -12px rgba(11, 34, 20, 0.5);
+}
+
+.parent-doc-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.parent-doc-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #dcebe1;
+    min-width: 0;
+}
+
+.parent-doc-title svg {
+    color: #7fd6a0;
+    flex-shrink: 0;
+}
+
+.parent-doc-title strong {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    line-height: 1.25;
+}
+
+.parent-doc-title span {
+    display: block;
+    font-size: 10px;
+    color: #94b49f;
+    margin-top: 2px;
+}
+
+.parent-doc-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 7px 12px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #eaf5ee;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.parent-doc-download:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Toolbar PDF */
+.pdf-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.pdf-toolbar-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #94b49f;
+}
+
+.pdf-toolbar-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pdf-ctl-btn {
+    width: 27px;
+    height: 27px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #dcebe1;
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: none;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.pdf-ctl-btn:hover {
+    background: rgba(255, 255, 255, 0.24);
+    color: #ffffff;
+}
+
+.pdf-zoom-label {
+    min-width: 40px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: #dcebe1;
+}
+
+/* Frame PDF */
+.pdf-frame {
+    height: 300px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.pdf-frame iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+    background: #ffffff;
+}
+
+/* Form persetujuan */
+.parent-form {
+    padding: 26px 26px 22px;
+    background: #fcfdfc;
+}
+
+.parent-form-head h3 {
+    margin: 0 0 3px;
+    font-size: 16px;
+    font-weight: 850;
+    color: #13271b;
+}
+
+.parent-form-head p {
+    margin: 0 0 14px;
+    font-size: 11.5px;
+    color: #74807a;
+}
+
+.parent-form .reg-form-group {
+    margin-bottom: 13px;
+}
+
+.parent-required-mark {
+    color: #dc2626;
+}
+
+/* Upload bukti persetujuan */
+.parent-upload-box {
+    width: 100%;
+    padding: 18px 14px;
+    border: 1.5px dashed #c0c6c0;
+    border-radius: 16px;
+    background: #f8f8f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.parent-upload-box:hover {
+    border-color: #175e30;
+    background: #f3f5f3;
+}
+
+.parent-upload-box input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.parent-upload-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #e9efe9;
+    color: #1e5631;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 9px;
+}
+
+.parent-upload-label {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #26322a;
+}
+
+.parent-upload-hint {
+    font-size: 10.5px;
+    color: #88918a;
+    margin-top: 4px;
+}
+
+/* Pratinjau bukti */
+.parent-proof-preview {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 12px;
+    margin-top: 9px;
+    border: 1.5px solid #cfe3d4;
+    border-radius: 13px;
+    background: #f6faf7;
+    position: relative;
+}
+
+.parent-proof-preview[hidden] {
+    display: none;
+}
+
+.parent-proof-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 9px;
+    overflow: hidden;
+    background: #e6efe8;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.parent-proof-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.pdf-badge-thumb {
+    font-size: 9.5px;
+    font-weight: 900;
+    color: #b42318;
+    background: #ffffff;
+    padding: 3px 7px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    border: 1px solid #f0d8d6;
+}
+
+.parent-proof-meta {
+    min-width: 0;
+    flex: 1;
+}
+
+.parent-proof-meta strong {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    color: #1f2a22;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.parent-proof-meta span {
+    display: block;
+    font-size: 10.5px;
+    color: #7b857e;
+    margin-top: 2px;
+}
+
+.parent-proof-remove {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 50%;
+    background: #f1f1ec;
+    color: #57615a;
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.parent-proof-remove:hover {
+    background: #ffebe9;
+    color: #b42318;
+}
+
+.parent-proof-progress {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 6px;
+    height: 3px;
+    border-radius: 999px;
+    background: #e3e9e4;
+    overflow: hidden;
+}
+
+.parent-proof-bar {
+    display: block;
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #2d7a47, #1e5631);
+    transition: width 0.15s ease;
+}
+
+.parent-proof-bar.is-success {
+    background: #1e8a3c;
+}
+
+.parent-proof-status {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #7b857e;
+    margin-top: 10px;
+    min-height: 14px;
+}
+
+.parent-proof-status.is-success {
+    color: #1e7a3a;
+}
+
+.parent-proof-status.is-error {
+    color: #c0392b;
+}
+
+.parent-consent-check {
+    margin-top: 4px;
+}
+
+.parent-form-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-top: 12px;
+    font-size: 10.5px;
+    line-height: 1.5;
+    color: #8b948d;
+}
+
+.parent-form-note svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* Mobile & tablet parent consent modal */
+@media (max-width: 900px) {
+    .parent-card {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        overflow-y: auto;
+        max-height: calc(100vh - 70px);
+    }
+
+    .parent-info,
+    .parent-form {
+        overflow: visible;
+        padding: 20px 18px;
+    }
+
+    .parent-info {
+        border-right: none;
+        border-bottom: 1px solid #edf1ed;
+    }
+
+    .pdf-frame {
+        height: 240px;
     }
 }
 

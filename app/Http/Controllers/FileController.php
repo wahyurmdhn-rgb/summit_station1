@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\ReturnRecord;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -62,6 +63,64 @@ class FileController extends Controller
         }
 
         return $this->responseFromDisks($raw);
+    }
+
+    /**
+     * Sajikan bukti persetujuan orang tua milik satu User (dengan otorisasi).
+     * Hanya admin atau user pemiliknya sendiri yang boleh mengakses.
+     */
+    public function parentConsent(int $userId): StreamedResponse
+    {
+        $user = User::findOrFail($userId);
+        return $this->serveUserDoc($user, 'parent_consent_path', 'Bukti persetujuan tidak ditemukan.');
+    }
+
+    /**
+     * Sajikan KTP orang tua/wali milik satu User (user di bawah 17 tahun).
+     */
+    public function ktpGuardian(int $userId): StreamedResponse
+    {
+        $user = User::findOrFail($userId);
+        return $this->serveUserDoc($user, 'ktp_orang_tua_path', 'KTP orang tua tidak ditemukan.');
+    }
+
+    /**
+     * Sajikan kartu pelajar milik satu User (user di bawah 17 tahun).
+     */
+    public function studentCard(int $userId): StreamedResponse
+    {
+        $user = User::findOrFail($userId);
+        return $this->serveUserDoc($user, 'kartu_pelajar_path', 'Kartu pelajar tidak ditemukan.');
+    }
+
+    /**
+     * Otorisasi & penyajian dokumen identitas/persetujuan milik satu User.
+     * Dokumen sensitif hanya boleh diakses oleh admin atau user pemiliknya.
+     */
+    private function serveUserDoc(User $user, string $column, string $missing): StreamedResponse
+    {
+        $role = session('account_role');
+        $isAdmin = $role === 'admin' && session('account_id');
+        $isOwner = $role === 'customer' && session('account_id')
+            && (int) session('account_id') === (int) $user->getKey();
+
+        if (! $isAdmin && ! $isOwner) {
+            abort(403, 'Anda tidak memiliki izin untuk mengakses file ini.');
+        }
+
+        $raw = (string) ($user->{$column} ?? '');
+
+        if ($raw === '' || $raw === 'null') {
+            abort(404, $missing);
+        }
+
+        foreach (['local', 'public'] as $disk) {
+            if (Storage::disk($disk)->exists($raw)) {
+                return Storage::disk($disk)->response($raw);
+            }
+        }
+
+        abort(404, $missing);
     }
 
     /**

@@ -173,8 +173,31 @@
                 @enderror
             </div>
 
-            <!-- 5. Password -->
+            <!-- 5. Tanggal Lahir (umur dihitung otomatis) -->
             <div class="reg-form-group" style="--field-idx: 4;">
+                <label for="reg_dob" class="reg-label">Tanggal Lahir</label>
+                <div class="reg-input-wrap reg-date-wrap @error('date_of_birth') has-error @enderror">
+                    <span class="input-leading-icon" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                    </span>
+                    <input type="date" id="reg_dob" name="date_of_birth" value="{{ old('date_of_birth') }}" max="{{ date('Y-m-d') }}" min="1900-01-02" required>
+                </div>
+                <span class="age-hint" data-age-hint aria-live="polite">Umur Anda dihitung otomatis dari tanggal lahir.</span>
+                @error('date_of_birth')
+                    <span class="reg-field-error">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        {{ $message }}
+                    </span>
+                @enderror
+            </div>
+
+            <!-- 6. Password -->
+            <div class="reg-form-group" style="--field-idx: 5;">
                 <label for="password" class="reg-label">Password</label>
                 <div class="reg-input-wrap @error('password') has-error @enderror">
                     <span class="input-leading-icon" aria-hidden="true">
@@ -204,8 +227,8 @@
                 @enderror
             </div>
 
-            <!-- 6. Konfirmasi Password -->
-            <div class="reg-form-group" style="--field-idx: 5;">
+            <!-- 7. Konfirmasi Password -->
+            <div class="reg-form-group" style="--field-idx: 6;">
                 <label for="password_confirmation" class="reg-label">Konfirmasi Password</label>
                 <div class="reg-input-wrap">
                     <span class="input-leading-icon" aria-hidden="true">
@@ -224,7 +247,7 @@
             </div>
 
             <!-- Checkbox Terms -->
-            <div class="reg-form-group terms-check-group" style="--field-idx: 6;">
+            <div class="reg-form-group terms-check-group" style="--field-idx: 7;">
                 <label class="custom-terms-label">
                     <input type="checkbox" name="terms" value="1" required checked>
                     <span class="terms-custom-box">
@@ -240,7 +263,7 @@
             </div>
 
             <!-- Tombol Register -->
-            <button class="btn-register-submit" type="submit" data-create-account style="--field-idx: 7;">
+            <button class="btn-register-submit" type="submit" data-create-account style="--field-idx: 8;">
                 <span class="btn-text">Buat Akun</span>
                 <svg class="btn-arrow-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <polyline points="9 18 15 12 9 6"></polyline>
@@ -258,12 +281,12 @@
     <div class="expedition-shell terms-shell">
         <header class="modal-topbar">
             <div class="brand-badge-topbar">
-                <span class="topbar-logo-icon">▲</span>
+                <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="Summit Station" class="topbar-logo-img">
                 <strong>SUMMIT STATION</strong>
             </div>
             <nav>
                 <span class="topbar-badge">LEGAL &amp; KESELAMATAN</span>
-                <span class="topbar-badge">RENTAL OUTDOOR</span>
+                <span class="topbar-badge topbar-badge-desktop">RENTAL OUTDOOR</span>
             </nav>
         </header>
         <article class="terms-modal-card pasted-terms-card">
@@ -484,7 +507,9 @@
                     </div>
                 </div>
 
-                <div class="terms-end-mark">▲</div>
+                <div class="terms-end-mark">
+                    <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="Summit Station" class="terms-end-logo">
+                </div>
             </div>
 
             <footer class="terms-action">
@@ -518,16 +543,14 @@
 <section class="expedition-overlay" data-ktp-modal hidden>
     <div class="expedition-shell ktp-shell">
         <header class="modal-topbar">
-            <div class="brand-logo-modal">
-                <div class="logo-badge-modal">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                        <polyline points="2 17 12 22 22 17"></polyline>
-                        <polyline points="2 12 12 17 22 12"></polyline>
-                    </svg>
-                </div>
-                <span>SUMMIT STATION</span>
+            <div class="brand-badge-topbar">
+                <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="Summit Station" class="topbar-logo-img">
+                <strong>SUMMIT STATION</strong>
             </div>
+            <nav>
+                <span class="topbar-badge">VERIFIKASI IDENTITAS</span>
+                <span class="topbar-badge topbar-badge-desktop">RENTAL OUTDOOR</span>
+            </nav>
         </header>
         <article class="ktp-card">
             <aside class="ktp-photo">
@@ -537,46 +560,339 @@
                         <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=200&q=80" alt="Profile">
                     </div>
                     <span class="yellow-line"></span>
-                    <h2>Langkah 2 dari 2</h2>
+                    <h2 data-step-indicator>Langkah 2 dari 2</h2>
                     <p>Persiapkan diri untuk mendaki. Perjalanan Anda dimulai dari basecamp.</p>
                 </div>
             </aside>
             <section class="ktp-form">
-                <h2>UPLOAD KTP</h2>
-                <p class="subtitle">SEBAGAI JAMINAN</p>
-                <label class="upload-box">
-                    <input type="file" name="ktp" accept=".jpg,.jpeg,.png" data-ktp-file>
-                    <div class="camera-icon-circle">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                            <circle cx="12" cy="13" r="4"></circle>
-                            <line x1="19" y1="10" x2="19" y2="14"></line>
-                            <line x1="17" y1="12" x2="21" y2="12"></line>
-                        </svg>
+                {{-- Blok user >= 17 tahun: KTP user sendiri sebagai jaminan --}}
+                <div data-ktp-adult>
+                    <h2>UPLOAD KTP</h2>
+                    <p class="subtitle">SEBAGAI JAMINAN</p>
+                    <label class="upload-box">
+                        <input type="file" name="ktp_user" accept=".jpg,.jpeg,.png" data-ktp-file>
+                        <div class="camera-icon-circle">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                <circle cx="12" cy="13" r="4"></circle>
+                                <line x1="19" y1="10" x2="19" y2="14"></line>
+                                <line x1="17" y1="12" x2="21" y2="12"></line>
+                            </svg>
+                        </div>
+                        <div class="upload-btn-pill">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            <span>UNGGAH DARI PERANGKAT</span>
+                        </div>
+                        <span class="drag-text">atau seret dan lepas di sini</span>
+                        <small class="file-hint">JPEG, PNG hingga 10MB</small>
+                    </label>
+                    <div class="ktp-preview" data-ktp-preview hidden>
+                        <img src="" alt="Preview KTP" data-ktp-preview-img>
+                        <p class="ktp-preview-hint">Pastikan foto KTP terlihat jelas, tidak buram, dan seluruh bagian KTP terlihat.</p>
+                        <span class="ktp-preview-name" data-ktp-preview-name></span>
+                        <button type="button" class="ktp-preview-remove" data-ktp-preview-remove>&times;</button>
                     </div>
-                    <div class="upload-btn-pill">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        <span>UNGGAH DARI PERANGKAT</span>
-                    </div>
-                    <span class="drag-text">atau seret dan lepas di sini</span>
-                    <small class="file-hint">JPEG, PNG hingga 10MB</small>
-                </label>
-                <div class="ktp-preview" data-ktp-preview hidden>
-                    <img src="" alt="Preview KTP" data-ktp-preview-img>
-                    <p class="ktp-preview-hint">Pastikan foto KTP terlihat jelas, tidak buram, dan seluruh bagian KTP terlihat.</p>
-                    <span class="ktp-preview-name" data-ktp-preview-name></span>
-                    <button type="button" class="ktp-preview-remove" data-ktp-preview-remove>&times;</button>
+                    <div class="upload-file" data-upload-file></div>
                 </div>
-                <div class="upload-file" data-upload-file></div>
+
+                {{-- Blok user < 17 tahun: KTP orang tua + kartu pelajar (wajib) --}}
+                <div data-ktp-minor hidden>
+                    <h2>VERIFIKASI IDENTITAS</h2>
+                    <p class="subtitle">DOKUMEN PENDUKUNG</p>
+
+                    <div class="idoc-callout">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 16v-4"></path>
+                            <path d="M12 8h.01"></path>
+                        </svg>
+                        <p>Karena usia Anda di bawah <strong>17 tahun</strong>, diperlukan <strong>KTP orang tua/wali</strong> dan <strong>kartu pelajar</strong> untuk proses verifikasi identitas.</p>
+                    </div>
+
+                    <div class="idoc-section" data-doc-section>
+                        <h3 class="idoc-title">
+                            <span class="idoc-num">1</span>
+                            <span class="idoc-title-label">UPLOAD KTP ORANG TUA</span>
+                            <span class="idoc-ok-badge" data-doc-ok hidden>&#10003; SIAP</span>
+                        </h3>
+                        <label class="upload-box">
+                            <input type="file" name="ktp_orang_tua" accept=".jpg,.jpeg,.png" data-doc-file>
+                            <div class="camera-icon-circle">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                    <circle cx="12" cy="13" r="4"></circle>
+                                    <line x1="19" y1="10" x2="19" y2="14"></line>
+                                    <line x1="17" y1="12" x2="21" y2="12"></line>
+                                </svg>
+                            </div>
+                            <div class="upload-btn-pill">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <span>UNGGAH DARI PERANGKAT</span>
+                            </div>
+                            <span class="drag-text">atau seret dan lepas di sini</span>
+                            <small class="file-hint">JPG, JPEG, PNG hingga 10MB</small>
+                        </label>
+                        <div class="ktp-preview idoc-preview" data-doc-preview hidden>
+                            <img src="" alt="Preview KTP Orang Tua" data-doc-preview-img>
+                            <p class="ktp-preview-hint">Pastikan KTP orang tua/wali terlihat jelas dan seluruh bagian terbaca.</p>
+                            <span class="ktp-preview-name" data-doc-name></span>
+                            <span class="ktp-preview-size" data-doc-size></span>
+                            <button type="button" class="ktp-preview-remove" data-doc-remove>&times;</button>
+                        </div>
+                        <div class="ktp-progress" data-doc-progress hidden>
+                            <div class="ktp-progress-bar" data-doc-progress-bar></div>
+                        </div>
+                        <div class="upload-file" data-doc-status></div>
+                    </div>
+
+                    <div class="idoc-section" data-doc-section>
+                        <h3 class="idoc-title">
+                            <span class="idoc-num">2</span>
+                            <span class="idoc-title-label">UPLOAD KARTU PELAJAR</span>
+                            <span class="idoc-ok-badge" data-doc-ok hidden>&#10003; SIAP</span>
+                        </h3>
+                        <label class="upload-box">
+                            <input type="file" name="kartu_pelajar" accept=".jpg,.jpeg,.png" data-doc-file>
+                            <div class="camera-icon-circle">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                    <circle cx="12" cy="13" r="4"></circle>
+                                    <line x1="19" y1="10" x2="19" y2="14"></line>
+                                    <line x1="17" y1="12" x2="21" y2="12"></line>
+                                </svg>
+                            </div>
+                            <div class="upload-btn-pill">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <span>UNGGAH DARI PERANGKAT</span>
+                            </div>
+                            <span class="drag-text">atau seret dan lepas di sini</span>
+                            <small class="file-hint">JPG, JPEG, PNG hingga 10MB</small>
+                        </label>
+                        <div class="ktp-preview idoc-preview" data-doc-preview hidden>
+                            <img src="" alt="Preview Kartu Pelajar" data-doc-preview-img>
+                            <p class="ktp-preview-hint">Pastikan kartu pelajar terlihat jelas, sesuai nama pendaftar dan masih berlaku.</p>
+                            <span class="ktp-preview-name" data-doc-name></span>
+                            <span class="ktp-preview-size" data-doc-size></span>
+                            <button type="button" class="ktp-preview-remove" data-doc-remove>&times;</button>
+                        </div>
+                        <div class="ktp-progress" data-doc-progress hidden>
+                            <div class="ktp-progress-bar" data-doc-progress-bar></div>
+                        </div>
+                        <div class="upload-file" data-doc-status></div>
+                    </div>
+                </div>
+
                 <div class="form-divider"></div>
                 <button class="complete-btn" type="button" data-complete-register disabled>
                     <span>SELESAI</span>
                     <span>&rarr;</span>
                 </button>
+            </section>
+        </article>
+        <small class="modal-copy">&copy; 2026 SUMMIT STATION EXPEDITION GEAR. HAK CIPTA DILINDUNGI.</small>
+    </div>
+</section>
+
+<section class="expedition-overlay parent-consent-overlay" data-parent-modal hidden>
+    <div class="expedition-shell parent-shell">
+        <header class="modal-topbar">
+            <div class="brand-badge-topbar">
+                <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="Summit Station" class="topbar-logo-img">
+                <strong>SUMMIT STATION</strong>
+            </div>
+            <nav>
+                <span class="topbar-badge">PERSETUJUAN ORANG TUA</span>
+                <span class="topbar-badge topbar-badge-desktop">RENTAL OUTDOOR</span>
+            </nav>
+        </header>
+
+        <article class="parent-card pasted-terms-card">
+            <aside class="parent-info">
+                <div class="parent-info-head">
+<div class="terms-eyebrow">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    <span>PERSETUJUAN ORANG TUA</span>
+                    <span class="modal-step-chip" data-step-indicator>Langkah 2 dari 3</span>
+                </div>
+                    <button class="round-close" type="button" data-close-parent aria-label="Tutup Persetujuan Orang Tua">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <h2>Persetujuan Orang Tua / Wali</h2>
+                <p class="parent-intro">
+                    Karena usia Anda masih di bawah ketentuan rental Summit Station (<strong>17 tahun</strong>),
+                    pendaftaran hanya bisa diteruskan setelah ada persetujuan dari orang tua atau wali.
+                </p>
+
+                <div class="parent-doc-card">
+                    <div class="parent-doc-head">
+                        <div class="parent-doc-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <path d="M9 15l2 2 4-4"></path>
+                            </svg>
+                            <div>
+                                <strong>Surat Persetujuan Orang Tua</strong>
+                                <span>Dokumen resmi ber- meterai (PDF)</span>
+                            </div>
+                        </div>
+                        <a href="{{ asset('pdf/Surat_Persetujuan_Orang_Tua_Summit_Station_dengan_Materai.pdf') }}" download class="parent-doc-download" title="Unduh PDF">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Unduh
+                        </a>
+                    </div>
+
+                    <div class="pdf-toolbar" aria-label="Kontrol tampilan PDF">
+                        <span class="pdf-toolbar-label">Preview dokumen</span>
+                        <div class="pdf-toolbar-controls">
+                            <button type="button" class="pdf-ctl-btn" data-pdf-zoom-out title="Perkecil" aria-label="Perkecil">−</button>
+                            <span class="pdf-zoom-label" data-pdf-zoom-label>100%</span>
+                            <button type="button" class="pdf-ctl-btn" data-pdf-zoom-in title="Perbesar" aria-label="Perbesar">+</button>
+                            <button type="button" class="pdf-ctl-btn" data-pdf-fullscreen title="Layar penuh" aria-label="Layar penuh">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+                                    <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
+                                    <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+                                    <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="pdf-frame" data-pdf-frame>
+                        <iframe data-pdf-iframe src="{{ asset('pdf/Surat_Persetujuan_Orang_Tua_Summit_Station_dengan_Materai.pdf') }}" title="Surat Persetujuan Orang Tua Summit Station" loading="lazy"></iframe>
+                    </div>
+                </div>
+
+                <label class="custom-accept parent-read-row" data-parent-read-row>
+                    <input type="checkbox" data-parent-read>
+                    <span class="fake-check">
+                        <svg class="check-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </span>
+                    <span class="accept-label-text">Saya telah membaca dan memahami persetujuan orang tua.</span>
+                </label>
+            </aside>
+
+            <section class="parent-form">
+                <div class="parent-form-head">
+                    <h3>Data Orang Tua / Wali</h3>
+                    <p>Lengkapi data wali yang berhak memberikan persetujuan.</p>
+                </div>
+
+                <div class="reg-form-group">
+                    <label for="parent_name" class="reg-label">Nama Orang Tua / Wali</label>
+                    <div class="reg-input-wrap">
+                        <span class="input-leading-icon" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        </span>
+                        <input type="text" id="parent_name" name="parent_name" placeholder="Nama lengkap orang tua/wali" required maxlength="255" data-parent-field>
+                    </div>
+                </div>
+
+                <div class="reg-form-group">
+                    <label for="parent_relation" class="reg-label">Hubungan dengan Anda</label>
+                    <div class="reg-input-wrap reg-select-wrap">
+                        <span class="input-leading-icon" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </span>
+                        <select id="parent_relation" name="parent_relation" required data-parent-field>
+                            <option value="">Pilih hubungan</option>
+                            <option value="Ayah">Ayah</option>
+                            <option value="Ibu">Ibu</option>
+                            <option value="Wali">Wali</option>
+                            <option value="Kakek">Kakek</option>
+                            <option value="Nenek">Nenek</option>
+                            <option value="Saudara">Saudara</option>
+                        </select>
+                        <span class="select-chevron-icon" aria-hidden="true">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="reg-form-group">
+                    <label for="parent_phone" class="reg-label">Nomor Kontak Orang Tua / Wali</label>
+                    <div class="reg-input-wrap">
+                        <span class="input-leading-icon" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        </span>
+                        <input type="tel" id="parent_phone" name="parent_phone" placeholder="Contoh: 0812xxxxxxx" required maxlength="30" data-parent-field>
+                    </div>
+                </div>
+
+                <div class="reg-form-group">
+                    <span class="reg-label">Upload Bukti Persetujuan <span class="parent-required-mark">*</span></span>
+                    <label class="parent-upload-box" data-parent-upload-box>
+                        <input type="file" name="parent_consent_proof" accept=".jpg,.jpeg,.png,.pdf" data-parent-proof>
+                        <div class="parent-upload-icon" aria-hidden="true">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <span class="parent-upload-label">Pilih file atau seret ke sini</span>
+                        <small class="parent-upload-hint">JPG, JPEG, PNG, atau PDF &middot; maks. 5MB</small>
+                    </label>
+
+                    <div class="parent-proof-preview" data-parent-proof-preview hidden>
+                        <div class="parent-proof-thumb" data-parent-proof-thumb></div>
+                        <div class="parent-proof-meta">
+                            <strong data-parent-proof-name>file.pdf</strong>
+                            <span data-parent-proof-size>0 KB</span>
+                        </div>
+                        <div class="parent-proof-progress" data-parent-proof-progress><span data-parent-proof-bar></span></div>
+                        <span class="parent-proof-status" data-parent-proof-status></span>
+                        <button type="button" class="parent-proof-remove" data-parent-proof-remove title="Hapus file">&times;</button>
+                    </div>
+                    <span class="reg-field-error" data-parent-file-error hidden></span>
+                </div>
+
+                <label class="custom-accept parent-consent-check" data-parent-consent-row>
+                    <input type="checkbox" data-parent-consent-accepted>
+                    <span class="fake-check">
+                        <svg class="check-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </span>
+                    <span class="accept-label-text">Orang tua/wali saya menyetujui persyaratan penyewaan Summit Station.</span>
+                </label>
+
+                <button type="button" class="btn-terms-proceed btn-parent-proceed" data-parent-proceed disabled>
+                    <span>LANJUTKAN</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+                <small class="parent-form-note">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    Anda tidak dapat melanjutkan sebelum seluruh data dan bukti persetujuan lengkap.
+                </small>
             </section>
         </article>
         <small class="modal-copy">&copy; 2026 SUMMIT STATION EXPEDITION GEAR. HAK CIPTA DILINDUNGI.</small>

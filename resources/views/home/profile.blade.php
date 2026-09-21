@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}">
     <title>Profil Saya - Summit Station</title>
-    <link rel="stylesheet" href="{{ asset('css/summit-navbar.css') . '?v=' . filemtime(public_path('css/summit-navbar.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/summit-profile.css') . '?v=' . filemtime(public_path('css/summit-profile.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . filemtime(public_path('css/summit-footer.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-navbar.css') . '?v=' . filemtime(public_path('css/summit-navbar.css')) }}">
 </head>
 <body>
 
@@ -26,6 +26,8 @@
             default => 'active',
         };
 
+        $accountStatus = ucfirst(strtolower($user->status_label));
+
         $lastStatusLabels = [
             'pending' => 'Menunggu',
             'active' => 'Aktif',
@@ -37,7 +39,7 @@
         ];
     @endphp
 
-    <main class="cp-page">
+    <main class="cp-page profile-page">
 
         @if (session('status'))
             <div class="cp-flash cp-flash-success">
@@ -67,10 +69,8 @@
             </div>
         @endif
 
-        {{-- ═══ PROFILE HERO ═══ --}}
+        {{-- ═══ PROFIL AKUN ═══ --}}
         <section class="cp-hero">
-            <div class="cp-hero-decor" aria-hidden="true"></div>
-
             <div class="cp-avatar-block">
                 <div class="cp-avatar">
                     @if ($user->avatar_path)
@@ -81,7 +81,7 @@
                         <span class="cp-avatar-initial">{{ $avatarInitial }}</span>
                     @endif
                 </div>
-                <button type="button" class="cp-avatar-edit" title="Ubah foto &amp; profil" onclick="openEditProfileModal()">
+                <button type="button" class="cp-avatar-edit" title="Ubah foto &amp; profil" onclick="openEditProfileModal()" aria-label="Ubah foto dan profil">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -90,27 +90,29 @@
             </div>
 
             <div class="cp-hero-info">
-                <span class="cp-role-badge">Customer</span>
                 <h1 class="cp-name">{{ $user->name }}</h1>
                 <p class="cp-username">{{ '@' . $handle }}</p>
-
                 <div class="cp-hero-meta">
-                    <span class="cp-chip">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                            <polyline points="22,6 12,13 2,6"></polyline>
-                        </svg>
-                        {{ $user->email }}
-                    </span>
+                    @if ($user->email)
+                        <span class="cp-meta-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                            {{ $user->email }}
+                        </span>
+                    @endif
                     @if ($user->phone)
-                        <span class="cp-chip">
+                        <span class="cp-meta-item">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.5 2.5a2 2 0 0 1-.5 1.8L8 9a16 16 0 0 0 7 7l1-1.1a2 2 0 0 1 1.8-.5l2.5.5a2 2 0 0 1 1.7 2z"></path>
                             </svg>
                             {{ $user->phone }}
                         </span>
                     @endif
-                    <span class="cp-status-pill {{ $statusClass }}"><span class="cp-status-dot"></span>{{ $user->status_label }}</span>
+                    <span class="cp-account-status {{ $statusClass }}">
+                        <span class="cp-status-dot"></span>{{ $accountStatus }}
+                    </span>
                 </div>
             </div>
 
@@ -129,7 +131,7 @@
                     </svg>
                     Ubah Password
                 </button>
-                <button type="button" class="cp-btn cp-btn-ghost cp-btn-logout" data-logout-open title="Keluar dari akun">
+                <button type="button" class="cp-btn cp-btn-danger" data-logout-open title="Keluar dari akun">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                         <polyline points="16 17 21 12 16 7"></polyline>
@@ -140,224 +142,98 @@
             </div>
         </section>
 
-        {{-- ═══ AKTIVITAS + DOKUMEN ═══ --}}
-        <div class="cp-main-grid">
-
-            <section class="cp-card">
-                <div class="cp-card-head">
-                    <div class="cp-card-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
-                            <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="cp-card-title">Aktivitas Saya</h2>
-                        <p class="cp-card-subtitle">Ringkasan aktivitas rental Anda</p>
-                    </div>
+        {{-- ═══ AKTIVITAS RENTAL ═══ --}}
+        <section class="cp-section cp-activity">
+            <div class="cp-section-head">
+                <div class="cp-section-title">
+                    <span class="cp-eyebrow">AKTIVITAS</span>
+                    <h2>Aktivitas Rental</h2>
+                    <p>Ringkasan aktivitas penyewaan Anda</p>
                 </div>
-
-                <div class="cp-stats">
-                    <div class="cp-stat">
-                        <div class="cp-stat-icon sc-green">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                            </svg>
-                        </div>
-                        <strong>{{ number_format($totalOrdersCount, 0, ',', '.') }}</strong>
-                        <span>Total Penyewaan</span>
-                    </div>
-                    <div class="cp-stat">
-                        <div class="cp-stat-icon sc-blue">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                <line x1="16" y1="2" x2="16" y2="6"></line>
-                                <line x1="8" y1="2" x2="8" y2="6"></line>
-                                <line x1="3" y1="10" x2="21" y2="10"></line>
-                            </svg>
-                        </div>
-                        <strong>{{ number_format($activeOrdersCount, 0, ',', '.') }}</strong>
-                        <span>Booking Aktif</span>
-                    </div>
-                    <div class="cp-stat">
-                        <div class="cp-stat-icon sc-violet">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                                <polyline points="3 3 3 8 8 8"></polyline>
-                            </svg>
-                        </div>
-                        <strong>{{ number_format($returnsCount, 0, ',', '.') }}</strong>
-                        <span>Pengembalian</span>
-                    </div>
-                    <div class="cp-stat">
-                        <div class="cp-stat-icon sc-amber">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                            </svg>
-                        </div>
-                        <strong>{{ number_format($completedOrdersCount, 0, ',', '.') }}</strong>
-                        <span>Pesanan Selesai</span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="cp-card cp-ktp-card">
-                <div class="cp-card-head">
-                    <div class="cp-card-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="cp-card-title">Dokumen Verifikasi</h2>
-                        <p class="cp-card-subtitle">Dokumen identitas akun Anda</p>
-                    </div>
-                    @if ($user->ktp_url)
-                        <span class="cp-doc-pill available">● Dokumen Tersimpan</span>
-                    @else
-                        <span class="cp-doc-pill empty">Belum diunggah</span>
-                    @endif
-                </div>
-
-                @if ($user->ktp_url)
-                    <div class="cp-ktp-preview" title="Klik untuk memperbesar" onclick="openKtpModal()">
-                        <img id="ktp-profile-img" src="{{ $user->ktp_url }}" alt="KTP {{ $user->name }}">
-                        <span class="cp-ktp-zoom">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                <line x1="11" y1="8" x2="11" y2="14"></line>
-                                <line x1="8" y1="11" x2="14" y2="11"></line>
-                            </svg>
-                        </span>
-                    </div>
-                    <p class="cp-ktp-note">Foto KTP Anda telah diunggah saat pendaftaran dan tersimpan aman.</p>
-                @else
-                    <div class="cp-ktp-empty">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-                            <polyline points="13 2 13 9 20 9"></polyline>
-                        </svg>
-                        <p>Belum ada dokumen KTP yang terunggah.</p>
-                    </div>
-                @endif
-            </section>
-        </div>
-
-        {{-- ═══ INFORMASI PRIBADI ═══ --}}
-        <section class="cp-card">
-            <div class="cp-card-head">
-                <div class="cp-card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="cp-card-title">Informasi Pribadi</h2>
-                    <p class="cp-card-subtitle">Data pribadi akun Anda</p>
+                <div class="cp-section-action">
+                    <a href="{{ route('history') }}" class="cp-btn cp-btn-ghost cp-btn-sm">
+                        Lihat Riwayat Penyewaan
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </a>
                 </div>
             </div>
 
-            <div class="cp-info-grid">
-                <div class="cp-info-item">
-                    <div class="cp-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
-                    <div>
-                        <span class="cp-info-label">Nama</span>
-                        <span class="cp-info-value">{{ $user->name }}</span>
-                    </div>
+            <div class="cp-stats">
+                <div class="cp-stat">
+                    <span class="cp-stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                    </span>
+                    <strong class="cp-stat-value">{{ number_format($totalOrdersCount, 0, ',', '.') }}</strong>
+                    <span class="cp-stat-label">Total Rental</span>
                 </div>
-                <div class="cp-info-item">
-                    <div class="cp-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
-                    <div>
-                        <span class="cp-info-label">Username</span>
-                        <span class="cp-info-value">{{ $handle !== '' ? '@' . $handle : '-' }}</span>
-                    </div>
+                <div class="cp-stat">
+                    <span class="cp-stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    </span>
+                    <strong class="cp-stat-value">{{ number_format($activeOrdersCount, 0, ',', '.') }}</strong>
+                    <span class="cp-stat-label">Booking Aktif</span>
                 </div>
-                <div class="cp-info-item">
-                    <div class="cp-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></div>
-                    <div>
-                        <span class="cp-info-label">Email</span>
-                        <span class="cp-info-value">{{ $user->email }}</span>
-                    </div>
+                <div class="cp-stat">
+                    <span class="cp-stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </span>
+                    <strong class="cp-stat-value">{{ number_format($completedOrdersCount, 0, ',', '.') }}</strong>
+                    <span class="cp-stat-label">Selesai</span>
                 </div>
-                <div class="cp-info-item">
-                    <div class="cp-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.5 2.5a2 2 0 0 1-.5 1.8L8 9a16 16 0 0 0 7 7l1-1.1a2 2 0 0 1 1.8-.5l2.5.5a2 2 0 0 1 1.7 2z"></path></svg></div>
-                    <div>
-                        <span class="cp-info-label">No. WhatsApp</span>
-                        <span class="cp-info-value">{{ $user->phone ?: '-' }}</span>
-                    </div>
-                </div>
-                <div class="cp-info-item">
-                    <div class="cp-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"></path><circle cx="12" cy="9" r="2"></circle></svg></div>
-                    <div>
-                        <span class="cp-info-label">Domisili</span>
-                        <span class="cp-info-value">{{ $user->domicile ?: '-' }}</span>
-                    </div>
-                </div>
-                <div class="cp-info-item">
-                    <div class="cp-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
-                    <div>
-                        <span class="cp-info-label">Anggota Sejak</span>
-                        <span class="cp-info-value">{{ $user->created_at ? $user->created_at->format('M Y') : '-' }}</span>
-                    </div>
+                <div class="cp-stat">
+                    <span class="cp-stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    </span>
+                    <strong class="cp-stat-value">{{ number_format($pendingOrdersCount, 0, ',', '.') }}</strong>
+                    <span class="cp-stat-label">Menunggu Pembayaran</span>
                 </div>
             </div>
         </section>
 
-        {{-- ═══ AKSI CEPAT ═══ --}}
-        <section class="cp-quick-grid">
-            <a href="{{ route('catalog') }}" class="cp-quick">
-                <div class="cp-quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2l1.5 4H20l-3 8H8L5 2z"></path><circle cx="9" cy="20" r="1"></circle><circle cx="17" cy="20" r="1"></circle></svg></div>
-                <div>
-                    <strong>Lihat Katalog</strong>
-                    <span>Jelajahi perlengkapan sewa</span>
+        {{-- ═══ INFORMASI PRIBADI ═══ --}}
+        <section class="cp-section cp-info-section">
+            <div class="cp-section-head">
+                <div class="cp-section-title">
+                    <span class="cp-eyebrow">DATA DIRI</span>
+                    <h2>Informasi Pribadi</h2>
+                    <p>Kelola informasi akun Anda.</p>
                 </div>
-                <svg class="cp-quick-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-            </a>
-            <a href="{{ route('history') }}" class="cp-quick">
-                <div class="cp-quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg></div>
-                <div>
-                    <strong>Riwayat Penyewaan</strong>
-                    <span>Lihat seluruh transaksi Anda</span>
+            </div>
+
+            <div class="cp-info-split">
+                <div class="cp-info-group">
+                    <h3 class="cp-group-title">Data Pribadi</h3>
+                    <dl>
+                        <div class="cp-info-item"><dt>Nama Lengkap</dt><dd>{{ $user->name }}</dd></div>
+                        <div class="cp-info-item"><dt>Username</dt><dd>{{ $handle !== '' ? '@' . $handle : '-' }}</dd></div>
+                        <div class="cp-info-item"><dt>Email</dt><dd>{{ $user->email }}</dd></div>
+                        <div class="cp-info-item"><dt>Nomor Telepon</dt><dd>{{ $user->phone ?: '-' }}</dd></div>
+                        <div class="cp-info-item"><dt>Domisili</dt><dd>{{ $user->domicile ?: '-' }}</dd></div>
+                        <div class="cp-info-item"><dt>Tanggal Lahir</dt><dd>{{ $user->date_of_birth_formatted ?: '-' }}</dd></div>
+                    </dl>
                 </div>
-                <svg class="cp-quick-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-            </a>
-            <a href="{{ route('history', ['status' => 'active']) }}" class="cp-quick">
-                <div class="cp-quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
-                <div>
-                    <strong>Booking Aktif</strong>
-                    <span>Penyewaan yang sedang berjalan</span>
+
+                <div class="cp-info-group">
+                    <h3 class="cp-group-title">Informasi Akun</h3>
+                    <dl>
+                        <div class="cp-info-item"><dt>Status Akun</dt><dd>{{ $accountStatus }}</dd></div>
+                        <div class="cp-info-item"><dt>Anggota Sejak</dt><dd>{{ $user->created_at ? $user->created_at->format('M Y') : '-' }}</dd></div>
+                        <div class="cp-info-item"><dt>Terakhir Diperbarui</dt><dd>{{ $user->updated_at ? $user->updated_at->format('d M Y, H:i') : '-' }}</dd></div>
+                    </dl>
                 </div>
-                <svg class="cp-quick-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-            </a>
-            <a href="{{ route('contact.admin') }}" class="cp-quick">
-                <div class="cp-quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></div>
-                <div>
-                    <strong>Hubungi Admin</strong>
-                    <span>Butuh bantuan? Chat admin</span>
-                </div>
-                <svg class="cp-quick-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-            </a>
+            </div>
         </section>
 
         {{-- ═══ PENYEWAAN TERAKHIR ═══ --}}
-        <section class="cp-card cp-recent">
-            <div class="cp-card-head">
-                <div class="cp-card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                    </svg>
+        <section class="cp-section cp-recent">
+            <div class="cp-section-head">
+                <div class="cp-section-title">
+                    <span class="cp-eyebrow">RIWAYAT TERBARU</span>
+                    <h2>Penyewaan Terakhir</h2>
+                    <p>Pesanan paling terbaru Anda</p>
                 </div>
-                <div>
-                    <h2 class="cp-card-title">Penyewaan Terakhir</h2>
-                    <p class="cp-card-subtitle">Pesanan paling terbaru Anda</p>
-                </div>
-                <a href="{{ route('history') }}" class="cp-link-all">Lihat Semua
+                <a href="{{ route('history') }}" class="cp-link">
+                    Lihat Semua
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </a>
             </div>
@@ -397,6 +273,183 @@
                     <a href="{{ route('catalog') }}" class="cp-btn cp-btn-primary">Buka Katalog Sewa</a>
                 </div>
             @endif
+        </section>
+
+        {{-- ═══ DOKUMEN VERIFIKASI ═══ --}}
+        <section class="cp-section cp-docs-section">
+            <div class="cp-section-head">
+                <div class="cp-section-title">
+                    <span class="cp-eyebrow">VERIFIKASI</span>
+                    <h2>Dokumen Verifikasi</h2>
+                    <p>Dokumen identitas dan persetujuan untuk akun Anda</p>
+                </div>
+            </div>
+
+            <div class="cp-docs">
+                @if ($user->is_minor)
+                    <div class="cp-doc-row">
+                        @if ($user->ktp_orang_tua_url)
+                            <img class="cp-doc-thumb" src="{{ $user->ktp_orang_tua_url }}" alt="KTP Orang Tua {{ $user->name }}">
+                        @else
+                            <span class="cp-doc-thumb cp-doc-thumb-empty">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                            </span>
+                        @endif
+                        <div class="cp-doc-info">
+                            <span class="cp-doc-title">KTP ORANG TUA</span>
+                            <span class="cp-doc-meta">{{ $user->ktp_orang_tua_url ? 'Foto KTP orang tua tersimpan di penyimpanan privat.' : 'KTP orang tua belum tersedia.' }}</span>
+                        </div>
+                        <span class="cp-doc-pill {{ $user->ktp_orang_tua_url ? 'available' : 'empty' }}">{{ $user->ktp_orang_tua_url ? 'Dokumen tersimpan' : 'Belum diunggah' }}</span>
+                        @if ($user->ktp_orang_tua_url)
+                            <div class="cp-doc-actions">
+                                <button type="button" class="cp-btn cp-btn-sm cp-btn-ghost" onclick="openKtpModal('{{ $user->ktp_orang_tua_url }}')">Lihat</button>
+                            </div>
+                        @else
+                            <div class="cp-doc-actions">
+                                <a class="cp-btn cp-btn-sm cp-btn-ghost" href="{{ route('contact.admin') }}">Hubungi Admin</a>
+                            </div>
+                        @endif
+                    </div>
+                    <div class="cp-doc-row">
+                        @if ($user->kartu_pelajar_url)
+                            <img class="cp-doc-thumb" src="{{ $user->kartu_pelajar_url }}" alt="Kartu Pelajar {{ $user->name }}">
+                        @else
+                            <span class="cp-doc-thumb cp-doc-thumb-empty">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                            </span>
+                        @endif
+                        <div class="cp-doc-info">
+                            <span class="cp-doc-title">KARTU PELAJAR</span>
+                            <span class="cp-doc-meta">{{ $user->kartu_pelajar_url ? 'Foto kartu pelajar tersimpan di penyimpanan privat.' : 'Kartu pelajar belum tersedia.' }}</span>
+                        </div>
+                        <span class="cp-doc-pill {{ $user->kartu_pelajar_url ? 'available' : 'empty' }}">{{ $user->kartu_pelajar_url ? 'Dokumen tersimpan' : 'Belum diunggah' }}</span>
+                        @if ($user->kartu_pelajar_url)
+                            <div class="cp-doc-actions">
+                                <button type="button" class="cp-btn cp-btn-sm cp-btn-ghost" onclick="openKtpModal('{{ $user->kartu_pelajar_url }}')">Lihat</button>
+                            </div>
+                        @else
+                            <div class="cp-doc-actions">
+                                <a class="cp-btn cp-btn-sm cp-btn-ghost" href="{{ route('contact.admin') }}">Hubungi Admin</a>
+                            </div>
+                        @endif
+                    </div>
+                    <p class="cp-doc-note">Dokumen identitas Anda (usia di bawah 17 tahun) diunggah saat pendaftaran dan tersimpan aman.</p>
+                @elseif ($user->ktp_url)
+                    <div class="cp-doc-row">
+                        <img id="ktp-profile-img" class="cp-doc-thumb" src="{{ $user->ktp_url }}" alt="KTP {{ $user->name }}">
+                        <div class="cp-doc-info">
+                            <span class="cp-doc-title">KTP / Identitas</span>
+                            <span class="cp-doc-meta">Foto KTP Anda diunggah saat pendaftaran dan tersimpan aman.</span>
+                        </div>
+                        <span class="cp-doc-pill available">Dokumen tersimpan</span>
+                        <div class="cp-doc-actions">
+                            <button type="button" class="cp-btn cp-btn-sm cp-btn-ghost" onclick="openKtpModal()">Lihat</button>
+                        </div>
+                    </div>
+                @else
+                    <div class="cp-doc-row">
+                        <span class="cp-doc-thumb cp-doc-thumb-empty">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                        </span>
+                        <div class="cp-doc-info">
+                            <span class="cp-doc-title">KTP / Identitas</span>
+                            <span class="cp-doc-meta">Belum ada dokumen KTP yang terunggah.</span>
+                        </div>
+                        <span class="cp-doc-pill empty">Belum diunggah</span>
+                        <div class="cp-doc-actions">
+                            <a class="cp-btn cp-btn-sm cp-btn-ghost" href="{{ route('contact.admin') }}">Hubungi Admin</a>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Surat persetujuan orang tua (khusus di bawah 17 tahun) --}}
+                @php
+                    $consentPillClass = match ($user->parent_consent_status) {
+                        'verified' => 'available',
+                        'rejected' => 'rejected',
+                        'submitted' => 'submitted',
+                        'pending' => 'pending',
+                        default => 'empty',
+                    };
+                @endphp
+                @if ($user->parent_consent_path || $user->is_minor)
+                    <div class="cp-consent-card">
+                        @if ($user->parent_consent_path)
+                            <div class="cp-doc-row">
+                                <span class="cp-doc-thumb cp-doc-thumb-pdf">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 15l2 2 4-4"></path></svg>
+                                </span>
+                                <div class="cp-doc-info">
+                                    <span class="cp-doc-title">Surat Persetujuan Orang Tua</span>
+                                    <span class="cp-doc-meta">{{ basename($user->parent_consent_path) }}</span>
+                                    @if ($user->parent_consent_status === 'rejected' && $user->parent_consent_rejected_reason)
+                                        <span class="cp-consent-reason"><strong>Alasan penolakan:</strong> {{ $user->parent_consent_rejected_reason }}</span>
+                                    @endif
+                                </div>
+                                <span class="cp-doc-pill {{ $consentPillClass }}">{{ $user->parent_consent_status_label }}</span>
+                                @if ($user->parent_consent_url)
+                                    <div class="cp-doc-actions">
+                                        <button type="button" class="cp-btn cp-btn-sm cp-btn-primary" data-pdf-open="{{ $user->parent_consent_url }}">
+                                            Lihat PDF
+                                        </button>
+                                    </div>
+                                @endif
+                            </div>
+                            <p class="cp-doc-note">Dokumen ini disimpan di penyimpanan privat dan hanya dapat dilihat oleh Anda atau tim Administrator Summit Station.</p>
+                        @else
+                            <div class="cp-doc-row">
+                                <span class="cp-doc-thumb cp-doc-thumb-pdf">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 15l2 2 4-4"></path></svg>
+                                </span>
+                                <div class="cp-doc-info">
+                                    <span class="cp-doc-title">Surat Persetujuan Orang Tua</span>
+                                    <span class="cp-doc-meta">Surat persetujuan orang tua belum diunggah.</span>
+                                </div>
+                                <span class="cp-doc-pill empty">Belum diunggah</span>
+                            </div>
+                            <p class="cp-consent-help">Anda berusia di bawah 17 tahun sehingga dokumen ini diperlukan untuk verifikasi. Silakan hubungi <a class="cp-inline-link" href="{{ route('contact.admin') }}">Administrator Summit Station</a> untuk melengkapi berkas.</p>
+                        @endif
+                    </div>
+                @endif
+            </div>
+        </section>
+
+        {{-- ═══ AKSES CEPAT ═══ --}}
+        <section class="cp-section cp-quick-section">
+            <div class="cp-section-head">
+                <div class="cp-section-title">
+                    <span class="cp-eyebrow">NAVIGASI CEPAT</span>
+                    <h2>Akses Cepat</h2>
+                    <p>Navigasi pintas untuk aktivitas Anda</p>
+                </div>
+            </div>
+
+            <nav class="cp-quick-row" aria-label="Akses cepat">
+                <a class="cp-quick-btn" href="{{ route('catalog') }}">
+                    <span class="cp-quick-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    </span>
+                    Lihat Katalog
+                </a>
+                <a class="cp-quick-btn" href="{{ route('history') }}">
+                    <span class="cp-quick-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    </span>
+                    Riwayat Penyewaan
+                </a>
+                <a class="cp-quick-btn" href="{{ route('history', ['status' => 'active']) }}">
+                    <span class="cp-quick-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><polyline points="9 15 11 17 15 13"></polyline></svg>
+                    </span>
+                    Booking Aktif
+                </a>
+                <a class="cp-quick-btn" href="{{ route('contact.admin') }}">
+                    <span class="cp-quick-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                    </span>
+                    Hubungi Admin
+                </a>
+            </nav>
         </section>
 
     </main>
@@ -472,6 +525,37 @@
         </div>
     </div>
 
+    {{-- ═══ MODAL PRATINJAU PDF / SURAT PERSETUJUAN ═══ --}}
+    <div id="pdfModal" class="user-modal-overlay" onclick="closePdfModal(event)">
+        <div class="user-modal-pdf" onclick="event.stopPropagation()">
+            <div class="user-modal-pdf-head">
+                <div class="user-modal-pdf-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <path d="M9 15l2 2 4-4"></path>
+                    </svg>
+                    <div>
+                        <h3>Surat Persetujuan Orang Tua</h3>
+                        <p>Pratinjau berkas — gunakan kontrol pembesaran browser untuk memperbesar/memperkecil.</p>
+                    </div>
+                </div>
+                <button type="button" class="user-modal-pdf-close" onclick="closePdfModal(null, true)" aria-label="Tutup pratinjau PDF" title="Tutup">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="user-modal-pdf-body">
+                <iframe id="pdfFrame" src="" title="Surat Persetujuan Orang Tua" loading="lazy"></iframe>
+            </div>
+            <div class="user-modal-pdf-actions">
+                <button type="button" class="um-btn um-btn-cancel" onclick="closePdfModal(null, true)">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     {{-- ═══ MODAL PERBESAR KTP ═══ --}}
     <div id="ktpModal" class="user-modal-overlay" onclick="closeKtpModal(event)">
         <div class="user-modal-zoom" onclick="event.stopPropagation()">
@@ -501,10 +585,13 @@
             }
         }
 
-        function openKtpModal() {
-            const source = document.getElementById('ktp-profile-img');
-            if (source) {
-                document.getElementById('ktpModalImg').src = source.src;
+        function openKtpModal(src) {
+            if (!src) {
+                const source = document.getElementById('ktp-profile-img');
+                if (source) src = source.src;
+            }
+            if (src) {
+                document.getElementById('ktpModalImg').src = src;
                 document.getElementById('ktpModal').classList.add('show');
             }
         }
@@ -514,6 +601,34 @@
                 document.getElementById('ktpModalImg').removeAttribute('src');
             }
         }
+
+        function openPdfModal(url) {
+            if (!url) { return; }
+            document.getElementById('pdfModal').classList.add('show');
+            document.body.classList.add('cp-modal-open');
+            document.getElementById('pdfFrame').src = url;
+        }
+        function closePdfModal(e, force) {
+            var modal = document.getElementById('pdfModal');
+            if (force || e?.target === modal) {
+                modal.classList.remove('show');
+                document.getElementById('pdfFrame').removeAttribute('src');
+                document.body.classList.remove('cp-modal-open');
+            }
+        }
+        document.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Escape') {
+                var pdfModal = document.getElementById('pdfModal');
+                if (pdfModal && pdfModal.classList.contains('show')) {
+                    closePdfModal(null, true);
+                }
+            }
+        });
+        document.querySelectorAll('[data-pdf-open]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                openPdfModal(btn.getAttribute('data-pdf-open'));
+            });
+        });
 
         document.querySelectorAll('form[data-loading-text]').forEach(function (form) {
             form.addEventListener('submit', function () {

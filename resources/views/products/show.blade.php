@@ -245,6 +245,15 @@
                     <div style="padding: 16px; background: #fee2e2; border-radius: 10px; color: #991b1b; text-align: center; font-weight: 700; font-size: 14px; margin-top: 10px; line-height: 1.5;">
                         Akun Anda telah ditangguhkan (DIBLOKIR) dan tidak dapat melakukan penyewaan. Silakan hubungi Administrator.
                     </div>
+                @elseif (!empty($isConsentPending))
+                    <div style="padding: 16px; background: #fef3c7; border-radius: 10px; color: #92400e; text-align: center; font-weight: 700; font-size: 14px; margin-top: 10px; line-height: 1.5;">
+                        Persetujuan orang tua Anda masih menunggu verifikasi admin. Anda belum dapat melakukan penyewaan alat sampai akun dikonfirmasi admin.
+                        <div style="margin-top: 10px;">
+                            <a href="{{ route('profile') }}" style="display: inline-block; background: #92400e; color: #fff; font-size: 13px; font-weight: 700; padding: 10px 24px; border-radius: 8px; text-decoration: none;">
+                                Cek Status Verifikasi &rarr;
+                            </a>
+                        </div>
+                    </div>
                 @elseif (!session('account_id'))
                     <div style="padding: 16px; background: #fef3c7; border-radius: 10px; color: #92400e; text-align: center; font-weight: 700; font-size: 14px; margin-top: 10px; line-height: 1.5;">
                         Silakan login terlebih dahulu untuk melakukan booking.

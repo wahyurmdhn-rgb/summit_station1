@@ -20,6 +20,11 @@ class Order extends Model
         'total',
         'status',
         'notes',
+        'delivery_method',
+        'recipient_name',
+        'recipient_phone',
+        'delivery_address',
+        'delivery_note',
         'paid_at',
     ];
 
@@ -30,6 +35,14 @@ class Order extends Model
             'rent_end' => 'date',
             'paid_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Label human-readable untuk metode pengambilan barang sewa.
+     */
+    public function getDeliveryMethodLabelAttribute(): string
+    {
+        return $this->delivery_method === 'delivery' ? 'Dikirim ke Lokasi' : 'Ambil di Tempat';
     }
 
     public function user(): BelongsTo

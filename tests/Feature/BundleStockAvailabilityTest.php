@@ -179,7 +179,7 @@ class BundleStockAvailabilityTest extends TestCase
         $catalog = $this->get('/catalog');
         $catalog->assertStatus(200);
         $catalog->assertSee('Paket Tersedia');
-        $catalog->assertSee('STOK: 2', false);
+        $catalog->assertSee('Stok: 2', false);
         $catalog->assertSee(sprintf('href="%s"', route('catalog.bundle', $bundle->id)), false);
         $catalog->assertDontSee('Paket sedang habis', false);
     }

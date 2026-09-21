@@ -124,7 +124,9 @@
                         <div class="user-stat-val-row">
                             <span class="user-stat-number red">{{ number_format($pendingVerification) }}</span>
                         </div>
-                        <div class="user-stat-subtext">Perlu perhatian segera</div>
+                        <div class="user-stat-subtext">
+                            {{ isset($pendingConsent) && $pendingConsent > 0 ? number_format($pendingConsent) . ' persetujuan orang tua' : 'Perlu perhatian segera' }}
+                        </div>
                     </div>
                 </div>
 
@@ -137,6 +139,9 @@
                             <form method="GET" action="{{ route('admin.users') }}" id="filterStatusForm" class="filter-dropdown-form">
                                 @if ($domicileFilter !== 'everywhere')
                                     <input type="hidden" name="domicile" value="{{ $domicileFilter }}">
+                                @endif
+                                @if ($consentFilter !== 'all')
+                                    <input type="hidden" name="consent" value="{{ $consentFilter }}">
                                 @endif
                                 @if ($search)
                                     <input type="hidden" name="search" value="{{ $search }}">
@@ -162,6 +167,9 @@
                                 @if ($statusFilter !== 'all')
                                     <input type="hidden" name="status" value="{{ $statusFilter }}">
                                 @endif
+                                @if ($consentFilter !== 'all')
+                                    <input type="hidden" name="consent" value="{{ $consentFilter }}">
+                                @endif
                                 @if ($search)
                                     <input type="hidden" name="search" value="{{ $search }}">
                                 @endif
@@ -179,6 +187,32 @@
                                 </div>
                             </form>
 
+                            <!-- Filter: Persetujuan Orang Tua -->
+                            <form method="GET" action="{{ route('admin.users') }}" id="filterConsentForm" class="filter-dropdown-form">
+                                @if ($statusFilter !== 'all')
+                                    <input type="hidden" name="status" value="{{ $statusFilter }}">
+                                @endif
+                                @if ($domicileFilter !== 'everywhere')
+                                    <input type="hidden" name="domicile" value="{{ $domicileFilter }}">
+                                @endif
+                                @if ($search)
+                                    <input type="hidden" name="search" value="{{ $search }}">
+                                @endif
+                                <div class="filter-pill-dropdown">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                        <path d="M9 12l2 2 4-4"></path>
+                                    </svg>
+                                    <select name="consent" class="filter-select-pill" onchange="this.form.submit()">
+                                        <option value="all" {{ $consentFilter === 'all' ? 'selected' : '' }}>Persetujuan: Semua</option>
+                                        <option value="submitted" {{ $consentFilter === 'submitted' ? 'selected' : '' }}>PO: Menunggu Verifikasi</option>
+                                        <option value="verified" {{ $consentFilter === 'verified' ? 'selected' : '' }}>PO: Terverifikasi</option>
+                                        <option value="rejected" {{ $consentFilter === 'rejected' ? 'selected' : '' }}>PO: Ditolak</option>
+                                        <option value="not_required" {{ $consentFilter === 'not_required' ? 'selected' : '' }}>PO: Tidak Diperlukan</option>
+                                    </select>
+                                </div>
+                            </form>
+
                             <!-- Inline Search Input -->
                             <form method="GET" action="{{ route('admin.users') }}" class="user-inline-search">
                                 @if ($statusFilter !== 'all')
@@ -187,15 +221,18 @@
                                 @if ($domicileFilter !== 'everywhere')
                                     <input type="hidden" name="domicile" value="{{ $domicileFilter }}">
                                 @endif
+                                @if ($consentFilter !== 'all')
+                                    <input type="hidden" name="consent" value="{{ $consentFilter }}">
+                                @endif
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="11" cy="11" r="8"></circle>
                                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                                 </svg>
                                 <input type="text"
-                                       name="search"
-                                       value="{{ $search }}"
-                                       class="user-search-field"
-                                       placeholder="Cari explorer...">
+                                    name="search"
+                                    value="{{ $search }}"
+                                    class="user-search-field"
+                                    placeholder="Cari explorer...">
                                 @if ($search)
                                     <a href="{{ route('admin.users', ['status' => $statusFilter, 'domicile' => $domicileFilter]) }}" class="clear-search-btn">&times;</a>
                                 @endif
@@ -251,7 +288,20 @@
                                             'orders_count' => $user->orders_count ?? 0,
                                             'avatar_path' => $user->avatar_path ?? $user->avatar,
                                             'ktp_url' => $user->ktp_url,
+                                            'ktp_orang_tua_url' => $user->ktp_orang_tua_url,
+                                            'kartu_pelajar_url' => $user->kartu_pelajar_url,
+                                            'is_minor' => $user->is_minor,
                                             'created_at' => $user->created_at ? $user->created_at->format('M d, Y') : '-',
+                                            'consent_status' => $user->parent_consent_status ?? 'not_required',
+                                            'consent_label' => $user->parent_consent_status_label,
+                                            'consent_badge_class' => $user->parent_consent_badge_class,
+                                            'consent_proof_url' => $user->parent_consent_url,
+                                            'parent_name' => $user->parent_name ?? '',
+                                            'parent_relation' => $user->parent_relation ?? '',
+                                            'parent_phone' => $user->parent_phone ?? '',
+                                            'rejection_reason' => $user->parent_consent_rejected_reason ?? '',
+                                            'age' => $user->age,
+                                            'dob' => $user->date_of_birth_formatted,
                                         ];
                                     @endphp
                                     <tr class="user-table-row">
@@ -260,8 +310,8 @@
                                             <div class="user-profile-cell" onclick="openDetailModal({{ json_encode($userData) }})" style="cursor: pointer;" title="Lihat Detail User">
                                                 @if ($user->avatar_path || $user->avatar)
                                                     <img src="{{ $user->avatar_path ?? $user->avatar }}"
-                                                         alt="{{ $user->name }}"
-                                                         class="user-avatar-img">
+                                                        alt="{{ $user->name }}"
+                                                        class="user-avatar-img">
                                                 @else
                                                     <div class="user-avatar-initials">
                                                         {{ $user->initials }}
@@ -299,15 +349,38 @@
 
                                         <!-- 10. STATUS AKUN -->
                                         <td>
-                                            <span class="user-status-badge {{ $user->status_badge_class }}">
-                                                <span class="badge-dot"></span>
-                                                <span>{{ $user->status_label }}</span>
-                                            </span>
+                                            <div class="user-status-cell">
+                                                <span class="user-status-badge {{ $user->status_badge_class }}">
+                                                    <span class="badge-dot"></span>
+                                                    <span>{{ $user->status_label }}</span>
+                                                </span>
+                                                @if (($user->parent_consent_status ?? 'not_required') !== 'not_required')
+                                                    <span
+                                                        class="user-status-badge {{ $user->parent_consent_badge_class }}"
+                                                        style="margin-top: 5px;"
+                                                        title="Persetujuan orang tua: {{ $user->parent_consent_status_label }}">
+                                                        <span class="badge-dot"></span>
+                                                        <span>PO: {{ $user->parent_consent_status_label }}</span>
+                                                    </span>
+                                                @endif
+                                            </div>
                                         </td>
 
                                         <!-- 11. ACTIONS -->
                                         <td>
                                             <div class="user-action-buttons">
+                                                @if (in_array($user->parent_consent_status ?? '', ['pending', 'submitted']))
+                                                    <!-- Verifikasi Persetujuan Orang Tua -->
+                                                    <button type="button"
+                                                            class="user-action-btn consent"
+                                                            title="Verifikasi Persetujuan Orang Tua"
+                                                            onclick="openConsentModal({{ json_encode($userData) }})">
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                                            <path d="M9 12l2 2 4-4"></path>
+                                                        </svg>
+                                                    </button>
+                                                @endif
                                                 <!-- Edit Button (Pencil) -->
                                                 <button type="button"
                                                         class="user-action-btn edit"
@@ -357,14 +430,14 @@
                                                     </svg>
                                                 </div>
                                                 <h3 class="empty-state-title">
-                                                    @if ($search || $statusFilter !== 'all' || $domicileFilter !== 'everywhere')
+                                                    @if ($search || $statusFilter !== 'all' || $domicileFilter !== 'everywhere' || $consentFilter !== 'all')
                                                         Tidak ada user yang sesuai dengan filter
                                                     @else
                                                         Belum ada user
                                                     @endif
                                                 </h3>
                                                 <p class="empty-state-desc">
-                                                    @if ($search || $statusFilter !== 'all' || $domicileFilter !== 'everywhere')
+                                                    @if ($search || $statusFilter !== 'all' || $domicileFilter !== 'everywhere' || $consentFilter !== 'all')
                                                         Coba ubah kata kunci pencarian atau sesuaikan status dan domisili.
                                                     @else
                                                         User yang mendaftar di Summit Station akan ditampilkan di halaman ini.
@@ -388,6 +461,9 @@
                                 @endif
                                 @if ($domicileFilter !== 'everywhere')
                                     <input type="hidden" name="domicile" value="{{ $domicileFilter }}">
+                                @endif
+                                @if ($consentFilter !== 'all')
+                                    <input type="hidden" name="consent" value="{{ $consentFilter }}">
                                 @endif
                                 @if ($search)
                                     <input type="hidden" name="search" value="{{ $search }}">
@@ -665,6 +741,71 @@
         </div>
     </div>
 
+    <!-- ─── 15b. Verifikasi Persetujuan Orang Tua Modal ─── -->
+    <div id="consentUserModal" class="user-modal-overlay" onclick="closeConsentModal(event)">
+        <div class="user-modal-card user-status-modal" style="max-width: 460px;" onclick="event.stopPropagation()">
+            <div class="user-modal-header">
+                <div>
+                    <h3 class="user-modal-title">Verifikasi Persetujuan Orang Tua</h3>
+                    <p class="user-modal-subtitle user-status-subtitle" id="consentModalUserName">User Explorer</p>
+                </div>
+                <button type="button" class="user-modal-close-btn" onclick="hideConsentModal()">&times;</button>
+            </div>
+
+            <form id="consentUserForm" method="POST" action="">
+                @csrf
+                @method('POST')
+
+                <div class="user-status-current">
+                    <span class="user-status-current-label">Status persetujuan</span>
+                    <span id="consentCurrentBadge" class="user-status-badge user-badge-pending">
+                        <span class="badge-dot"></span>
+                        <span id="consentCurrentText">MENUNGGU VERIFIKASI</span>
+                    </span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; font-size: 12.5px; margin: 12px 0 16px;">
+                    <div>
+                        <div style="color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 2px;">Tanggal Lahir</div>
+                        <div id="consentDob" style="font-weight: 600; color: #1f2937;">-</div>
+                    </div>
+                    <div>
+                        <div style="color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 2px;">Umur</div>
+                        <div id="consentAge" style="font-weight: 600; color: #1f2937;">-</div>
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <div style="color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 2px;">Orang Tua / Wali</div>
+                        <div id="consentParent" style="font-weight: 600; color: #1f2937;">-</div>
+                    </div>
+                </div>
+
+                <p style="font-size: 13px; color: #374151; line-height: 1.5; margin-bottom: 14px;">
+                    Telah memeriksa bukti persetujuan? Anda dapat
+                    <a id="consentProofLink" href="#" target="_blank" rel="noopener" style="color: #166534; font-weight: 700;">membuka dokumen</a>
+                    lalu memutuskan statusnya di bawah.
+                </p>
+
+                <div class="user-form-group user-status-select-group">
+                    <label class="user-form-label">Keputusan <span style="color: #dc2626;">*</span></label>
+                    <select name="parent_consent_status" id="consentDecisionSelect" class="user-form-select" required>
+                        <option value="verified">Terverifikasi</option>
+                        <option value="rejected">Ditolak</option>
+                    </select>
+                </div>
+
+                <div class="user-form-group" id="consentReasonGroup" style="display: none;">
+                    <label class="user-form-label">Alasan Penolakan <span style="color: #dc2626;">*</span></label>
+                    <textarea name="rejection_reason" id="consentRejectionReason" class="user-form-input" rows="3" style="resize: vertical; height: auto; min-height: 72px;" placeholder="Jelaskan alasan mengapa bukti tidak diterima."></textarea>
+                </div>
+
+                <div class="user-modal-actions">
+                    <button type="button" class="btn-cancel-modal" onclick="hideConsentModal()">Batal</button>
+                    <button type="submit" class="btn-submit-modal">Simpan Keputusan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- ─── 16. User Detail Modal ─── -->
     <div id="detailUserModal" class="user-modal-overlay" onclick="closeDetailModal(event)">
         <div class="user-modal-card" style="max-width: 500px;" onclick="event.stopPropagation()">
@@ -715,15 +856,85 @@
             </div>
 
             <div style="border-top: 1px solid #f1f5f9; padding-top: 16px;">
-                <div style="color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">KTP</div>
-                <div id="detailKtpEmpty" style="font-size: 12.5px; color: #94a3b8;">KTP belum tersedia.</div>
-                <img id="detailKtpImg"
-                     src=""
-                     alt="Foto KTP User"
-                     title="Klik untuk memperbesar"
-                     onclick="openKtpViewer(this.src)"
-                     style="display: none; max-width: 100%; max-height: 240px; object-fit: contain; border-radius: 10px; border: 1px solid #e5e7eb; background: #f8fafc; cursor: zoom-in;">
+                <div style="color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">Dokumen Verifikasi</div>
+
+                {{-- User >= 17 tahun: KTP user sendiri --}}
+                <div id="detailDocKtpUser">
+                    <div style="font-size: 12px; font-weight: 700; color: #1f2937; margin-bottom: 6px;">KTP User</div>
+                    <div id="detailKtpEmpty" style="font-size: 12.5px; color: #94a3b8;">KTP belum tersedia.</div>
+                    <img id="detailKtpImg"
+                        src=""
+                        alt="Foto KTP User"
+                        title="Klik untuk memperbesar"
+                        onclick="openKtpViewer(this.src)"
+                        style="display: none; max-width: 100%; max-height: 240px; object-fit: contain; border-radius: 10px; border: 1px solid #e5e7eb; background: #f8fafc; cursor: zoom-in;">
+                </div>
+
+                {{-- User < 17 tahun: KTP orang tua/wali --}}
+                <div id="detailDocKtpOrtu" style="display: none;">
+                    <div style="font-size: 12px; font-weight: 700; color: #1f2937; margin-bottom: 6px;">KTP Orang Tua / Wali</div>
+                    <div id="detailKtpOrtuEmpty" style="font-size: 12.5px; color: #94a3b8;">KTP orang tua belum tersedia.</div>
+                    <img id="detailKtpOrtuImg"
+                        src=""
+                        alt="Foto KTP Orang Tua"
+                        title="Klik untuk memperbesar"
+                        onclick="openKtpViewer(this.src)"
+                        style="display: none; max-width: 100%; max-height: 240px; object-fit: contain; border-radius: 10px; border: 1px solid #e5e7eb; background: #f8fafc; cursor: zoom-in;">
+                </div>
+
+                {{-- User < 17 tahun: kartu pelajar --}}
+                <div id="detailDocKartuPelajar" style="display: none;">
+                    <div style="font-size: 12px; font-weight: 700; color: #1f2937; margin-bottom: 6px;">Kartu Pelajar</div>
+                    <div id="detailKartuEmpty" style="font-size: 12.5px; color: #94a3b8;">Kartu pelajar belum tersedia.</div>
+                    <img id="detailKartuImg"
+                        src=""
+                        alt="Foto Kartu Pelajar"
+                        title="Klik untuk memperbesar"
+                        onclick="openKtpViewer(this.src)"
+                        style="display: none; max-width: 100%; max-height: 240px; object-fit: contain; border-radius: 10px; border: 1px solid #e5e7eb; background: #f8fafc; cursor: zoom-in;">
+                </div>
                 <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Klik foto untuk melihat ukuran lebih besar.</div>
+            </div>
+
+            <div style="border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <div style="color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase;">Persetujuan Orang Tua</div>
+                    <span id="detailConsentBadge" class="user-status-badge user-badge-active">
+                        <span class="badge-dot"></span>
+                        <span id="detailConsentText">TIDAK DIPERLUKAN</span>
+                    </span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; font-size: 13px;">
+                    <div>
+                        <div style="color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 2px;">Tanggal Lahir</div>
+                        <div id="detailConsentDob" style="font-weight: 600; color: #1f2937;">-</div>
+                    </div>
+                    <div>
+                        <div style="color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 2px;">Umur</div>
+                        <div id="detailConsentAge" style="font-weight: 600; color: #1f2937;">-</div>
+                    </div>
+                    <div>
+                        <div style="color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 2px;">Nama Orang Tua / Wali</div>
+                        <div id="detailConsentParentName" style="font-weight: 600; color: #1f2937;">-</div>
+                    </div>
+                    <div>
+                        <div style="color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 2px;">Hubungan</div>
+                        <div id="detailConsentRelation" style="font-weight: 600; color: #1f2937;">-</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                    <div style="color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Bukti Persetujuan</div>
+                    <a id="detailConsentProofLink" href="#" target="_blank" rel="noopener" style="display: none; align-items: center; gap: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; text-decoration: none; padding: 10px 14px; border-radius: 10px; font-size: 12.5px; font-weight: 700;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 15l2 2 4-4"></path></svg>
+                        Lihat dokumen persetujuan
+                    </a>
+                    <div id="detailConsentProofEmpty" style="font-size: 12.5px; color: #94a3b8;">Tidak ada bukti yang diunggah.</div>
+                    <div id="detailConsentRejected" style="display: none; margin-top: 8px; background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 10px 14px; border-radius: 10px; font-size: 12px; line-height: 1.5;">
+                        <strong>Alasan penolakan:</strong> <span id="detailConsentRejectedText"></span>
+                    </div>
+                </div>
             </div>
 
             <div class="user-modal-actions">
@@ -806,6 +1017,47 @@
             if (e.target === document.getElementById('deleteUserModal')) hideDeleteModal();
         }
 
+        function openConsentModal(data) {
+            document.getElementById('consentUserForm').action = "/admin/users/" + data.id + "/parent-consent";
+            document.getElementById('consentModalUserName').textContent = data.name + ' (' + data.email + ')';
+            document.getElementById('consentDob').textContent = data.dob || '-';
+            document.getElementById('consentAge').textContent = (data.age != null ? data.age + ' tahun' : '-');
+            document.getElementById('consentParent').textContent = data.parent_name ? (data.parent_name + ' — ' + data.parent_relation) : '-';
+
+            const proofLink = document.getElementById('consentProofLink');
+            if (data.consent_proof_url) {
+                proofLink.href = data.consent_proof_url;
+                proofLink.style.display = 'inline';
+            } else {
+                proofLink.style.display = 'none';
+            }
+
+            const badge = document.getElementById('consentCurrentBadge');
+            badge.className = 'user-status-badge';
+            if (data.consent_status === 'verified') badge.classList.add('user-badge-success');
+            else if (data.consent_status === 'rejected') badge.classList.add('user-badge-suspended');
+            else badge.classList.add('user-badge-pending');
+            document.getElementById('consentCurrentText').textContent = data.consent_label || 'MENUNGGU VERIFIKASI';
+
+            document.getElementById('consentDecisionSelect').value = 'verified';
+            document.getElementById('consentReasonGroup').style.display = 'none';
+            document.getElementById('consentRejectionReason').value = '';
+
+            document.getElementById('consentUserModal').classList.add('show');
+        }
+        function hideConsentModal() {
+            document.getElementById('consentUserModal').classList.remove('show');
+        }
+        function closeConsentModal(e) {
+            if (e.target === document.getElementById('consentUserModal')) hideConsentModal();
+        }
+
+        document.getElementById('consentDecisionSelect')?.addEventListener('change', function () {
+            const showReason = this.value === 'rejected';
+            document.getElementById('consentReasonGroup').style.display = showReason ? 'block' : 'none';
+            document.getElementById('consentRejectionReason').required = showReason;
+        });
+
         function openDetailModal(data) {
             document.getElementById('detailName').textContent = data.name;
             document.getElementById('detailEmail').textContent = data.email;
@@ -844,6 +1096,71 @@
             } else {
                 ktpImg.style.display = 'none';
                 ktpEmpty.style.display = 'block';
+            }
+
+            if (data.is_minor) {
+                document.getElementById('detailDocKtpUser').style.display = 'none';
+                document.getElementById('detailDocKtpOrtu').style.display = 'block';
+                document.getElementById('detailDocKartuPelajar').style.display = 'block';
+            } else {
+                document.getElementById('detailDocKtpUser').style.display = 'block';
+                document.getElementById('detailDocKtpOrtu').style.display = 'none';
+                document.getElementById('detailDocKartuPelajar').style.display = 'none';
+            }
+
+            const ktpOrtuImg = document.getElementById('detailKtpOrtuImg');
+            const ktpOrtuEmpty = document.getElementById('detailKtpOrtuEmpty');
+            if (data.ktp_orang_tua_url) {
+                ktpOrtuImg.src = data.ktp_orang_tua_url;
+                ktpOrtuImg.style.display = 'block';
+                ktpOrtuEmpty.style.display = 'none';
+            } else {
+                ktpOrtuImg.style.display = 'none';
+                ktpOrtuEmpty.style.display = 'block';
+            }
+
+            const kartuImg = document.getElementById('detailKartuImg');
+            const kartuEmpty = document.getElementById('detailKartuEmpty');
+            if (data.kartu_pelajar_url) {
+                kartuImg.src = data.kartu_pelajar_url;
+                kartuImg.style.display = 'block';
+                kartuEmpty.style.display = 'none';
+            } else {
+                kartuImg.style.display = 'none';
+                kartuEmpty.style.display = 'block';
+            }
+
+            // Persetujuan Orang Tua
+            const consentBadge = document.getElementById('detailConsentBadge');
+            consentBadge.className = 'user-status-badge';
+            if (data.consent_status === 'verified') consentBadge.classList.add('user-badge-success');
+            else if (data.consent_status === 'rejected') consentBadge.classList.add('user-badge-suspended');
+            else if (data.consent_status === 'pending' || data.consent_status === 'submitted') consentBadge.classList.add('user-badge-pending');
+            else consentBadge.classList.add('user-badge-active');
+            document.getElementById('detailConsentText').textContent = data.consent_label || 'TIDAK DIPERLUKAN';
+
+            document.getElementById('detailConsentDob').textContent = data.dob || '-';
+            document.getElementById('detailConsentAge').textContent = (data.age != null ? data.age + ' tahun' : '-');
+            document.getElementById('detailConsentParentName').textContent = data.parent_name || '-';
+            document.getElementById('detailConsentRelation').textContent = data.parent_relation || '-';
+
+            const proofLink = document.getElementById('detailConsentProofLink');
+            const proofEmpty = document.getElementById('detailConsentProofEmpty');
+            if (data.consent_proof_url) {
+                proofLink.href = data.consent_proof_url;
+                proofLink.style.display = 'inline-flex';
+                proofEmpty.style.display = 'none';
+            } else {
+                proofLink.style.display = 'none';
+                proofEmpty.style.display = 'block';
+            }
+
+            const rejectedBox = document.getElementById('detailConsentRejected');
+            if (data.consent_status === 'rejected' && data.rejection_reason) {
+                document.getElementById('detailConsentRejectedText').textContent = data.rejection_reason;
+                rejectedBox.style.display = 'block';
+            } else {
+                rejectedBox.style.display = 'none';
             }
 
             document.getElementById('detailUserModal').classList.add('show');

@@ -1787,6 +1787,7 @@ class AdminController extends Controller
         $search = $request->input('search', '');
         $statusFilter = $request->input('status', 'all');
         $domicileFilter = $request->input('domicile', 'everywhere');
+        $consentFilter = $request->input('consent', 'all');
         $perPage = (int) $request->input('per_page', 10);
         if ($perPage < 5 || $perPage > 100) {
             $perPage = 10;
@@ -1816,6 +1817,9 @@ class AdminController extends Controller
 
         // Pending Verification: users with status pending or pending_verification
         $pendingVerification = User::whereIn('status', ['pending', 'pending_verification'])->count();
+
+        // Persetujuan orang tua menunggu verifikasi (user di bawah umur)
+        $pendingConsent = User::whereIn('parent_consent_status', ['pending', 'submitted'])->count();
 
         // Query Users
         $query = User::query()->withCount('orders');
@@ -1849,6 +1853,10 @@ class AdminController extends Controller
             }
         }
 
+        if ($consentFilter && $consentFilter !== 'all') {
+            $query->where('parent_consent_status', $consentFilter);
+        }
+
         $users = $query->orderBy('created_at', 'desc')->paginate($perPage)->withQueryString();
 
         // Pilihan filter wilayah dibatasi hanya untuk 5 wilayah utama Jabodetabek
@@ -1860,9 +1868,11 @@ class AdminController extends Controller
             'activeNow',
             'newRegistrations',
             'pendingVerification',
+            'pendingConsent',
             'search',
             'statusFilter',
             'domicileFilter',
+            'consentFilter',
             'domiciles',
             'perPage'
         ));
@@ -1936,6 +1946,35 @@ class AdminController extends Controller
 
         $statusLabel = $user->status_label;
         return redirect()->route('admin.users')->with('success', "Status user '{$user->name}' berhasil diubah menjadi {$statusLabel}.");
+    }
+
+    /**
+     * Verifikasi / Tolak Persetujuan Orang Tua (untuk user di bawah umur).
+     */
+    public function updateParentConsent(Request $request, int $id): RedirectResponse
+    {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'parent_consent_status' => 'required|string|in:verified,rejected',
+            'rejection_reason' => 'nullable|string|max:500',
+        ]);
+
+        if ($validated['parent_consent_status'] === 'rejected' && empty(trim((string) $validated['rejection_reason']))) {
+            return back()->withErrors([
+                'rejection_reason' => 'Alasan penolakan wajib diisi saat menolak persetujuan orang tua.',
+            ])->withInput();
+        }
+
+        $user->update([
+            'parent_consent_status' => $validated['parent_consent_status'],
+            'parent_consent_rejected_reason' => $validated['parent_consent_status'] === 'rejected'
+                ? trim((string) $validated['rejection_reason'])
+                : null,
+        ]);
+
+        $label = $validated['parent_consent_status'] === 'verified' ? 'terverifikasi' : 'ditolak';
+        return redirect()->route('admin.users')->with('success', "Persetujuan orang tua user '{$user->name}' berhasil di-set {$label}.");
     }
 
     /**

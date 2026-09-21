@@ -351,6 +351,29 @@
                                     </svg>
                                     <span>{{ $order->rent_start ? $order->rent_start->format('d M Y') : '-' }} &mdash; {{ $order->rent_end ? $order->rent_end->format('d M Y') : '-' }}</span>
                                 </div>
+                                @if (!empty($order->delivery_method))
+                                    <div class="order-delivery-meta">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            @if ($order->delivery_method === 'delivery')
+                                                <path d="M1 3h15v13H1z"></path>
+                                                <path d="M16 8h4l3 3v5h-7V8z"></path>
+                                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                            @else
+                                                <path d="M4 10h16l-1.5 11h-13L4 10z"></path>
+                                                <path d="M2 7l2-4h16l2 4H2z"></path>
+                                                <path d="M12 10v11"></path>
+                                            @endif
+                                        </svg>
+                                        <span>
+                                            @if ($order->delivery_method === 'delivery')
+                                                Dikirim ke: {{ $order->delivery_address ?? '-' }}
+                                            @else
+                                                Ambil di Tempat (Summit Station)
+                                            @endif
+                                        </span>
+                                    </div>
+                                @endif
                                 <div class="order-items-summary">
                                     <span class="items-count-tag">
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

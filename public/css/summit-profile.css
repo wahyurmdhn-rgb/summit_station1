@@ -1,38 +1,43 @@
-﻿/* ============================================================
-   Summit Station — Customer Profile
-   Modern Outdoor Rental · Forest Green Theme
+﻿@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@400..800&display=swap');
+
+/* ============================================================
+   Summit Station — Customer Profile (PROFILE PAGE ONLY)
+   ------------------------------------------------------------
+   SCOPE  : Stylesheet ini dimuat HANYA pada halaman /profile.
+            Semua selector di-scope ke komponen profil (cp-*,
+            user-modal-*, um-btn). Tidak memengaruhi navbar
+            (summit-navbar.css) dan footer (summit-footer.css).
+            Palet & font diselaraskan dengan seluruh aplikasi
+            (green #185d31, aksen #9ce6a6, Outfit + Jakarta).
    ============================================================ */
 
 :root {
-    --c-green-900: #1f4d3a;
-    --c-green-800: #1f4d3a;
-    --c-green-700: #2f6a4d;
-    --c-green-600: #3f7d5a;
-    --c-green-500: #4f926b;
-    --c-green-300: #8fb996;
-    --c-green-200: #bcd6c4;
-    --c-green-100: #e4efe7;
-    --c-green-50: #f1f7f2;
-    --c-bg: #f7f8f6;
+    --c-green: #185d31;
+    --c-green-dark: #124926;
+    --c-green-deep: #104421;
+    --c-green-soft: #eef5ef;
+    --c-green-100: #e3efe6;
+    --c-green-200: #c9e0d0;
+    --c-accent: #9ce6a6;
+    --c-bg: #f6f8f6;
     --c-card: #ffffff;
-    --c-text: #1f2937;
-    --c-text-2: #6b7280;
-    --c-muted: #9ca3af;
-    --c-line: #e8ece9;
-    --c-line-strong: #dce3de;
-    --c-success-bg: #dcfce7;
-    --c-success-text: #15803d;
-    --c-danger-bg: #fee2e2;
-    --c-danger-text: #b91c1c;
-    --c-warning-bg: #fef3c7;
-    --c-warning-text: #b45309;
-    --c-info-bg: #e0edff;
+    --c-text: #1b1d1b;
+    --c-text-2: #5b625d;
+    --c-muted: #8a9390;
+    --c-line: #e6ebe7;
+    --c-line-strong: #d7dfd9;
+    --c-success-bg: #e7f6ec;
+    --c-success-text: #166534;
+    --c-danger-bg: #fdecec;
+    --c-danger-text: #b3261e;
+    --c-warning-bg: #fdf3d7;
+    --c-warning-text: #8a5b08;
+    --c-info-bg: #e7effc;
     --c-info-text: #1d4ed8;
-    --c-violet-bg: #ede9fe;
-    --c-violet-text: #6d28d9;
-    --c-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.06);
-    --c-shadow-md: 0 10px 24px -12px rgba(16, 24, 40, 0.14);
+    --c-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+    --c-shadow-md: 0 8px 24px -8px rgba(16, 24, 40, 0.14);
     --c-radius: 16px;
+    --c-speed: 200ms;
 }
 
 *,
@@ -41,12 +46,32 @@
     box-sizing: border-box;
 }
 
+/* Normalisasi element shared (navbar & footer):
+   Halaman lain (home/catalog/detail/dll) mereset margin/padding global
+   (*{margin:0;padding:0}) sehingga elemen <ul>/<h3>/<p> pada navbar &
+   footer tampil rapi. Halaman profil tidak mereset global, akibatnya
+   default browser membuat footer & navbar /profile lebih tinggi dan
+   spasi internalnya tidak identik dengan halaman lain.
+   Scope dibatasi ke navbar & footer agar desain konten profil tidak berubah. */
+.site-header *,
+.site-header *::before,
+.site-header *::after,
+.site-footer *,
+.site-footer *::before,
+.site-footer *::after {
+    margin: 0;
+    padding: 0;
+}
+
+/* Hanya berlaku di halaman profil (stylesheet khusus profil). */
 body {
     margin: 0;
     background-color: var(--c-bg);
     color: var(--c-text);
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Outfit', Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.5;
 }
 
 a {
@@ -58,22 +83,17 @@ svg {
     vertical-align: middle;
 }
 
-.cp-page {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 32px 24px 0;
-    animation: cp-fade-in 0.25s ease;
+[hidden] {
+    display: none !important;
 }
 
-@keyframes cp-fade-in {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* ─── Page Container (profil only) ───
+   Mengikuti container Halaman Lain (navbar & footer = 1280px, padding horizontal 32px),
+   agar footer halaman /profile sejajar (sama persis) dengan footer halaman lain. */
+.cp-page.profile-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 36px 32px 64px;
 }
 
 /* ─── Flash Feedback ─── */
@@ -85,7 +105,7 @@ svg {
     border-radius: 12px;
     font-size: 13.5px;
     font-weight: 600;
-    margin-bottom: 24px;
+    margin-bottom: 22px;
 }
 
 .cp-flash svg {
@@ -112,31 +132,164 @@ svg {
     padding-left: 18px;
 }
 
-/* ─── Profile Hero ─── */
-.cp-hero {
-    position: relative;
-    overflow: hidden;
+/* ─── Buttons ─── */
+.cp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color var(--c-speed) ease, border-color var(--c-speed) ease,
+        color var(--c-speed) ease, transform var(--c-speed) ease, box-shadow var(--c-speed) ease;
+}
+
+.cp-btn svg {
+    width: 15px;
+    height: 15px;
+}
+
+.cp-btn:hover {
+    transform: translateY(-1px);
+}
+
+.cp-btn:active {
+    transform: translateY(0);
+}
+
+.cp-btn:focus-visible {
+    outline: 2px solid var(--c-green);
+    outline-offset: 2px;
+}
+
+.cp-btn-primary {
+    background: var(--c-green);
+    color: #ffffff;
+    box-shadow: 0 4px 12px -4px rgba(24, 93, 49, 0.45);
+}
+
+.cp-btn-primary:hover {
+    background: var(--c-green-dark);
+    box-shadow: 0 6px 16px -4px rgba(24, 93, 49, 0.5);
+}
+
+.cp-btn-ghost {
+    background: #ffffff;
+    border-color: var(--c-line-strong);
+    color: #1f4330;
+}
+
+.cp-btn-ghost:hover {
+    background: var(--c-green-soft);
+    border-color: var(--c-green-200);
+}
+
+.cp-btn-danger {
+    background: #ffffff;
+    border-color: #f0c9c7;
+    color: var(--c-danger-text);
+}
+
+.cp-btn-danger:hover {
+    background: var(--c-danger-bg);
+    border-color: #e7aaa6;
+}
+
+.cp-btn-sm {
+    padding: 7px 14px;
+    font-size: 12.5px;
+    border-radius: 9px;
+}
+
+/* ─── Section ─── */
+.cp-section {
+    background: var(--c-card);
+    border: 1px solid var(--c-line);
+    border-radius: var(--c-radius);
+    box-shadow: var(--c-shadow-sm);
+    padding: 28px 30px;
+    margin-bottom: 26px;
+}
+
+/* Section terakhir: hilangkan margin bawah agar tidak ada area kosong besar
+   sebelum footer. Jarak footer = padding-bottom container (64px), sama persis
+   dengan halaman lain (mis. Katalog: padding-bottom 64px). */
+.cp-section:last-child {
+    margin-bottom: 0;
+}
+
+.cp-section-head {
     display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px 24px;
+    margin-bottom: 20px;
     flex-wrap: wrap;
+}
+
+.cp-eyebrow {
+    display: block;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: var(--c-green);
+    margin-bottom: 7px;
+}
+
+.cp-section-title h2 {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--c-text);
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.cp-section-title p {
+    font-size: 13px;
+    color: var(--c-text-2);
+    margin: 3px 0 0;
+}
+
+.cp-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--c-green);
+    white-space: nowrap;
+    transition: color var(--c-speed) ease, gap var(--c-speed) ease;
+}
+
+.cp-link:hover {
+    color: var(--c-green-dark);
+    gap: 7px;
+}
+
+.cp-link svg {
+    width: 13px;
+    height: 13px;
+}
+
+/* ─── Profil Akun (Hero) ─── */
+.cp-hero {
+    display: flex;
     align-items: center;
     gap: 28px;
     background: var(--c-card);
     border: 1px solid var(--c-line);
-    border-radius: 20px;
+    border-radius: var(--c-radius);
     box-shadow: var(--c-shadow-sm);
-    padding: 32px;
-    margin-bottom: 24px;
-}
-
-.cp-hero-decor {
-    position: absolute;
-    top: -80px;
-    right: -60px;
-    width: 320px;
-    height: 320px;
-    border-radius: 50%;
-    background: radial-gradient(circle at center, rgba(143, 185, 150, 0.22) 0%, rgba(143, 185, 150, 0) 70%);
-    pointer-events: none;
+    padding: 30px 34px;
+    margin-bottom: 26px;
 }
 
 .cp-avatar-block {
@@ -145,22 +298,21 @@ svg {
 }
 
 .cp-avatar {
-    width: 108px;
-    height: 108px;
+    width: 84px;
+    height: 84px;
     border-radius: 50%;
     overflow: hidden;
     background: var(--c-green-100);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 4px solid #ffffff;
-    box-shadow: 0 0 0 1px var(--c-line-strong), var(--c-shadow-md);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 0 1px var(--c-line-strong), var(--c-shadow-sm);
+    transition: box-shadow var(--c-speed) ease;
 }
 
 .cp-avatar:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 0 1px var(--c-green-300), 0 14px 30px -12px rgba(31, 77, 58, 0.35);
+    box-shadow: 0 0 0 1px var(--c-green-200), 0 8px 20px -10px rgba(24, 93, 49, 0.35);
 }
 
 .cp-avatar img {
@@ -176,55 +328,51 @@ svg {
     justify-content: center;
     width: 100%;
     height: 100%;
-    font-size: 40px;
+    font-size: 30px;
     font-weight: 800;
-    color: var(--c-green-700);
+    color: var(--c-green);
     letter-spacing: 1px;
 }
 
 .cp-avatar-edit {
     position: absolute;
-    right: -2px;
-    bottom: -2px;
-    width: 36px;
-    height: 36px;
+    right: -3px;
+    bottom: -3px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    background: var(--c-green-600);
+    background: var(--c-green);
     color: #ffffff;
-    border: 3px solid #ffffff;
+    border: 2px solid #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease;
+    transition: background var(--c-speed) ease, transform var(--c-speed) ease;
 }
 
 .cp-avatar-edit:hover {
-    background: var(--c-green-800);
-    transform: scale(1.06);
+    background: var(--c-green-dark);
+    transform: scale(1.08);
+}
+
+.cp-avatar-edit:active {
+    transform: scale(0.96);
+}
+
+.cp-avatar-edit:focus-visible {
+    outline: 2px solid var(--c-green);
+    outline-offset: 2px;
 }
 
 .cp-avatar-edit svg {
-    width: 15px;
-    height: 15px;
+    width: 14px;
+    height: 14px;
 }
 
 .cp-hero-info {
     flex: 1;
-    min-width: 260px;
-}
-
-.cp-role-badge {
-    display: inline-block;
-    background: var(--c-green-100);
-    color: var(--c-green-700);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    padding: 5px 12px;
-    border-radius: 999px;
-    margin-bottom: 10px;
+    min-width: 0;
 }
 
 .cp-name {
@@ -233,12 +381,13 @@ svg {
     color: var(--c-text);
     margin: 0;
     word-break: break-word;
+    letter-spacing: -0.015em;
 }
 
 .cp-username {
     font-size: 14px;
     font-weight: 600;
-    color: var(--c-text-2);
+    color: var(--c-green-dark);
     margin: 4px 0 0;
 }
 
@@ -246,537 +395,191 @@ svg {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
-    margin-top: 16px;
+    gap: 6px 22px;
+    margin-top: 14px;
 }
 
-.cp-chip {
+.cp-meta-item {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    background: var(--c-green-50);
-    border: 1px solid var(--c-green-200);
-    color: var(--c-text-2);
-    font-size: 12.5px;
+    font-size: 13px;
     font-weight: 600;
-    padding: 7px 12px;
-    border-radius: 999px;
+    color: var(--c-text-2);
     max-width: 100%;
     word-break: break-word;
 }
 
-.cp-chip svg {
+.cp-meta-item svg {
     width: 14px;
     height: 14px;
-    color: var(--c-green-600);
+    color: var(--c-green);
     flex-shrink: 0;
 }
 
-.cp-status-pill {
+.cp-account-status {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12.5px;
+    gap: 7px;
+    font-size: 12px;
     font-weight: 700;
-    padding: 7px 14px;
-    border-radius: 999px;
-    letter-spacing: 0.4px;
+    color: var(--c-text-2);
+    white-space: nowrap;
 }
 
 .cp-status-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-}
-
-.cp-status-pill.active {
-    background: var(--c-success-bg);
-    color: var(--c-success-text);
-}
-
-.cp-status-pill.active .cp-status-dot {
-    background: #16a34a;
-    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
-}
-
-.cp-status-pill.pending {
-    background: var(--c-warning-bg);
-    color: var(--c-warning-text);
-}
-
-.cp-status-pill.pending .cp-status-dot {
-    background: #d97706;
-}
-
-.cp-status-pill.inactive {
-    background: #e5e7eb;
-    color: #4b5563;
-}
-
-.cp-status-pill.inactive .cp-status-dot {
     background: #6b7280;
 }
 
-.cp-status-pill.suspended {
-    background: var(--c-danger-bg);
-    color: var(--c-danger-text);
-}
+.cp-account-status.active { color: var(--c-success-text); }
+.cp-account-status.active .cp-status-dot { background: #16a34a; }
 
-.cp-status-pill.suspended .cp-status-dot {
-    background: #dc2626;
-}
+.cp-account-status.pending { color: var(--c-warning-text); }
+.cp-account-status.pending .cp-status-dot { background: #d97706; }
+
+.cp-account-status.inactive { color: var(--c-text-2); }
+.cp-account-status.inactive .cp-status-dot { background: #9ca3af; }
+
+.cp-account-status.suspended { color: var(--c-danger-text); }
+.cp-account-status.suspended .cp-status-dot { background: #dc2626; }
 
 .cp-hero-actions {
-    position: relative;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     margin-left: auto;
+    justify-content: flex-end;
 }
 
-/* ─── Buttons ─── */
-.cp-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 11px 18px;
-    border-radius: 12px;
-    font-size: 13.5px;
-    font-weight: 700;
-    font-family: inherit;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.cp-btn svg {
-    width: 16px;
-    height: 16px;
-}
-
-.cp-btn-primary {
-    background: var(--c-green-700);
-    color: #ffffff;
-    box-shadow: 0 3px 10px -2px rgba(31, 77, 58, 0.35);
-}
-
-.cp-btn-primary:hover {
-    background: var(--c-green-900);
-    transform: translateY(-1px);
-}
-
-.cp-btn-ghost {
-    background: #ffffff;
-    border-color: var(--c-line-strong);
-    color: var(--c-green-700);
-}
-
-.cp-btn-ghost:hover {
-    background: var(--c-green-50);
-    border-color: var(--c-green-300);
-    transform: translateY(-1px);
-}
-
-.cp-btn-logout {
-    color: var(--c-danger-text);
-    border-color: var(--c-danger-bg);
-    background: #ffffff;
-}
-
-.cp-btn-logout:hover {
-    background: var(--c-danger-bg);
-    border-color: #fca5a5;
-}
-
-/* ─── Card ─── */
-.cp-card {
-    background: var(--c-card);
-    border: 1px solid var(--c-line);
-    border-radius: var(--c-radius);
-    box-shadow: var(--c-shadow-sm);
-    padding: 24px;
-    transition: box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.cp-card:hover {
-    box-shadow: var(--c-shadow-md);
-    border-color: var(--c-green-200);
-}
-
-.cp-card-head {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 20px;
-}
-
-.cp-card-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background: var(--c-green-100);
-    color: var(--c-green-700);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.cp-card-icon svg {
-    width: 20px;
-    height: 20px;
-}
-
-.cp-card-title {
-    font-size: 16px;
-    font-weight: 800;
-    color: var(--c-text);
-    margin: 0;
-}
-
-.cp-card-subtitle {
-    font-size: 13px;
-    color: var(--c-text-2);
-    margin: 2px 0 0;
-}
-
-.cp-link-all {
-    margin-left: auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--c-green-700);
-    transition: color 0.2s ease, gap 0.2s ease;
-    white-space: nowrap;
-}
-
-.cp-link-all svg {
-    width: 14px;
-    height: 14px;
-}
-
-.cp-link-all:hover {
-    color: var(--c-green-900);
-    gap: 9px;
-}
-
-/* ─── Layout ─── */
-.cp-main-grid {
-    display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: 24px;
-    margin-bottom: 24px;
-    align-items: start;
-}
-
-/* ─── Statistik Aktivitas ─── */
-.cp-stats {
+/* ─── Informasi Pribadi ─── */
+.cp-info-split {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 48px;
+}
+
+.cp-group-title {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--c-green-dark);
+    margin: 0 0 6px;
+}
+
+.cp-info-item {
+    padding: 13px 0;
+    border-bottom: 1px solid #eef1ee;
+}
+
+.cp-info-item:last-child {
+    border-bottom: none;
+}
+
+.cp-info-item dt {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--c-text-2);
+    margin-bottom: 3px;
+}
+
+.cp-info-item dd {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--c-text);
+    margin: 0;
+    word-break: break-word;
+}
+
+/* ─── Aktivitas Rental (Statistik) ─── */
+.cp-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px;
 }
 
 .cp-stat {
-    background: var(--c-green-50);
+    background: var(--c-card);
     border: 1px solid var(--c-line);
-    border-radius: 14px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    border-radius: 12px;
+    padding: 18px 16px;
     min-width: 0;
-    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+    transition: transform var(--c-speed) ease, box-shadow var(--c-speed) ease,
+        border-color var(--c-speed) ease, background-color var(--c-speed) ease;
 }
 
 .cp-stat:hover {
     transform: translateY(-2px);
-    border-color: var(--c-green-300);
     box-shadow: var(--c-shadow-md);
+    border-color: var(--c-green-200);
+    background-color: var(--c-green-soft);
 }
 
 .cp-stat-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 6px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--c-green-100);
+    color: var(--c-green);
+    margin-bottom: 13px;
+    transition: background-color var(--c-speed) ease, color var(--c-speed) ease;
+}
+
+.cp-stat:hover .cp-stat-icon {
+    background: var(--c-green);
+    color: #ffffff;
 }
 
 .cp-stat-icon svg {
-    width: 17px;
-    height: 17px;
-}
-
-.cp-stat-icon.sc-green { background: var(--c-green-100); color: var(--c-green-700); }
-.cp-stat-icon.sc-blue { background: var(--c-info-bg); color: var(--c-info-text); }
-.cp-stat-icon.sc-violet { background: var(--c-violet-bg); color: var(--c-violet-text); }
-.cp-stat-icon.sc-amber { background: var(--c-warning-bg); color: var(--c-warning-text); }
-
-.cp-stat strong {
-    font-size: 24px;
-    font-weight: 800;
-    color: var(--c-text);
-    line-height: 1.1;
-}
-
-.cp-stat span {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--c-text-2);
-}
-
-/* ─── Dokumen Verifikasi ─── */
-.cp-doc-pill {
-    margin-left: auto;
-    font-size: 11.5px;
-    font-weight: 800;
-    letter-spacing: 0.4px;
-    padding: 5px 12px;
-    border-radius: 999px;
-    white-space: nowrap;
-}
-
-.cp-doc-pill.available {
-    background: var(--c-success-bg);
-    color: var(--c-success-text);
-}
-
-.cp-doc-pill.empty {
-    background: #e5e7eb;
-    color: #4b5563;
-}
-
-.cp-ktp-preview {
-    position: relative;
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid var(--c-line);
-    cursor: zoom-in;
-    background: var(--c-green-50);
-}
-
-.cp-ktp-preview img {
-    display: block;
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    transition: transform 0.25s ease;
-}
-
-.cp-ktp-preview:hover img {
-    transform: scale(1.03);
-}
-
-.cp-ktp-zoom {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.92);
-    color: var(--c-green-700);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: var(--c-shadow-sm);
-}
-
-.cp-ktp-zoom svg {
-    width: 16px;
-    height: 16px;
-}
-
-.cp-ktp-note {
-    font-size: 12.5px;
-    color: var(--c-text-2);
-    margin: 12px 0 0;
-}
-
-.cp-ktp-empty {
-    border: 1px dashed var(--c-green-300);
-    background: var(--c-green-50);
-    border-radius: 14px;
-    padding: 28px 18px;
-    text-align: center;
-    color: var(--c-text-2);
-}
-
-.cp-ktp-empty svg {
-    width: 30px;
-    height: 30px;
-    color: var(--c-green-500);
-    margin-bottom: 8px;
-}
-
-.cp-ktp-empty p {
-    margin: 0;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-/* ─── Informasi Pribadi ─── */
-.cp-info-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-}
-
-.cp-info-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    background: var(--c-green-50);
-    border: 1px solid var(--c-line);
-    border-radius: 14px;
-    padding: 14px 16px;
-    min-width: 0;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.cp-info-item:hover {
-    border-color: var(--c-green-300);
-}
-
-.cp-info-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: var(--c-card);
-    border: 1px solid var(--c-green-200);
-    color: var(--c-green-600);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.cp-info-icon svg {
-    width: 17px;
-    height: 17px;
-}
-
-.cp-info-label {
-    display: block;
-    font-size: 11.5px;
-    font-weight: 700;
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
-    color: var(--c-muted);
-    margin-bottom: 3px;
-}
-
-.cp-info-value {
-    display: block;
-    font-size: 14.5px;
-    font-weight: 700;
-    color: var(--c-text);
-    word-break: break-word;
-}
-
-/* ─── Quick Actions ─── */
-.cp-quick-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.cp-quick {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: var(--c-card);
-    border: 1px solid var(--c-line);
-    border-radius: var(--c-radius);
-    box-shadow: var(--c-shadow-sm);
-    padding: 16px;
-    min-width: 0;
-    transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-}
-
-.cp-quick:hover {
-    transform: translateY(-2px);
-    border-color: var(--c-green-300);
-    box-shadow: var(--c-shadow-md);
-}
-
-.cp-quick-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: var(--c-green-100);
-    color: var(--c-green-700);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.cp-quick-icon svg {
     width: 19px;
     height: 19px;
 }
 
-.cp-quick > div {
-    flex: 1;
-    min-width: 0;
-}
-
-.cp-quick strong {
+.cp-stat-value {
     display: block;
-    font-size: 13.5px;
+    font-size: 26px;
     font-weight: 800;
+    line-height: 1;
     color: var(--c-text);
+    letter-spacing: -0.02em;
 }
 
-.cp-quick span {
+.cp-stat-label {
     display: block;
-    font-size: 11.5px;
+    font-size: 12.5px;
+    font-weight: 600;
     color: var(--c-text-2);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    margin-top: 7px;
 }
 
-.cp-quick-arrow {
-    width: 15px;
-    height: 15px;
-    color: var(--c-green-500);
-    flex-shrink: 0;
-    transition: transform 0.2s ease;
-}
-
-.cp-quick:hover .cp-quick-arrow {
-    transform: translateX(3px);
+.cp-stats-footer {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-start;
 }
 
 /* ─── Penyewaan Terakhir ─── */
-.cp-recent {
-    margin-bottom: 24px;
-}
-
 .cp-order {
     display: flex;
     align-items: center;
     gap: 20px;
-    background: var(--c-green-50);
+    background: #fbfcfb;
     border: 1px solid var(--c-line);
-    border-radius: 14px;
-    padding: 16px;
-    position: relative;
+    border-radius: 12px;
+    padding: 16px 18px;
     flex-wrap: wrap;
 }
 
 .cp-order-status {
     font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.4px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
     padding: 4px 12px;
     border-radius: 999px;
     white-space: nowrap;
@@ -784,18 +587,18 @@ svg {
 }
 
 .cp-order-status.st-pending { background: var(--c-warning-bg); color: var(--c-warning-text); }
-.cp-order-status.st-active { background: var(--c-green-100); color: var(--c-green-700); }
+.cp-order-status.st-active { background: var(--c-green-100); color: var(--c-green-dark); }
 .cp-order-status.st-paid { background: var(--c-info-bg); color: var(--c-info-text); }
 .cp-order-status.st-completed { background: var(--c-success-bg); color: var(--c-success-text); }
 .cp-order-status.st-cancelled,
 .cp-order-status.st-rejected { background: var(--c-danger-bg); color: var(--c-danger-text); }
-.cp-order-status.st-returned { background: var(--c-violet-bg); color: var(--c-violet-text); }
+.cp-order-status.st-returned { background: var(--c-green-100); color: var(--c-green); }
 
 .cp-order-img {
-    width: 92px;
-    height: 92px;
+    width: 88px;
+    height: 88px;
     object-fit: cover;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid var(--c-line);
     flex-shrink: 0;
     background: #ffffff;
@@ -808,13 +611,13 @@ svg {
 
 .cp-order-info small {
     font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.4px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
     color: var(--c-muted);
 }
 
 .cp-order-info h3 {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 800;
     color: var(--c-text);
     margin: 4px 0 6px;
@@ -835,7 +638,7 @@ svg {
 .cp-order-info p svg {
     width: 14px;
     height: 14px;
-    color: var(--c-green-600);
+    color: var(--c-green);
 }
 
 .cp-order-total {
@@ -845,8 +648,8 @@ svg {
 
 .cp-order-total small {
     font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.4px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
     color: var(--c-muted);
     display: block;
     margin-bottom: 4px;
@@ -859,16 +662,16 @@ svg {
 
 .cp-order-total strong {
     display: block;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 800;
-    color: var(--c-green-700);
+    color: var(--c-green-dark);
     margin-bottom: 6px;
 }
 
 .cp-order-total a {
     font-size: 12px;
     font-weight: 700;
-    color: var(--c-green-700);
+    color: var(--c-green);
 }
 
 .cp-order-total a:hover {
@@ -877,10 +680,10 @@ svg {
 
 .cp-empty {
     text-align: center;
-    padding: 40px 20px;
-    background: var(--c-green-50);
-    border: 1px dashed var(--c-green-300);
-    border-radius: 14px;
+    padding: 42px 20px;
+    background: var(--c-green-soft);
+    border: 1px dashed var(--c-green-200);
+    border-radius: 12px;
 }
 
 .cp-empty-icon {
@@ -889,7 +692,7 @@ svg {
     margin: 0 auto 12px;
     border-radius: 50%;
     background: var(--c-green-100);
-    color: var(--c-green-700);
+    color: var(--c-green);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -901,7 +704,7 @@ svg {
 }
 
 .cp-empty h3 {
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 800;
     color: var(--c-text);
     margin: 0 0 6px;
@@ -914,7 +717,232 @@ svg {
     max-width: 360px;
 }
 
-/* ─── Modal (Edit / Password / KTP) ─── */
+/* ─── Dokumen Verifikasi ─── */
+.cp-doc-pill {
+    margin-left: auto;
+    flex-shrink: 0;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+    text-transform: none;
+}
+
+.cp-doc-pill.available,
+.cp-doc-pill.verified {
+    background: var(--c-success-bg);
+    color: var(--c-success-text);
+}
+
+.cp-doc-pill.empty {
+    background: #e9edf0;
+    color: #55606c;
+}
+
+.cp-doc-pill.pending {
+    background: var(--c-warning-bg);
+    color: var(--c-warning-text);
+}
+
+.cp-doc-pill.submitted {
+    background: var(--c-info-bg);
+    color: var(--c-info-text);
+}
+
+.cp-doc-pill.rejected {
+    background: var(--c-danger-bg);
+    color: var(--c-danger-text);
+}
+
+.cp-doc-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 12px;
+    border-radius: 12px;
+    transition: background-color var(--c-speed) ease;
+}
+
+.cp-doc-row:hover {
+    background: var(--c-green-soft);
+}
+
+.cp-doc-thumb {
+    width: 60px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--c-line-strong);
+    background: #ffffff;
+    flex-shrink: 0;
+}
+
+.cp-doc-thumb-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--c-green-soft);
+    border: 1px dashed var(--c-green-200);
+    color: var(--c-green);
+}
+
+.cp-doc-thumb-empty svg {
+    width: 24px;
+    height: 24px;
+}
+
+.cp-doc-thumb-pdf {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--c-green-soft);
+    border: 1px solid var(--c-line-strong);
+    color: var(--c-green);
+    width: 60px;
+    height: 80px;
+}
+
+.cp-doc-thumb-pdf svg {
+    width: 26px;
+    height: 26px;
+}
+
+.cp-doc-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.cp-doc-title {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--c-text);
+}
+
+.cp-doc-meta {
+    font-size: 12px;
+    color: var(--c-text-2);
+    word-break: break-word;
+}
+
+.cp-doc-actions {
+    flex-shrink: 0;
+}
+
+.cp-doc-note {
+    font-size: 12px;
+    color: var(--c-text-2);
+    margin: 10px 12px 0;
+    line-height: 1.55;
+}
+
+.cp-inline-link {
+    color: var(--c-green);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.cp-inline-link:hover {
+    color: var(--c-green-dark);
+}
+
+.cp-consent-card {
+    margin-top: 8px;
+    border-top: 1px dashed var(--c-line-strong);
+    padding-top: 10px;
+}
+
+.cp-consent-reason {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.5;
+    font-weight: 600;
+    color: var(--c-danger-text);
+    background: var(--c-danger-bg);
+    border-left: 3px solid var(--c-danger-text);
+    border-radius: 8px;
+    padding: 7px 12px;
+    word-break: break-word;
+}
+
+.cp-consent-help {
+    font-size: 12.5px;
+    color: var(--c-text-2);
+    font-weight: 500;
+    margin: 10px 12px 0;
+    line-height: 1.55;
+}
+
+/* ─── Akses Cepat ─── */
+.cp-quick-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.cp-quick-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--c-line-strong);
+    border-radius: 12px;
+    background: var(--c-card);
+    color: var(--c-green-dark);
+    font-size: 13.5px;
+    font-weight: 700;
+    font-family: inherit;
+    min-width: 0;
+    transition: background var(--c-speed) ease, border-color var(--c-speed) ease,
+        color var(--c-speed) ease, transform var(--c-speed) ease, box-shadow var(--c-speed) ease;
+}
+
+.cp-quick-btn:hover {
+    background: var(--c-green-soft);
+    border-color: var(--c-green-200);
+    transform: translateY(-2px);
+    box-shadow: var(--c-shadow-md);
+}
+
+.cp-quick-btn:active {
+    transform: translateY(0);
+}
+
+.cp-quick-btn:focus-visible {
+    outline: 2px solid var(--c-green);
+    outline-offset: 2px;
+}
+
+.cp-quick-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--c-green-100);
+    color: var(--c-green);
+    flex-shrink: 0;
+    transition: background var(--c-speed) ease, color var(--c-speed) ease;
+}
+
+.cp-quick-btn:hover .cp-quick-icon {
+    background: var(--c-green);
+    color: #ffffff;
+}
+
+.cp-quick-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ─── Modal (Edit / Password / KTP / PDF) ─── */
 .user-modal-overlay {
     position: fixed;
     top: 0;
@@ -923,13 +951,14 @@ svg {
     bottom: 0;
     background: rgba(15, 23, 42, 0.55);
     backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
     padding: 20px;
 }
 
@@ -970,7 +999,7 @@ svg {
 .user-modal-head svg {
     width: 18px;
     height: 18px;
-    color: var(--c-green-700);
+    color: var(--c-green);
 }
 
 .form-group {
@@ -1000,8 +1029,8 @@ svg {
 
 .form-group input:focus {
     outline: none;
-    border-color: var(--c-green-600);
-    box-shadow: 0 0 0 3px rgba(63, 125, 90, 0.16);
+    border-color: var(--c-green);
+    box-shadow: 0 0 0 3px rgba(24, 93, 49, 0.15);
 }
 
 .form-group input:disabled,
@@ -1033,13 +1062,13 @@ svg {
 }
 
 .um-btn-submit {
-    background: var(--c-green-700);
+    background: var(--c-green);
     color: #ffffff;
-    box-shadow: 0 3px 10px -2px rgba(31, 77, 58, 0.35);
+    box-shadow: 0 3px 10px -2px rgba(24, 93, 49, 0.35);
 }
 
 .um-btn-submit:hover {
-    background: var(--c-green-900);
+    background: var(--c-green-dark);
 }
 
 .um-btn-cancel {
@@ -1086,68 +1115,169 @@ svg {
     padding: 9px 22px;
 }
 
-/* ─── Footer ─── */
-.site-footer {
-    background-color: #eae7e1;
-    border-top: 1px solid #dcd9d2;
-    padding: 48px 32px 24px;
-    margin-top: 48px;
+@keyframes cp-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.footer-container {
-    max-width: 1280px;
-    margin: 0 auto;
+/* ═══ Modal Pratinjau PDF ═══ */
+body.cp-modal-open {
+    overflow: hidden;
 }
 
-.footer-brand {
+.user-modal-pdf {
+    position: relative;
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 20px;
+    width: 100%;
+    max-width: 940px;
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+    transform: translateY(8px) scale(0.98);
+    transition: transform 0.2s ease;
+    animation: cp-fade-in 0.2s ease;
+}
+
+.user-modal-overlay.show .user-modal-pdf {
+    transform: translateY(0) scale(1);
+}
+
+.user-modal-pdf-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.user-modal-pdf-title {
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 20px;
+    min-width: 0;
+}
+
+.user-modal-pdf-title > svg {
+    width: 22px;
+    height: 22px;
+    color: var(--c-green);
+    flex-shrink: 0;
+}
+
+.user-modal-pdf-title h3 {
+    font-size: 16px;
     font-weight: 800;
-    color: #174e2b;
-    margin-bottom: 12px;
+    color: var(--c-text);
+    margin: 0;
 }
 
-.footer-subtitle {
-    font-size: 13px;
-    color: #555d57;
-    max-width: 400px;
-    margin-bottom: 32px;
-    line-height: 1.5;
+.user-modal-pdf-title p {
+    font-size: 12px;
+    color: var(--c-text-2);
+    margin: 2px 0 0;
 }
 
-.footer-divider {
-    height: 1px;
-    background-color: #d8d4cb;
-    margin-bottom: 24px;
+.user-modal-pdf-close {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid var(--c-line-strong);
+    background: var(--c-green-soft);
+    color: var(--c-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
-.footer-copyright {
-    font-size: 11px;
-    color: #727a73;
+.user-modal-pdf-close svg {
+    width: 17px;
+    height: 17px;
 }
 
-/* ─── Responsive ─── */
-@media (max-width: 1080px) {
-    .cp-page {
-        padding: 24px 20px 0;
+.user-modal-pdf-close:hover {
+    background: var(--c-danger-bg);
+    border-color: #fca5a5;
+    color: var(--c-danger-text);
+    transform: translateY(-1px);
+}
+
+.user-modal-pdf-body {
+    background: #f1f5f4;
+    border: 1px solid var(--c-line);
+    border-radius: 14px;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.user-modal-pdf-body iframe {
+    display: block;
+    width: 100%;
+    height: 70vh;
+    max-height: 70vh;
+    border: 0;
+    background: #ffffff;
+}
+
+.user-modal-pdf-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 14px;
+}
+
+.user-modal-pdf-actions .um-btn {
+    flex: 0 0 auto;
+    padding: 9px 24px;
+}
+
+/* ─── Responsive (profil only) ─── */
+@media (max-width: 980px) {
+    .cp-page.profile-page {
+        padding: 30px 32px 52px;
     }
 
-    .cp-main-grid {
+    .cp-hero {
+        flex-wrap: wrap;
+        gap: 22px;
+        padding: 26px;
+    }
+
+    .cp-hero-actions {
+        width: 100%;
+        margin-left: 0;
+        justify-content: flex-start;
+    }
+
+    .cp-info-split {
         grid-template-columns: 1fr;
+        gap: 28px;
     }
 
-    .cp-quick-grid {
+    .cp-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cp-quick-row {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 700px) {
     .cp-hero {
         flex-direction: column;
-        align-items: center;
         text-align: center;
+        padding: 26px 20px;
     }
 
     .cp-hero-meta {
@@ -1155,12 +1285,19 @@ svg {
     }
 
     .cp-hero-actions {
-        margin-left: 0;
-        justify-content: center;
+        flex-direction: column;
     }
 
-    .cp-info-grid {
-        grid-template-columns: 1fr;
+    .cp-hero-actions .cp-btn {
+        width: 100%;
+    }
+
+    .cp-stats {
+        gap: 12px;
+    }
+
+    .cp-section {
+        padding: 22px 18px;
     }
 
     .cp-order {
@@ -1169,7 +1306,6 @@ svg {
     }
 
     .cp-order-info {
-        padding-right: 0;
         width: 100%;
     }
 
@@ -1180,81 +1316,82 @@ svg {
     .cp-order-total {
         text-align: left;
     }
+
+    .cp-stats-footer .cp-btn {
+        width: 100%;
+    }
 }
 
+/* Sekutu anti-footer misaligned di layar kecil: site-footer beralih ke padding
+   horizontal 20px di breakpoint 640px, jadi kita ikuti nilai yang sama. */
 @media (max-width: 640px) {
-    .cp-page {
-        padding: 16px 14px 0;
+    .cp-page.profile-page {
+        padding: 24px 20px 48px;
+    }
+}
+
+@media (max-width: 520px) {
+    .cp-page.profile-page {
+        padding: 20px 20px 40px;
     }
 
-    .cp-hero {
-        padding: 24px 20px;
-        gap: 20px;
+    .cp-section-head {
+        flex-wrap: wrap;
     }
 
-    .cp-avatar {
-        width: 92px;
-        height: 92px;
-    }
-
-    .cp-avatar-initial {
-        font-size: 34px;
-    }
-
-    .cp-name {
-        font-size: 22px;
-    }
-
-    .cp-stats {
-        grid-template-columns: 1fr;
-    }
-
-    .cp-quick-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .cp-hero-actions {
-        flex-direction: column;
+    .cp-section-head .cp-link {
         width: 100%;
     }
 
-    .cp-hero-actions .cp-btn {
-        width: 100%;
-    }
-
-    .cp-card {
-        padding: 20px;
+    .cp-quick-row {
+        grid-template-columns: 1fr;
     }
 
     .cp-doc-pill {
         display: none;
     }
-}
 
-@media (max-width: 480px) {
-    .cp-card-head {
-        flex-wrap: wrap;
+    .cp-doc-actions {
+        width: 100%;
     }
 
-    .cp-link-all {
+    .cp-doc-actions .cp-btn {
         width: 100%;
-        margin-left: 0;
-        justify-content: flex-start;
+    }
+
+    .user-modal-pdf {
+        padding: 16px;
+        max-height: 94vh;
+    }
+
+    .user-modal-pdf-body iframe {
+        height: 64vh;
+    }
+
+    .user-modal-pdf-title p {
+        display: none;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .cp-page,
+    .cp-page.profile-page,
+    .cp-hero,
     .cp-avatar,
+    .cp-avatar-edit,
     .cp-btn,
+    .cp-quick-btn,
+    .cp-link,
     .cp-stat,
-    .cp-quick,
-    .cp-ktp-preview img,
+    .cp-doc-row,
     .cp-order,
+    .cp-section,
+    .cp-quick-icon,
     .form-group input,
     .um-btn,
-    .user-modal-card {
-        animation: none;
-        transition: none;
+    .user-modal-card,
+    .user-modal-pdf,
+    .user-modal-pdf-close {
+        animation: none !important;
+        transition: none !important;
     }
 }

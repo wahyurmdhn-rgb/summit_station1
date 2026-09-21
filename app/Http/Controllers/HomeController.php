@@ -110,6 +110,10 @@ class HomeController extends Controller
             ->where('status', 'completed')
             ->count();
 
+        $pendingOrdersCount = Order::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->count();
+
         $totalOrdersCount = Order::where('user_id', $user->id)->count();
 
         $returnsCount = ReturnRecord::whereHas('order', function ($query) use ($user) {
@@ -125,6 +129,7 @@ class HomeController extends Controller
             'user',
             'activeOrdersCount',
             'completedOrdersCount',
+            'pendingOrdersCount',
             'totalOrdersCount',
             'returnsCount',
             'latestOrder'
