@@ -1286,9 +1286,10 @@ class AdminController extends Controller
         $loadError = false;
 
         try {
-            // Base query: orders yang status-nya active/completed/paid (already started)
+            // Pesanan selesai hanya ditampilkan melalui filter Selesai.
+            $queryStatuses = $filter === 'selesai' ? ['completed'] : ['active', 'paid'];
             $query = Order::query()->with(['user', 'items.product', 'returns', 'payments', 'latePenalty'])
-                ->whereIn('status', ['active', 'completed', 'paid']);
+                ->whereIn('status', $queryStatuses);
 
             // Apply search (kode pesanan / nama & email pelanggan / nama barang)
             if ($search) {
@@ -1493,23 +1494,92 @@ class AdminController extends Controller
      */
     public function completeReturn(Request $request, int $orderId): RedirectResponse
     {
-        $order = Order::with(['items.product', 'items.bundle.products', 'returns', 'latePenalty'])->findOrFail($orderId);
+        $validated = $request->validate([
+            'return_record_id' => ['required', 'integer', 'min:1'],
+        ]);
 
-        // Pastikan ada return record yang sudah diinspeksi.
-        $returnRecord = $order->returns()->whereNull('order_item_id')->latest('id')->first();
-        if (! $returnRecord || $returnRecord->condition === null) {
+        $returnRecordId = (int) $validated['return_record_id'];
+        $order = Order::with(['user'])->findOrFail($orderId);
+        $returnRecord = ReturnRecord::where('id', $returnRecordId)
+            ->where('order_id', $order->id)
+            ->whereNull('order_item_id')
+            ->first();
+
+        if (! $returnRecord) {
             return redirect()->route('admin.pengembalian')
-                ->with('error', "Harap rekam inspeksi pengembalian order #{$order->code} terlebih dahulu.");
+                ->with('error', "Data pengembalian yang dipilih tidak valid untuk order #{$order->code}.");
         }
 
-        // Denda kerusakan wajib harus lunas sebelum pengembalian diselesaikan.
+        $result = DB::transaction(function () use ($orderId, $returnRecordId) {
+            $lockedOrder = Order::with(['items.product', 'items.bundle.products'])->lockForUpdate()->findOrFail($orderId);
+            $lockedReturn = ReturnRecord::where('id', $returnRecordId)
+                ->where('order_id', $lockedOrder->id)
+                ->whereNull('order_item_id')
+                ->lockForUpdate()
+                ->first();
+
+            if (! $lockedReturn) {
+                return ['state' => 'invalid'];
+            }
+
+            if ($lockedOrder->status === 'completed') {
+                return ['state' => 'already_completed'];
+            }
+
+            $blocker = $this->returnCompletionBlocker($lockedOrder, $lockedReturn);
+            if ($blocker !== null) {
+                return ['state' => 'blocked', 'message' => $blocker];
+            }
+
+            $lockedOrder->update(['status' => 'completed']);
+
+            if (! in_array($lockedReturn->condition, ['major_damage'], true)) {
+                $this->incrementOrderStock($lockedOrder);
+            }
+
+            return ['state' => 'completed'];
+        });
+
+        if ($result['state'] === 'invalid') {
+            return redirect()->route('admin.pengembalian')
+                ->with('error', "Data pengembalian tidak ditemukan atau sudah tidak sesuai dengan order #{$order->code}.");
+        }
+
+        if ($result['state'] === 'already_completed') {
+            return redirect()->route('admin.pengembalian')
+                ->with('info', "Pengembalian order #{$order->code} sudah selesai.");
+        }
+
+        if ($result['state'] === 'blocked') {
+            return redirect()->route('admin.pengembalian')
+                ->with('error', $result['message']);
+        }
+
+        RentalNotificationService::notifyReturnCompleted($order);
+
+        return redirect()->route('admin.pengembalian')
+            ->with('success', "Pengembalian order #{$order->code} berhasil diselesaikan.");
+    }
+
+    private function returnCompletionBlocker(Order $order, ReturnRecord $returnRecord): ?string
+    {
+        if (! in_array($order->status, ['active', 'paid'], true)) {
+            return "Pesanan #{$order->code} tidak berstatus aktif atau belum lunas sehingga tidak dapat diselesaikan.";
+        }
+
+        if ($returnRecord->status !== 'approved' || $returnRecord->condition === null) {
+            return "Harap rekam dan simpan hasil inspeksi pengembalian order #{$order->code} terlebih dahulu.";
+        }
+
+        if (! $returnRecord->returned_at) {
+            return "Waktu pengembalian order #{$order->code} belum tercatat.";
+        }
+
         if ($returnRecord->has_denda && ! $returnRecord->is_denda_paid) {
-            return redirect()->route('admin.pengembalian')
-                ->with('error', "Denda kerusakan order #{$order->code} belum lunas. Selesaikan pembayaran denda terlebih dahulu.");
+            return "Denda kerusakan order #{$order->code} belum lunas. Selesaikan pembayaran denda terlebih dahulu.";
         }
 
-        // Sanksi keterlambatan yang masih harus dibayar ikut memblokir penyelesaian.
-        $penalty = $order->latePenalty;
+        $penalty = LatePenalty::where('order_id', $order->id)->latest('id')->first();
         if ($penalty
             && (int) $penalty->total_fee > 0
             && in_array($penalty->status, [
@@ -1517,61 +1587,22 @@ class AdminController extends Controller
                 LatePenalty::STATUS_PENDING,
                 LatePenalty::STATUS_VERIFYING,
             ], true)) {
-            return redirect()->route('admin.pengembalian')
-                ->with('error', "Sanksi keterlambatan order #{$order->code} belum lunas. Selesaikan pembayaran sanksi terlebih dahulu.");
+            return "Sanksi keterlambatan order #{$order->code} belum lunas. Selesaikan pembayaran sanksi terlebih dahulu.";
         }
 
-        // Order yang TELAT wajib memiliki sanksi yang sudah dituntaskan
-        // (Lunas atau dibebaskan = tidak_ada_sanksi) sebelum diselesaikan.
-        // Menutup celah: pengembalian terlambat "dilewati" tanpa sanksi
-        // (termasuk sanksi yang dibatalkan) lewat akses langsung ke route.
-        $overdueInfo = $order->calculateOverdue($returnRecord?->returned_at);
+        $overdueInfo = $order->calculateOverdue($returnRecord->returned_at);
         if ((int) $overdueInfo['days_overdue'] > 0) {
             $sanctionResolved = $penalty && in_array($penalty->status, [
                 LatePenalty::STATUS_PAID,
                 LatePenalty::STATUS_NO_SANCTION,
             ], true);
+
             if (! $sanctionResolved) {
-                return redirect()->route('admin.pengembalian')
-                    ->with('error', "Sanksi keterlambatan order #{$order->code} belum dituntaskan. Tetapkan atau tuntaskan sanksi terlebih dahulu.");
+                return "Sanksi keterlambatan order #{$order->code} belum dituntaskan. Tetapkan atau tuntaskan sanksi terlebih dahulu.";
             }
         }
 
-        // major_damage: alat dalam perawatan, stok tidak langsung dikembalikan.
-        // Kondisi lain (baik / minor_damage / dll) mengembalikan stok.
-        $restoresStock = ! in_array($returnRecord->condition, ['major_damage'], true);
-
-        // Idempoten: stok hanya dikembalikan SATU KALI, ketika order benar-benar
-        // masih berstatus aktif (active/paid) sebelum diselesaikan. Jika complete
-        // diulang, stok TIDAK bertambah dua kali.
-        $wasActive = in_array($order->status, ['active', 'paid'], true);
-
-        DB::transaction(function () use ($order, $restoresStock, $wasActive) {
-            $order->update(['status' => 'completed']);
-
-            if ($wasActive && $restoresStock) {
-                foreach ($order->items as $item) {
-                    if ($item->product) {
-                        $item->product->increment('stock_available', $item->quantity ?? 1);
-                    }
-                    // Anggota Paket Sewa ikut dikembalikan stoknya.
-                    if ($item->bundle) {
-                        foreach ($item->bundle->products as $bundleProduct) {
-                            $needed = ($bundleProduct->pivot->quantity ?? 1) * ($item->quantity ?? 1);
-                            $bundleProduct->increment('stock_available', $needed);
-                        }
-                    }
-                }
-            }
-        });
-
-        // Notifikasi ke user pemilik booking: pengembalian telah diselesaikan.
-        if ($wasActive) {
-            RentalNotificationService::notifyReturnCompleted($order);
-        }
-
-        return redirect()->route('admin.pengembalian')
-            ->with('success', "Pengembalian order #{$order->code} telah diselesaikan.");
+        return null;
     }
 
     /**
@@ -1648,11 +1679,26 @@ class AdminController extends Controller
         $order = Order::with(['returns', 'latePenalty', 'user', 'items.product', 'items.bundle.products'])->findOrFail($orderId);
 
         $request->validate([
+            'return_record_id' => ['nullable', 'integer', 'min:1'],
             'status'      => 'required|in:menunggu_pembayaran,menunggu_verifikasi,tidak_ada_sanksi,belum_diproses,sudah_dibayar',
             'admin_notes' => 'nullable|string|max:1000',
         ]);
 
         $latestReturn = $order->returns()->whereNull('order_item_id')->latest('id')->first();
+        if ($request->filled('return_record_id')) {
+            $submittedReturn = ReturnRecord::where('id', $request->integer('return_record_id'))
+                ->where('order_id', $order->id)
+                ->whereNull('order_item_id')
+                ->first();
+
+            if (! $submittedReturn) {
+                return redirect()->route('admin.pengembalian')
+                    ->with('error', "Data pengembalian yang dipilih tidak valid untuk order #{$order->code}.");
+            }
+
+            $latestReturn = $submittedReturn;
+        }
+
         $actualDate = $latestReturn?->returned_at ?? now();
         $overdueInfo = $order->calculateOverdue($actualDate);
 
@@ -1691,33 +1737,18 @@ class AdminController extends Controller
             }
         }
 
-        // Order hanya boleh diselesaikan di sini apabila sanksi yang dipilih
-        // TIDAK menyisakan kewajiban denda (Lunas atau dibebaskan). Memilih
-        // "Kenakan Denda (Menunggu Pembayaran)" tidak boleh sekaligus menyelesaikan
-        // order — denda harus dituntaskan terlebih dahulu di luar alur ini.
-        $canComplete = $request->boolean('complete_order')
-            && in_array($order->status, ['active', 'paid'], true)
-            && in_array($status, ['sudah_dibayar', 'tidak_ada_sanksi'], true);
+        $shouldComplete = $request->boolean('complete_order')
+            && in_array($status, [LatePenalty::STATUS_PAID, LatePenalty::STATUS_NO_SANCTION], true);
 
-        if ($canComplete) {
-            $restoresStock = ! ($latestReturn && in_array($latestReturn->condition, ['major_damage'], true));
-            DB::transaction(function () use ($order, $restoresStock) {
-                $order->update(['status' => 'completed']);
-                if ($restoresStock) {
-                    foreach ($order->items as $item) {
-                        if ($item->product) {
-                            $item->product->increment('stock_available', $item->quantity ?? 1);
-                        }
-                        if ($item->bundle) {
-                            foreach ($item->bundle->products as $bundleProduct) {
-                                $needed = ($bundleProduct->pivot->quantity ?? 1) * ($item->quantity ?? 1);
-                                $bundleProduct->increment('stock_available', $needed);
-                            }
-                        }
-                    }
-                }
-            });
-            RentalNotificationService::notifyReturnCompleted($order);
+        if ($shouldComplete) {
+            if (! $latestReturn) {
+                return redirect()->route('admin.pengembalian')
+                    ->with('error', "Data pengembalian order #{$order->code} belum tersedia sehingga tidak dapat diselesaikan.");
+            }
+
+            $request->merge(['return_record_id' => $latestReturn->id]);
+
+            return $this->completeReturn($request, $order->id);
         }
 
         if ($status === 'menunggu_pembayaran' && $totalFee > 0) {

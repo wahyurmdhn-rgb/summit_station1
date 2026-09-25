@@ -16,7 +16,9 @@ class AdminPengembalianTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected Product $product;
+
     protected Order $activeOrder;
 
     protected function setUp(): void
@@ -102,13 +104,13 @@ class AdminPengembalianTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Pengembalian');
         $response->assertSee('Pengembalian Alat');
-        $response->assertSee('IKHTISAR LOGISTIK');
-        $response->assertSee('PENGEMBALIAN HARI INI');
-        $response->assertSee('MENUNGGU PEMERIKSAAN');
-        $response->assertSee('TERLAMBAT');
+        $response->assertSee('PROSES PENGEMBALIAN');
+        $response->assertSee('Total Pengembalian');
+        $response->assertSee('Menunggu Inspeksi');
+        $response->assertSee('Terlambat');
         $response->assertSee('Alex Thompson');
         $response->assertSee('ORD-9921-X');
-        $response->assertSee('Proses pengembalian alat');
+        $response->assertSee('Kelola seluruh proses pengembalian alat');
     }
 
     public function test_admin_can_filter_returns(): void
@@ -166,8 +168,7 @@ class AdminPengembalianTest extends TestCase
 
     public function test_admin_can_complete_return_and_restore_stock(): void
     {
-        // First record inspection
-        ReturnRecord::create([
+        $returnRecord = ReturnRecord::create([
             'order_id' => $this->activeOrder->id,
             'status' => 'approved',
             'condition' => 'excellent',
@@ -175,19 +176,188 @@ class AdminPengembalianTest extends TestCase
         ]);
 
         $initialStock = $this->product->fresh()->stock_available;
+        $adminSession = [
+            'account_id' => 1,
+            'account_name' => 'Admin Summit',
+            'account_role' => 'admin',
+        ];
+
+        $response = $this->withSession($adminSession)->post(
+            "/admin/pengembalian/{$this->activeOrder->id}/complete",
+            ['return_record_id' => $returnRecord->id]
+        );
+
+        $response->assertRedirect(route('admin.pengembalian'))
+            ->assertSessionHas('success', "Pengembalian order #{$this->activeOrder->code} berhasil diselesaikan.");
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->activeOrder->id,
+            'status' => 'completed',
+        ]);
+        $this->assertEquals($initialStock + 1, $this->product->fresh()->stock_available);
+
+        $repeatResponse = $this->withSession($adminSession)->post(
+            "/admin/pengembalian/{$this->activeOrder->id}/complete",
+            ['return_record_id' => $returnRecord->id]
+        );
+
+        $repeatResponse->assertRedirect(route('admin.pengembalian'))
+            ->assertSessionHas('info', "Pengembalian order #{$this->activeOrder->code} sudah selesai.");
+        $this->assertEquals($initialStock + 1, $this->product->fresh()->stock_available);
+
+        $this->withSession($adminSession)
+            ->get('/admin/pengembalian')
+            ->assertOk()
+            ->assertDontSee('class="rc-order-code" title="ID Transaksi">#'.$this->activeOrder->code.'</div>', false);
+        $this->withSession($adminSession)
+            ->get('/admin/pengembalian?filter=selesai')
+            ->assertOk()
+            ->assertSee('class="rc-order-code" title="ID Transaksi">#'.$this->activeOrder->code.'</div>', false)
+            ->assertSee('class="rc-btn-done"', false);
+    }
+
+    public function test_completion_rejects_return_record_from_another_order(): void
+    {
+        $otherOrder = Order::create([
+            'code' => 'ORD-OTHER-01',
+            'user_id' => $this->user->id,
+            'rent_start' => today()->subDays(2),
+            'rent_end' => today(),
+            'subtotal' => 100000,
+            'total' => 100000,
+            'status' => 'active',
+        ]);
+        $otherReturn = ReturnRecord::create([
+            'order_id' => $otherOrder->id,
+            'status' => 'approved',
+            'condition' => 'good',
+            'returned_at' => now(),
+        ]);
+        $initialStock = $this->product->fresh()->stock_available;
 
         $response = $this->withSession([
             'account_id' => 1,
             'account_name' => 'Admin Summit',
             'account_role' => 'admin',
-        ])->post("/admin/pengembalian/{$this->activeOrder->id}/complete");
+        ])->post("/admin/pengembalian/{$this->activeOrder->id}/complete", [
+            'return_record_id' => $otherReturn->id,
+        ]);
 
-        $response->assertRedirect('/admin/pengembalian');
-        
-        // Assert order status changed to completed
+        $response->assertRedirect(route('admin.pengembalian'))
+            ->assertSessionHas('error');
+        $this->assertEquals('active', $this->activeOrder->fresh()->status);
+        $this->assertEquals($initialStock, $this->product->fresh()->stock_available);
+    }
+
+    public function test_completion_keeps_unpaid_damage_fine_intact(): void
+    {
+        $returnRecord = ReturnRecord::create([
+            'order_id' => $this->activeOrder->id,
+            'status' => 'approved',
+            'condition' => 'minor_damage',
+            'damage_description' => 'Goresan pada bagian samping',
+            'damage_cost' => 50000,
+            'returned_at' => now(),
+        ]);
+        $initialStock = $this->product->fresh()->stock_available;
+
+        $response = $this->withSession([
+            'account_id' => 1,
+            'account_name' => 'Admin Summit',
+            'account_role' => 'admin',
+        ])->post("/admin/pengembalian/{$this->activeOrder->id}/complete", [
+            'return_record_id' => $returnRecord->id,
+        ]);
+
+        $response->assertRedirect(route('admin.pengembalian'))
+            ->assertSessionHas('error');
+        $this->assertEquals('active', $this->activeOrder->fresh()->status);
+        $this->assertEquals($initialStock, $this->product->fresh()->stock_available);
+        $this->assertDatabaseHas('return_records', [
+            'id' => $returnRecord->id,
+            'damage_cost' => 50000,
+            'damage_paid_at' => null,
+        ]);
+    }
+
+    public function test_major_damage_return_completes_without_restoring_stock(): void
+    {
+        $returnRecord = ReturnRecord::create([
+            'order_id' => $this->activeOrder->id,
+            'status' => 'approved',
+            'condition' => 'major_damage',
+            'damage_description' => 'Rangka patah dan perlu perbaikan',
+            'returned_at' => now(),
+        ]);
+        $initialStock = $this->product->fresh()->stock_available;
+
+        $response = $this->withSession([
+            'account_id' => 1,
+            'account_name' => 'Admin Summit',
+            'account_role' => 'admin',
+        ])->post("/admin/pengembalian/{$this->activeOrder->id}/complete", [
+            'return_record_id' => $returnRecord->id,
+        ]);
+
+        $response->assertRedirect(route('admin.pengembalian'))
+            ->assertSessionHas('success');
         $this->assertEquals('completed', $this->activeOrder->fresh()->status);
+        $this->assertEquals($initialStock, $this->product->fresh()->stock_available);
+        $this->assertDatabaseHas('return_records', [
+            'id' => $returnRecord->id,
+            'condition' => 'major_damage',
+        ]);
+    }
 
-        // Assert stock returned
-        $this->assertEquals($initialStock + 1, $this->product->fresh()->stock_available);
+    public function test_blocked_complete_button_shows_reason_instead_of_silent_disabled_state(): void
+    {
+        $this->withSession([
+            'account_id' => 1,
+            'account_name' => 'Admin Summit',
+            'account_role' => 'admin',
+        ])->get('/admin/pengembalian')
+            ->assertOk()
+            ->assertSee('data-return-blocked-message="Barang belum dikembalikan oleh customer"', false)
+            ->assertDontSee('class="rc-btn-complete" disabled', false)
+            ->assertSee('id="rtToastRoot"', false)
+            ->assertSee("var toastRoot = document.getElementById('rtToastRoot');", false)
+            ->assertSee('toastRoot.appendChild(el);', false)
+            ->assertSee("el.querySelector('.rt-toast-close').addEventListener('click'", false)
+            ->assertSee('setTimeout(function () { el.remove(); }, 200);', false)
+            ->assertDontSee('document.body.appendChild(el);', false);
+    }
+
+    public function test_toast_container_is_fixed_top_right_vertical_stack(): void
+    {
+        $css = file_get_contents(public_path('css/summit-return.css'));
+
+        $this->assertIsString($css);
+        $this->assertMatchesRegularExpression(
+            '/\.rt-toast-root\s*\{[^}]*position:\s*fixed;[^}]*top:\s*24px;[^}]*right:\s*24px;[^}]*z-index:\s*100000;[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*gap:\s*10px;/s',
+            $css
+        );
+        $this->assertDoesNotMatchRegularExpression('/\.rt-toast-root\s*\{[^}]*bottom:/s', $css);
+    }
+
+    public function test_complete_form_sends_explicit_return_record_id(): void
+    {
+        $returnRecord = ReturnRecord::create([
+            'order_id' => $this->activeOrder->id,
+            'status' => 'approved',
+            'condition' => 'good',
+            'returned_at' => now(),
+        ]);
+
+        $completeUrl = route('admin.pengembalian.complete', $this->activeOrder->id);
+        $encodedCompleteUrl = str_replace('/', '\/', $completeUrl);
+
+        $this->withSession([
+            'account_id' => 1,
+            'account_name' => 'Admin Summit',
+            'account_role' => 'admin',
+        ])->get('/admin/pengembalian')
+            ->assertOk()
+            ->assertSee('"complete_url":"'.$encodedCompleteUrl.'"', false)
+            ->assertSee('"return_record_id":'.$returnRecord->id, false)
+            ->assertSee('name="return_record_id"', false);
     }
 }

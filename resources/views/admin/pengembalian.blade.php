@@ -177,8 +177,10 @@
                         @else
                             @forelse ($orders as $order)
                                 @php
-                                    $returnRecord = $order->returns->firstWhere('order_item_id', null)
-                                                    ?? $order->returns->sortByDesc('id')->first();
+                                    $returnRecord = $order->returns
+                                        ->filter(fn ($record) => $record->order_item_id === null)
+                                        ->sortByDesc('id')
+                                        ->first();
                                     $firstItem = $order->items->first();
                                     $product = $firstItem?->product;
                                     $itemCount = $order->items->count();
@@ -326,6 +328,8 @@
                                     // ── Payload modal ──
                                     $inspectionPayload = [
                                         'order_id' => $order->id,
+                                        'return_record_id' => $returnRecord?->id,
+                                        'record_url' => route('admin.pengembalian.record', $order->id),
                                         'order_code' => $order->code,
                                         'customer_name' => $userName,
                                         'product_name' => $productName,
@@ -341,6 +345,8 @@
 
                                     $penaltyPayload = [
                                         'order_id' => $order->id,
+                                        'return_record_id' => $returnRecord?->id,
+                                        'penalty_url' => route('admin.pengembalian.penalty.store', $order->id),
                                         'order_code' => $order->code,
                                         'customer_name' => $userName,
                                         'product_name' => $productName,
@@ -354,6 +360,13 @@
                                         'current_status' => $latePenalty?->status ?? ($daysOverdue > 0 ? 'menunggu_pembayaran' : 'tidak_ada_sanksi'),
                                         'admin_notes' => $latePenalty?->admin_notes ?? '',
                                         'can_complete_order' => in_array($order->status, ['active', 'paid'], true),
+                                    ];
+
+                                    $completePayload = [
+                                        'order_code' => $order->code,
+                                        'customer_name' => $userName,
+                                        'return_record_id' => $returnRecord?->id,
+                                        'complete_url' => route('admin.pengembalian.complete', $order->id),
                                     ];
 
                                     $cardModifier = $isOverdue ? 'rt-overdue' : ($hasDamage ? 'rt-damaged' : '');
@@ -567,16 +580,20 @@
                                                     Selesai
                                                 </button>
                                             @elseif ($completeState === 'not-ready')
-                                                <button type="button" class="rc-btn-complete" disabled title="{{ $completeTitle }}">
+                                                <button type="button"
+                                                        class="rc-btn-complete"
+                                                        title="{{ $completeTitle }}"
+                                                        data-return-blocked-message="{{ $completeTitle }}"
+                                                        onclick="showReturnBlockedToast(this)">
                                                     Selesai
                                                 </button>
                                             @else
                                                 <button type="button"
                                                         class="rc-btn-complete"
                                                         title="{{ $completeTitle }}"
-                                                        onclick="openCompleteModal({{ $order->id }}, '{{ addslashes($order->code) }}', '{{ addslashes($userName) }}', {{ $inspected ? 'true' : 'false' }})">
+                                                        onclick='openCompleteModal(@json($completePayload))'>
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 21 1 13 4 10 9 15 20 4 23 7 9 21"/></svg>
-                                                    Selesaikan
+                                                    Selesai
                                                 </button>
                                             @endif
                                         </div>
@@ -749,6 +766,7 @@
 
             <form id="completeForm" method="POST" action="" data-lock>
                 @csrf
+                <input type="hidden" name="return_record_id" id="completeReturnRecordId">
                 <div class="inspection-modal-actions">
                     <button type="button" class="filter-pill-btn" onclick="hideCompleteModal()">Batal</button>
                     <button type="submit" class="rc-btn-complete" style="width: auto; padding: 0 20px;">Ya, Selesaikan Pengembalian</button>
@@ -806,6 +824,7 @@
 
             <form id="latePenaltyForm" method="POST" action="" data-lock>
                 @csrf
+                <input type="hidden" name="return_record_id" id="latePenaltyReturnRecordId">
                 <div class="inspection-form-group">
                     <label class="inspection-form-label">Tindakan Sanksi <span style="color: #dc2626;">*</span></label>
                     <select name="status" id="penaltyModalStatusSelect" class="inspection-form-select" onchange="syncPenaltyComplete(this.value)" required>
@@ -874,7 +893,7 @@
     <!-- Toast Notifikasi -->
     <div class="rt-toast-root" id="rtToastRoot"
          data-success="{{ session('success') }}"
-         data-error="{{ session('error') }}"
+         data-error="{{ $errors->first() ?: session('error') }}"
          data-info="{{ session('info') }}"></div>
 
     <script>
@@ -901,6 +920,9 @@
         })();
 
         function showToast(type, message) {
+            var toastRoot = document.getElementById('rtToastRoot');
+            if (!toastRoot) return;
+
             var icons = {
                 success: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="16 10 11 15 8 12"/></svg>',
                 error: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
@@ -916,7 +938,7 @@
                 el.classList.add('out');
                 setTimeout(function () { el.remove(); }, 200);
             });
-            document.body.appendChild(el);
+            toastRoot.appendChild(el);
             setTimeout(function () { el.classList.add('in'); }, 10);
             setTimeout(function () {
                 el.classList.add('out');
@@ -972,7 +994,7 @@
 
             toggleDamageFields(data.condition || 'excellent');
 
-            document.getElementById('inspectionForm').action = "/admin/pengembalian/" + data.order_id + "/record";
+            document.getElementById('inspectionForm').action = data.record_url;
             document.getElementById('inspectionForm').dataset.locked = '0';
             document.getElementById('inspectionModal').classList.add('show');
             document.body.classList.add('rt-modal-open');
@@ -990,13 +1012,19 @@
         }
 
         // ── Complete Confirmation Modal ──
-        function openCompleteModal(orderId, orderCode, customerName, hasInspected) {
-            document.getElementById('completeOrderCode').textContent = '#' + orderCode;
-            document.getElementById('completeCustomerName').textContent = customerName;
-            document.getElementById('completeForm').action = "/admin/pengembalian/" + orderId + "/complete";
-            document.getElementById('completeForm').dataset.locked = '0';
+        function openCompleteModal(data) {
+            document.getElementById('completeOrderCode').textContent = '#' + data.order_code;
+            document.getElementById('completeCustomerName').textContent = data.customer_name;
+            var form = document.getElementById('completeForm');
+            form.action = data.complete_url;
+            document.getElementById('completeReturnRecordId').value = data.return_record_id;
+            form.dataset.locked = '0';
             document.getElementById('completeModal').classList.add('show');
             document.body.classList.add('rt-modal-open');
+        }
+
+        function showReturnBlockedToast(button) {
+            showToast('error', button.dataset.returnBlockedMessage || 'Pengembalian belum dapat diselesaikan.');
         }
 
         function hideCompleteModal() { closeModal('completeModal'); }
@@ -1039,7 +1067,8 @@
                 document.getElementById('penaltyModalCompleteCheck').checked = false;
             }
 
-            document.getElementById('latePenaltyForm').action = "/admin/pengembalian/" + data.order_id + "/penalty";
+            document.getElementById('latePenaltyForm').action = data.penalty_url;
+            document.getElementById('latePenaltyReturnRecordId').value = data.return_record_id || '';
             document.getElementById('latePenaltyForm').dataset.locked = '0';
             document.getElementById('latePenaltyModal').classList.add('show');
             document.body.classList.add('rt-modal-open');

@@ -236,6 +236,7 @@ class LatePenaltyTest extends TestCase
             'account_role' => 'admin',
             'account_name' => 'Admin Summit',
         ])->post("/admin/pengembalian/{$order->id}/penalty", [
+            'return_record_id' => $returnRecord->id,
             'status' => 'menunggu_pembayaran',
             'admin_notes' => 'Terlambat 5 hari tanpa pemberitahuan.',
             'complete_order' => 1,
@@ -255,7 +256,7 @@ class LatePenaltyTest extends TestCase
         ]);
 
         $order->refresh();
-        $this->assertEquals('completed', $order->status);
+        $this->assertEquals('active', $order->status);
 
         Notification::assertSentTo(
             $this->user,
@@ -264,6 +265,45 @@ class LatePenaltyTest extends TestCase
                 return $notification->type === RentalStatusNotification::TYPE_LATE_PENALTY_ASSIGNED;
             }
         );
+    }
+
+    public function test_penalty_completion_does_not_bypass_unpaid_damage_fine(): void
+    {
+        $order = Order::create([
+            'code' => 'ORD-TEST-DENDA',
+            'user_id' => $this->user->id,
+            'rent_start' => Carbon::parse('2026-09-01'),
+            'rent_end' => Carbon::parse('2026-09-03'),
+            'subtotal' => 200000,
+            'total' => 200000,
+            'status' => 'active',
+        ]);
+        $returnRecord = ReturnRecord::create([
+            'order_id' => $order->id,
+            'condition' => 'minor_damage',
+            'damage_cost' => 50000,
+            'status' => 'approved',
+            'returned_at' => Carbon::parse('2026-09-08'),
+        ]);
+
+        $response = $this->withSession([
+            'account_id' => 1,
+            'account_role' => 'admin',
+            'account_name' => 'Admin Summit',
+        ])->post("/admin/pengembalian/{$order->id}/penalty", [
+            'return_record_id' => $returnRecord->id,
+            'status' => 'tidak_ada_sanksi',
+            'complete_order' => 1,
+        ]);
+
+        $response->assertRedirect('/admin/pengembalian')
+            ->assertSessionHas('error');
+        $this->assertEquals('active', $order->fresh()->status);
+        $this->assertDatabaseHas('return_records', [
+            'id' => $returnRecord->id,
+            'damage_cost' => 50000,
+            'damage_paid_at' => null,
+        ]);
     }
 
     /**
@@ -361,7 +401,7 @@ class LatePenaltyTest extends TestCase
             'account_id'   => 1,
             'account_role' => 'admin',
             'account_name' => 'Admin Summit',
-        ])->post("/admin/pengembalian/{$payment->id}/approve-denda");
+        ])->from('/admin/pengembalian')->post("/admin/pengembalian/{$payment->id}/approve-denda");
 
         $approveResponse->assertRedirect('/admin/pengembalian');
 

@@ -144,7 +144,13 @@ class FullIntegrationWorkflowTest extends TestCase
         ]);
         $recordReturnResponse->assertRedirect('/admin/pengembalian');
 
-        $completeReturnResponse = $this->post('/admin/pengembalian/' . $order->id . '/complete');
+        $returnRecord = ReturnRecord::where('order_id', $order->id)
+            ->whereNull('order_item_id')
+            ->latest('id')
+            ->firstOrFail();
+        $completeReturnResponse = $this->post('/admin/pengembalian/' . $order->id . '/complete', [
+            'return_record_id' => $returnRecord->id,
+        ]);
         $completeReturnResponse->assertRedirect('/admin/pengembalian');
 
         $order->refresh();
