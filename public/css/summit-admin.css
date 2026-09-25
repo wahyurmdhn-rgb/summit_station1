@@ -10,6 +10,7 @@
     --text-muted: #64748b;
     --border-color: #e5e7eb;
     --accent-lime: #86efac;
+    --admin-top-banner-height: 4px;
     --badge-expedition: #1b4332;
     --badge-technical: #8d5b29;
     --badge-ultralight: #2d6a4f;
@@ -64,7 +65,7 @@ a {
 
 /* Top Accent Line */
 .top-banner-line {
-    height: 4px;
+    height: var(--admin-top-banner-height);
     background: linear-gradient(90deg, #14532d, #2f9e5b);
     width: 100%;
 }
@@ -72,7 +73,8 @@ a {
 /* Admin Dashboard Wrapper */
 .admin-layout {
     display: flex;
-    min-height: 100vh;
+    min-height: calc(100vh - var(--admin-top-banner-height));
+    min-height: calc(100dvh - var(--admin-top-banner-height));
 }
 
 /* ─── Sidebar ─── */
@@ -87,7 +89,8 @@ a {
     flex-shrink: 0;
     position: sticky;
     top: 0;
-    height: 100vh;
+    height: calc(100vh - var(--admin-top-banner-height));
+    height: calc(100dvh - var(--admin-top-banner-height));
 }
 
 .sidebar-scroll {
