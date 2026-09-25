@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
             input.type = isVisible ? 'password' : 'text';
             btn.classList.toggle('is-visible', !isVisible);
             btn.setAttribute('aria-pressed', String(!isVisible));
+            btn.setAttribute('aria-label', isVisible ? 'Tampilkan password' : 'Sembunyikan password');
         });
     });
 

@@ -317,6 +317,9 @@ class AuthFlowTest extends TestCase
     {
         $response = $this->get('/admin/login');
         $response->assertOk();
+        $response->assertSee('data-password-toggle="password"', false);
+        $response->assertSee('class="eye-icon"', false);
+        $response->assertSee('class="eye-off-icon"', false);
 
         $html = strtolower($response->getContent());
         $this->assertStringNotContainsString('name="role"', $html);

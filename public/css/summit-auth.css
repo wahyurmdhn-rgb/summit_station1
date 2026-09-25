@@ -254,6 +254,11 @@ select:focus {
     display: none;
 }
 
+.password-toggle svg {
+    display: block;
+    pointer-events: none;
+}
+
 .password-toggle.is-visible .eye-icon {
     display: none;
 }
