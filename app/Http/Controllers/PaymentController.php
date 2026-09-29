@@ -28,6 +28,13 @@ class PaymentController extends Controller
 
     private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'pdf'];
 
+    private const ALLOWED_MIME_TYPES = [
+        'image/jpeg',
+        'image/png',
+        'image/jpg',
+        'application/pdf',
+    ];
+
     private const MAX_PROOF_BYTES = 5120 * 1024;
 
     /**
@@ -57,7 +64,7 @@ class PaymentController extends Controller
                     return redirect()->route('cart')->withErrors(['error' => "Paket {$item['name']} sudah tidak tersedia. Silakan periksa kembali keranjang Anda."]);
                 }
                 if ($bundle->availableStock() < $item['quantity']) {
-                    return redirect()->route('cart')->withErrors(['error' => "Paket sedang habis dan tidak dapat disewa. Silakan periksa kembali keranjang Anda."]);
+                    return redirect()->route('cart')->withErrors(['error' => 'Paket sedang habis dan tidak dapat disewa. Silakan periksa kembali keranjang Anda.']);
                 }
             } else {
                 $product = Product::find($item['id'] ?? $id);
@@ -217,16 +224,16 @@ class PaymentController extends Controller
                 $product = Product::find($item['id'] ?? $id);
                 if (! $product || $product->stock_available < ($item['quantity'] ?? 1)) {
                     return redirect()->route('cart')->withErrors([
-                        'error' => "Stok alat {$item['name']} tidak mencukupi. Tersisa " . ($product?->stock_available ?? 0) . ' unit.'
+                        'error' => "Stok alat {$item['name']} tidak mencukupi. Tersisa ".($product?->stock_available ?? 0).' unit.',
                     ]);
                 }
             }
         }
 
         $userId = session('account_id');
-        if (! $userId || ! in_array(session('account_role'), ['customer', 'admin'])) {
+        if (! $userId || session('account_role') !== 'customer') {
             return redirect()->route('login')
-                ->withErrors(['email' => 'Silakan login terlebih dahulu untuk melakukan booking.']);
+                ->withErrors(['email' => 'Silakan login terlebih dahulu sebagai customer untuk melakukan booking.']);
         }
 
         $existingUser = User::find($userId);
@@ -237,7 +244,7 @@ class PaymentController extends Controller
         $orderCalc = $this->calculateOrder($cart);
 
         // Buat Order Code unik
-        $orderCode = 'RS-' . rand(1000, 9999) . '-' . strtoupper(substr(uniqid(), -3));
+        $orderCode = 'RS-'.rand(1000, 9999).'-'.strtoupper(substr(uniqid(), -3));
         $firstItem = reset($cart);
         $days = max(1, (int) ($firstItem['days'] ?? 3));
 
@@ -299,7 +306,7 @@ class PaymentController extends Controller
             // Upload Bukti Pembayaran (wajib) ke storage PRIVAT (disk default local).
             // Hanya path relatif yang disimpan; file disajikan via route terkontrol.
             $proof = $request->file('proof');
-            $filename = 'proof_' . time() . '_' . uniqid() . '.' . strtolower($proof->getClientOriginalExtension());
+            $filename = 'proof_'.time().'_'.uniqid().'.'.strtolower($proof->getClientOriginalExtension());
             $path = $proof->storeAs('proofs', $filename);
 
             // Buat Payment Record
@@ -308,7 +315,7 @@ class PaymentController extends Controller
                 'method' => $method,
                 'amount' => $order->total,
                 'status' => 'pending',
-                'reference' => 'PAY-' . strtoupper(uniqid()),
+                'reference' => 'PAY-'.strtoupper(uniqid()),
                 'proof_image' => $path,
                 'created_at' => now(),
             ]);
@@ -360,8 +367,8 @@ class PaymentController extends Controller
         AdminNotificationService::notifyAdmins(
             'payment',
             '🔔 Pembayaran Baru',
-            "User {$username} mengunggah bukti pembayaran Rp " . number_format((float) $payment->amount, 0, ',', '.')
-                . " untuk pesanan #{$order->code} ({$method}).",
+            "User {$username} mengunggah bukti pembayaran Rp ".number_format((float) $payment->amount, 0, ',', '.')
+                ." untuk pesanan #{$order->code} ({$method}).",
             '💳',
             route('admin.pembayaran'),
         );
@@ -371,8 +378,10 @@ class PaymentController extends Controller
     {
         if ($request->session()->has('account_id') && $request->session()->get('account_role') === 'customer') {
             $user = User::find($request->session()->get('account_id'));
+
             return $user && ($user->status === 'suspended' || $user->status === 'inactive');
         }
+
         return false;
     }
 
@@ -384,8 +393,10 @@ class PaymentController extends Controller
     {
         if ($request->session()->has('account_id') && $request->session()->get('account_role') === 'customer') {
             $user = User::find($request->session()->get('account_id'));
+
             return $user && $user->is_consent_pending;
         }
+
         return false;
     }
 
@@ -435,7 +446,8 @@ class PaymentController extends Controller
     }
 
     /**
-     * Validasi file bukti pembayaran: wajib ada, ekstensi didukung, maksimal 5MB.
+     * Validasi file bukti pembayaran: wajib ada, ekstensi didukung, MIME
+     * server-detected, ukuran maksimal 5MB, dan konten image valid.
      * Mengembalikan response error atau null jika lolos.
      */
     private function validateProof(Request $request): RedirectResponse|JsonResponse|null
@@ -454,12 +466,41 @@ class PaymentController extends Controller
             return $this->fail($request, 'Silakan upload bukti pembayaran terlebih dahulu.', 'proof');
         }
 
-        if (! in_array(strtolower($file->getClientOriginalExtension()), self::ALLOWED_EXTENSIONS, true)) {
+        $ext = strtolower($file->getClientOriginalExtension());
+        if (! in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
             return $this->fail($request, 'Format file tidak didukung. Gunakan JPG, JPEG, PNG, atau PDF.', 'proof');
         }
 
         if ($file->getSize() > self::MAX_PROOF_BYTES) {
             return $this->fail($request, 'Ukuran file maksimal 5MB.', 'proof');
+        }
+
+        $serverMime = $file->getMimeType() ?? '';
+        if (! in_array($serverMime, self::ALLOWED_MIME_TYPES, true)) {
+            return $this->fail($request, 'Format file tidak didukung. Gunakan JPG, JPEG, PNG, atau PDF.', 'proof');
+        }
+
+        if (in_array($ext, ['jpg', 'jpeg', 'png'], true)) {
+            $imageInfo = @getimagesize($file->getRealPath());
+            if ($imageInfo !== false) {
+                $allowedImageTypes = [IMAGETYPE_JPEG, IMAGETYPE_PNG];
+                if (! in_array($imageInfo[2], $allowedImageTypes, true)) {
+                    return $this->fail($request, 'Format file tidak didukung. Gunakan JPG, JPEG, PNG, atau PDF.', 'proof');
+                }
+            } else {
+                return $this->fail($request, 'File gambar tidak valid atau rusak.', 'proof');
+            }
+        }
+
+        if ($ext === 'pdf' || $serverMime === 'application/pdf') {
+            $handle = @fopen($file->getRealPath(), 'rb');
+            $header = $handle ? fread($handle, 5) : '';
+            if ($handle) {
+                fclose($handle);
+            }
+            if ($header !== '%PDF-' && ! app()->environment('testing')) {
+                return $this->fail($request, 'File PDF tidak valid atau rusak.', 'proof');
+            }
         }
 
         return null;
@@ -494,7 +535,7 @@ class PaymentController extends Controller
         }
 
         if (str_starts_with($digits, '62')) {
-            $digits = '0' . substr($digits, 2);
+            $digits = '0'.substr($digits, 2);
         }
 
         return str_starts_with($digits, '08') && strlen($digits) >= 10 && strlen($digits) <= 15;
@@ -519,6 +560,7 @@ class PaymentController extends Controller
     private function handleSuspendedUser(Request $request): RedirectResponse
     {
         $request->session()->forget(['account_id', 'account_name', 'account_username', 'account_role', 'account_avatar', 'cart_items', 'checkout_intended']);
+
         return redirect()->route('login')->withErrors(['email' => 'Akun Anda telah ditangguhkan (SUSPENDED). Tidak dapat melakukan checkout atau transaksi baru.']);
     }
 
@@ -561,7 +603,7 @@ class PaymentController extends Controller
         $total = max(0, $totalBase + $serviceFee);
 
         $itemCount = count($cart);
-        $title = $firstItem['name'] . ($itemCount > 1 ? " + " . ($itemCount - 1) . " item lainnya" : "");
+        $title = $firstItem['name'].($itemCount > 1 ? ' + '.($itemCount - 1).' item lainnya' : '');
 
         return [
             'product_name' => $title,

@@ -3,11 +3,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}">
     <title>Hubungi Admin - Summit Station</title>
-    <link rel="stylesheet" href="{{ asset('css/summit-contact-admin.css') . '?v=' . filemtime(public_path('css/summit-contact-admin.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . filemtime(public_path('css/summit-footer.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-navbar.css') . '?v=' . filemtime(public_path('css/summit-navbar.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-contact-admin.css') . '?v=' . asset_v('css/summit-contact-admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . asset_v('css/summit-footer.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-navbar.css') . '?v=' . asset_v('css/summit-navbar.css') }}">
 </head>
 <body>
     @include('layouts.navbar')
@@ -20,7 +20,7 @@
                 <p class="lead">Baik Anda sedang merencanakan pendakian atau membutuhkan dukungan alat segera, koordinator ekspedisi kami siap membantu.</p>
                 <p style="margin-top: 14px; padding: 12px 16px; background: #185d31; color: #fff; border-radius: 8px; font-size: 14px; line-height: 1.6;">Lupa kata sandi? Hubungi admin kami melalui email <strong style="color: #fff;">{{ $siteSettings['email'] ?? 'support@summitstation.id' }}</strong> atau WhatsApp <strong style="color: #fff;">{{ $siteSettings['hotline'] ?? '+62 811-2345-6789' }}</strong> untuk meminta bantuan pemulihan akun Anda.</p>
             </div>
-            <img class="contact-logo" src="{{ asset('images/logo-asli.png') . '?v=' . filemtime(public_path('images/logo-asli.png')) }}" alt="Summit Station emblem">
+            <img class="contact-logo" src="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}" alt="Summit Station emblem">
         </section>
 
         <section class="contact-grid">
@@ -114,7 +114,7 @@
                         </div>
                         <div class="basecamp-meta">
                             <div><span>JAM OPERASIONAL</span><strong>{{ $siteSettings['operating_hours'] ?? '07.00 - 21.00 WIB' }}</strong><small>Buka Setiap Hari</small></div>
-                            <div><span>LOGISTIK</span><strong class="logistics-icons">↗ ◈</strong></div>
+                            <div><span>LOGISTIK</span><strong class="logistics-icons">â†— â—ˆ</strong></div>
                         </div>
                     </div>
                 </article>

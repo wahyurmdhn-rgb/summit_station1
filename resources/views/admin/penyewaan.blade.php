@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}">
     <title>Penyewaan - Manajemen Inventaris Sewa - Summit Station</title>
-    <link rel="stylesheet" href="{{ asset('css/summit-admin.css') . '?v=' . time() }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . filemtime(public_path('css/summit-footer.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-admin.css') . '?v=' . asset_v('css/summit-admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . asset_v('css/summit-footer.css') }}">
 </head>
 <body>
 
@@ -14,10 +14,10 @@
     <div class="top-banner-line"></div>
 
     <div class="admin-layout">
-        <!-- ─── Sidebar ─── -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Sidebar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
         @include('admin.partials.sidebar', ['activeMenu' => 'penyewaan'])
 
-        <!-- ─── Main Content ─── -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Content Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
         <div class="admin-main">
             <!-- Top Header -->
             @include('admin.partials.header', [
@@ -39,7 +39,7 @@
                     </div>
                 @endif
 
-                <!-- ─── 4 Statistic Cards Row ─── -->
+                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 4 Statistic Cards Row Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                 <div class="stats-grid-penyewaan">
                     <!-- Card 1: ACTIVE RENTALS -->
                     <div class="stat-card-penyewaan">
@@ -59,7 +59,7 @@
                             <div class="stat-penyewaan-val">{{ $activeRentals }}</div>
                         </div>
                         <div class="stat-subtext-note green">
-                            <span>↗</span>
+                            <span>Ã¢â€ â€”</span>
                             <span>Jumlah sewa yang sedang berjalan</span>
                         </div>
                     </div>
@@ -104,7 +104,7 @@
                             <div class="stat-penyewaan-val">{{ $expectedReturns }}</div>
                         </div>
                         <div class="stat-subtext-note muted">
-                            <span>🕒</span>
+                            <span>Ã°Å¸â€¢â€™</span>
                             <span>Perkiraan pengembalian sewa hari ini</span>
                         </div>
                     </div>
@@ -124,13 +124,13 @@
                             <div class="stat-penyewaan-val">{{ $revenueForecast }}</div>
                         </div>
                         <div class="stat-subtext-note green">
-                            <span>✔</span>
+                            <span>Ã¢Å“â€</span>
                             <span>Pembayaran terverifikasi</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- ─── Page Heading & Filter Actions Row ─── -->
+                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Page Heading & Filter Actions Row Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                 <div class="penyewaan-header-row">
                     <div class="penyewaan-title-block">
                         <h1 class="penyewaan-main-heading">Manajemen Inventaris Sewa</h1>
@@ -170,7 +170,7 @@
                     </div>
                 </div>
 
-                <!-- ─── Tabel Penyewaan ─── -->
+                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Tabel Penyewaan Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                 <div class="alat-table-container">
                     <div class="table-responsive">
                         <table class="alat-table">
@@ -342,7 +342,7 @@
                     </table>
                     </div>
 
-                    <!-- ─── Pagination Footer ─── -->
+                    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Pagination Footer Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                     <div class="pagination-container-row">
                         <div class="results-counter-text">
                             Menampilkan {{ $orders->firstItem() ?? 1 }} hingga {{ $orders->lastItem() ?? count($orders) }} dari {{ $orders->total() ?? count($orders) }} penyewaan
@@ -383,7 +383,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Detail / Receipt ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Detail / Receipt Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="detailModal" class="modal-overlay">
         <div class="modal-card" style="width: 580px;">
             <div class="modal-header">
@@ -399,7 +399,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Konfirmasi Penyewaan ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Konfirmasi Penyewaan Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="confirmModal" class="modal-overlay">
         <div class="modal-card" style="width: 440px;">
             <div class="modal-header">
@@ -421,7 +421,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Tolak Penyewaan ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Tolak Penyewaan Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="rejectModal" class="modal-overlay">
         <div class="modal-card" style="width: 460px;">
             <div class="modal-header">
@@ -447,7 +447,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Selesaikan Penyewaan ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Selesaikan Penyewaan Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="completeModal" class="modal-overlay">
         <div class="modal-card" style="width: 440px;">
             <div class="modal-header">
@@ -469,7 +469,7 @@
         </div>
     </div>
 
-    <!-- ─── Scripts ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Scripts Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <script>
         function openDetailModal(order) {
             document.getElementById('receipt_order_code').textContent = 'Detail Pesanan #' + order.code;
@@ -502,7 +502,7 @@
                     <div style="background: #f8faf8; padding: 14px; border-radius: 10px; border: 1px solid #e8e6e1;">
                         <div style="font-size: 11px; font-weight: 800; color: #185d31; text-transform: uppercase; margin-bottom: 8px;">Metode Pengambilan</div>
                         <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; color: #1a1d1a;">
-                            <span>🚚</span><span>Dikirim ke Lokasi</span>
+                            <span>Ã°Å¸Å¡Å¡</span><span>Dikirim ke Lokasi</span>
                         </div>
                         <div style="font-size: 12px; color: #64748b; margin: 2px 0 10px;">Pesanan akan dikirim menggunakan mobil Summit Station.</div>
                         <div style="display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; font-size: 12.5px;">
@@ -522,7 +522,7 @@
                     <div style="background: #f8faf8; padding: 14px; border-radius: 10px; border: 1px solid #e8e6e1;">
                         <div style="font-size: 11px; font-weight: 800; color: #185d31; text-transform: uppercase; margin-bottom: 8px;">Metode Pengambilan</div>
                         <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; color: #1a1d1a;">
-                            <span>📦</span><span>Ambil di Tempat</span>
+                            <span>Ã°Å¸â€œÂ¦</span><span>Ambil di Tempat</span>
                         </div>
                         <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Pesanan akan diambil langsung oleh penyewa di Summit Station.</div>
                     </div>

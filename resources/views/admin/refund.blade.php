@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}">
     <title>Manajemen Pengembalian Dana - Summit Station</title>
-    <link rel="stylesheet" href="{{ asset('css/summit-admin.css') . '?v=' . time() }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . filemtime(public_path('css/summit-footer.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-admin.css') . '?v=' . asset_v('css/summit-admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . asset_v('css/summit-footer.css') }}">
     <style>
         .refund-badge-pending { background: #fef3c7; color: #92400e; }
         .refund-badge-approved { background: #dbeafe; color: #1e40af; }
@@ -36,10 +36,10 @@
     <div class="top-banner-line"></div>
 
     <div class="admin-layout">
-        <!-- ─── Sidebar ─── -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Sidebar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
         @include('admin.partials.sidebar', ['activeMenu' => 'refund'])
 
-        <!-- ─── Main Content Area ─── -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Content Area Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
         <div class="admin-main">
             <!-- Header with Breadcrumb & Admin Profile -->
             @include('admin.partials.header', [
@@ -67,7 +67,7 @@
                     </div>
                 @endif
 
-                <!-- ─── 4 Statistic Cards Row ─── -->
+                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 4 Statistic Cards Row Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                 <div class="stats-grid-penyewaan">
                     <div class="stat-card-penyewaan">
                         <div class="stat-card-penyewaan-top">
@@ -143,7 +143,7 @@
                     </div>
                 </div>
 
-                <!-- ─── Refund Table ─── -->
+                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Refund Table Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                 <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; margin-top: 22px;">
                     <div class="penyewaan-header-row" style="padding: 18px 20px 0;">
                         <div class="penyewaan-title-block">
@@ -218,7 +218,7 @@
                                                 <span class="refund-reason-cell">{{ $refund->reason }}</span>
                                             </td>
                                             <td>
-                                                <span style="font-size: 12px; color: #64748b;">{{ $refund->created_at ? $refund->created_at->format('d M Y • H:i') : '-' }}</span>
+                                                <span style="font-size: 12px; color: #64748b;">{{ $refund->created_at ? $refund->created_at->format('d M Y Ã¢â‚¬Â¢ H:i') : '-' }}</span>
                                             </td>
                                             <td>
                                                 <span class="badge-status {{ $refund->status_badge_class }}">
@@ -305,7 +305,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Approve Refund ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Approve Refund Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="approveModal" class="modal-overlay">
         <div class="modal-card" style="width: 480px;">
             <div class="modal-header">
@@ -335,7 +335,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Reject Refund ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Reject Refund Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="rejectModal" class="modal-overlay">
         <div class="modal-card" style="width: 480px;">
             <div class="modal-header">
@@ -361,7 +361,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Complete Refund ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Complete Refund Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="completeModal" class="modal-overlay">
         <div class="modal-card" style="width: 440px;">
             <div class="modal-header">

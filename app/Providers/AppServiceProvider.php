@@ -51,15 +51,5 @@ class AppServiceProvider extends ServiceProvider
             'components.*',
             'admin.*',
         ], SiteSettingsComposer::class);
-
-        $source = 'C:/Users/user/.gemini/antigravity/brain/0908694d-86d5-4e5e-8e56-33bdfcbb4750/.user_uploaded/media_1787205042010.png';
-        $destDir = public_path('images');
-        $dest = public_path('images/logo.png');
-        if (file_exists($source) && (!file_exists($dest) || filesize($dest) === 0)) {
-            if (!is_dir($destDir)) {
-                mkdir($destDir, 0755, true);
-            }
-            @copy($source, $dest);
-        }
     }
 }

@@ -7,12 +7,15 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\Refund;
+use App\Models\ReturnRecord;
 use App\Models\User;
+use App\Notifications\AdminActivityNotification;
+use App\Services\AdminNotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Notifications\DatabaseNotification;
 use Tests\TestCase;
 
 class AdminNotificationTest extends TestCase
@@ -20,7 +23,9 @@ class AdminNotificationTest extends TestCase
     use RefreshDatabase;
 
     private Admin $admin;
+
     private User $user;
+
     private Product $product;
 
     protected function setUp(): void
@@ -88,7 +93,7 @@ class AdminNotificationTest extends TestCase
             ],
         ])->post('/payment/process', [
             'payment_method' => 'qris',
-            'proof' => UploadedFile::fake()->create('proof.jpg', 100),
+            'proof' => UploadedFile::fake()->createWithContent('proof.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')),
         ]);
 
         $response->assertRedirect('/history');
@@ -120,7 +125,7 @@ class AdminNotificationTest extends TestCase
      */
     public function test_admin_opening_notification_marks_it_read(): void
     {
-        $this->admin->notify(new \App\Notifications\AdminActivityNotification(
+        $this->admin->notify(new AdminActivityNotification(
             'booking',
             '🔔 Penyewaan Baru',
             'Body test',
@@ -149,10 +154,10 @@ class AdminNotificationTest extends TestCase
     public function test_admin_dashboard_badge_and_mark_all_read(): void
     {
         foreach (['booking', 'payment', 'return'] as $i => $type) {
-            $this->admin->notify(new \App\Notifications\AdminActivityNotification(
+            $this->admin->notify(new AdminActivityNotification(
                 $type,
-                '🔔 ' . ucfirst($type) . ' Baru',
-                'Body ' . $type,
+                '🔔 '.ucfirst($type).' Baru',
+                'Body '.$type,
                 '🔔',
                 null,
             ));
@@ -185,7 +190,7 @@ class AdminNotificationTest extends TestCase
      */
     public function test_customer_cannot_access_admin_notification_endpoints(): void
     {
-        $this->admin->notify(new \App\Notifications\AdminActivityNotification(
+        $this->admin->notify(new AdminActivityNotification(
             'booking',
             '🔔 Penyewaan Baru',
             'Body rahasia admin',
@@ -219,7 +224,7 @@ class AdminNotificationTest extends TestCase
      */
     public function test_customer_does_not_see_admin_notifications(): void
     {
-        $this->admin->notify(new \App\Notifications\AdminActivityNotification(
+        $this->admin->notify(new AdminActivityNotification(
             'booking',
             '🔔 Penyewaan Baru',
             'Body admin',
@@ -269,11 +274,11 @@ class AdminNotificationTest extends TestCase
         ]);
 
         // Refund pending -> badge refund.
-        \App\Models\Refund::create([
+        Refund::create([
             'code' => 'RF-BADGE-001',
             'order_id' => $order->id,
             'user_id' => $this->user->id,
-            'status' => \App\Models\Refund::STATUS_PENDING,
+            'status' => Refund::STATUS_PENDING,
             'original_amount' => 300000,
             'refund_amount' => 300000,
             'reason' => 'Tidak jadi menggunakan barang',
@@ -289,13 +294,13 @@ class AdminNotificationTest extends TestCase
             'total' => 150000,
             'status' => 'active',
         ]);
-        \App\Models\ReturnRecord::create([
+        ReturnRecord::create([
             'order_id' => $pendingReturn->id,
             'status' => 'pending',
             'returned_at' => now(),
         ]);
 
-        $counts = \App\Services\AdminNotificationService::sidebarBadgeCounts();
+        $counts = AdminNotificationService::sidebarBadgeCounts();
 
         $this->assertEquals(1, $counts['penyewaan']);
         $this->assertEquals(1, $counts['pembayaran']);
@@ -310,7 +315,7 @@ class AdminNotificationTest extends TestCase
     public function test_global_bell_and_sidebar_badges_appear_on_non_dashboard_pages(): void
     {
         // Satu notifikasi belum dibaca -> bell badge & badge menu Notifikasi tampil.
-        $this->admin->notify(new \App\Notifications\AdminActivityNotification(
+        $this->admin->notify(new AdminActivityNotification(
             'payment',
             '🔔 Pembayaran Baru',
             'Body global',
@@ -352,10 +357,10 @@ class AdminNotificationTest extends TestCase
     public function test_notification_history_page_renders_filters_and_pagination(): void
     {
         foreach (['booking', 'payment', 'return'] as $i => $type) {
-            $this->admin->notify(new \App\Notifications\AdminActivityNotification(
+            $this->admin->notify(new AdminActivityNotification(
                 $type,
-                '🔔 ' . ucfirst($type) . ' Baru',
-                'Body ' . $type,
+                '🔔 '.ucfirst($type).' Baru',
+                'Body '.$type,
                 '🔔',
                 null,
             ));
@@ -391,6 +396,7 @@ class AdminNotificationTest extends TestCase
         $unread->assertViewHas('notifications', function ($notifs) {
             $types = $notifs->pluck('data.type')->all();
             sort($types);
+
             return $types === ['payment', 'return'];
         });
 
@@ -401,6 +407,7 @@ class AdminNotificationTest extends TestCase
         // Validasi via koleksi view: hanya booking yang sudah dibaca.
         $read->assertViewHas('notifications', function ($notifs) {
             $types = $notifs->pluck('data.type')->all();
+
             return $types === ['booking'];
         });
 
@@ -439,7 +446,7 @@ class AdminNotificationTest extends TestCase
             'account_id' => $this->user->id,
             'account_name' => $this->user->name,
             'account_role' => 'customer',
-        ])->post('/history/' . $order->id . '/refund', [
+        ])->post('/history/'.$order->id.'/refund', [
             'reason' => 'tidak_jadi',
             'description' => 'Tidak jadi menggunakan barang.',
         ])->assertRedirect(route('history'));
@@ -504,11 +511,11 @@ class AdminNotificationTest extends TestCase
             'amount' => 1000000,
             'status' => 'success',
         ]);
-        $refund = \App\Models\Refund::create([
+        $refund = Refund::create([
             'code' => 'RF-COMP-001',
             'order_id' => $order->id,
             'user_id' => $this->user->id,
-            'status' => \App\Models\Refund::STATUS_APPROVED,
+            'status' => Refund::STATUS_APPROVED,
             'original_amount' => 1000000,
             'refund_amount' => 1000000,
             'reason' => 'Batal',

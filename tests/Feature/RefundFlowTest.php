@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class RefundFlowTest extends TestCase
@@ -77,10 +78,10 @@ class RefundFlowTest extends TestCase
         ], $overrides);
     }
 
-    private function submitRefund(int $orderId, array $payload = []): \Illuminate\Testing\TestResponse
+    private function submitRefund(int $orderId, array $payload = []): TestResponse
     {
         return $this->withSession($this->customerSession())
-            ->post('/history/' . $orderId . '/refund', array_merge([
+            ->post('/history/'.$orderId.'/refund', array_merge([
                 'reason' => 'tidak_jadi',
                 'description' => 'Tidak jadi menggunakan barang karena perubahan jadwal.',
             ], $payload));
@@ -151,7 +152,7 @@ class RefundFlowTest extends TestCase
 
     public function test_guest_is_redirected_when_submitting_refund(): void
     {
-        $response = $this->post('/history/' . $this->paidOrder->id . '/refund', [
+        $response = $this->post('/history/'.$this->paidOrder->id.'/refund', [
             'reason' => 'tidak_jadi',
             'description' => 'test',
         ]);
@@ -193,7 +194,7 @@ class RefundFlowTest extends TestCase
         $list->assertStatus(200);
         $list->assertSee($refund->code);
 
-        $detail = $this->withSession($this->adminSession())->get('/admin/refund/' . $refund->id);
+        $detail = $this->withSession($this->adminSession())->get('/admin/refund/'.$refund->id);
         $detail->assertStatus(200);
         $detail->assertSee('Refund Detail');
         $detail->assertSee($refund->code);
@@ -205,7 +206,7 @@ class RefundFlowTest extends TestCase
         $this->submitRefund($this->paidOrder->id);
         $refund = Refund::first();
 
-        $response = $this->withSession($this->adminSession())->post('/admin/refund/' . $refund->id . '/approve');
+        $response = $this->withSession($this->adminSession())->post('/admin/refund/'.$refund->id.'/approve');
 
         $response->assertRedirect(route('admin.refund'));
         $this->assertDatabaseHas('refunds', [
@@ -226,7 +227,7 @@ class RefundFlowTest extends TestCase
         $refund = Refund::first();
 
         $response = $this->withSession($this->adminSession())
-            ->post('/admin/refund/' . $refund->id . '/reject', [
+            ->post('/admin/refund/'.$refund->id.'/reject', [
                 'reject_reason' => 'Barang sudah digunakan, tidak memenuhi syarat refund.',
             ]);
 
@@ -249,7 +250,7 @@ class RefundFlowTest extends TestCase
         $refund = Refund::first();
 
         $response = $this->withSession($this->adminSession())
-            ->post('/admin/refund/' . $refund->id . '/reject');
+            ->post('/admin/refund/'.$refund->id.'/reject');
 
         $response->assertSessionHasErrors('reject_reason');
         $this->assertDatabaseHas('refunds', ['id' => $refund->id, 'status' => Refund::STATUS_PENDING]);
@@ -260,9 +261,9 @@ class RefundFlowTest extends TestCase
         $this->submitRefund($this->paidOrder->id);
         $refund = Refund::first();
 
-        $this->withSession($this->adminSession())->post('/admin/refund/' . $refund->id . '/approve');
+        $this->withSession($this->adminSession())->post('/admin/refund/'.$refund->id.'/approve');
 
-        $response = $this->withSession($this->adminSession())->post('/admin/refund/' . $refund->id . '/complete');
+        $response = $this->withSession($this->adminSession())->post('/admin/refund/'.$refund->id.'/complete');
 
         $response->assertRedirect(route('admin.refund'));
         $this->assertDatabaseHas('refunds', [
@@ -282,7 +283,7 @@ class RefundFlowTest extends TestCase
         $this->submitRefund($this->paidOrder->id);
         $refund = Refund::first();
 
-        $response = $this->withSession($this->adminSession())->post('/admin/refund/' . $refund->id . '/complete');
+        $response = $this->withSession($this->adminSession())->post('/admin/refund/'.$refund->id.'/complete');
 
         $response->assertSessionHas('error');
         $this->assertDatabaseHas('refunds', ['id' => $refund->id, 'status' => Refund::STATUS_PENDING]);
@@ -305,7 +306,7 @@ class RefundFlowTest extends TestCase
         $this->submitRefund($this->paidOrder->id);
         $refund = Refund::first();
 
-        $this->withSession($this->adminSession())->post('/admin/refund/' . $refund->id . '/approve');
+        $this->withSession($this->adminSession())->post('/admin/refund/'.$refund->id.'/approve');
 
         $this->assertSame(1, $this->customer->unreadNotifications()->count());
 
@@ -315,12 +316,26 @@ class RefundFlowTest extends TestCase
         $this->assertSame(0, $this->customer->unreadNotifications()->count());
     }
 
+    public function test_refund_submission_is_race_safe_and_creates_at_most_one_active_refund(): void
+    {
+        // Simulasi request refund pertama
+        $res1 = $this->submitRefund($this->paidOrder->id);
+        $res1->assertRedirect(route('history'));
+
+        // Request kedua dengan status masih pending
+        $res2 = $this->submitRefund($this->paidOrder->id);
+        $res2->assertSessionHasErrors('refund');
+
+        // Pastikan hanya ada tepat 1 row refund di database
+        $this->assertSame(1, Refund::where('order_id', $this->paidOrder->id)->count());
+    }
+
     public function test_navbar_renders_with_unread_refund_notifications(): void
     {
         $this->submitRefund($this->paidOrder->id);
         $refund = Refund::first();
 
-        $this->withSession($this->adminSession())->post('/admin/refund/' . $refund->id . '/approve');
+        $this->withSession($this->adminSession())->post('/admin/refund/'.$refund->id.'/approve');
 
         $response = $this->withSession($this->customerSession())->get('/history');
 

@@ -57,8 +57,10 @@ class ReviewController extends Controller
             return back()->withErrors(['review' => 'Pesanan tidak ditemukan atau Anda tidak memiliki akses.']);
         }
 
-        // 2. Validasi Status Penyewaan (Hanya Completed / Returned yang Boleh Di-rating)
-        if (! in_array($order->status, ['completed', 'returned'])) {
+        // 2. Validasi Status Penyewaan (hanya `completed` yang boleh di-rating).
+        //    Kolom `orders.status` ber-enum: pending, paid, active, completed,
+        //    cancelled — tidak ada status 'returned'.
+        if ($order->status !== 'completed') {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,

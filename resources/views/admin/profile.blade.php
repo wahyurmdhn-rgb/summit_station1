@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}">
     <title>Profil Admin - Summit Station</title>
-    <link rel="stylesheet" href="{{ asset('css/summit-admin.css') . '?v=' . time() }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . filemtime(public_path('css/summit-footer.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-admin.css') . '?v=' . asset_v('css/summit-admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . asset_v('css/summit-footer.css') }}">
 </head>
 <body>
 
@@ -14,10 +14,10 @@
     <div class="top-banner-line"></div>
 
     <div class="admin-layout">
-        <!-- ─── Sidebar ─── -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Sidebar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
         @include('admin.partials.sidebar', ['activeMenu' => 'profile'])
 
-        <!-- ─── Main Content Wrapper ─── -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Content Wrapper Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
         <div class="admin-main">
             <!-- Top Header -->
             @include('admin.partials.header', [
@@ -60,7 +60,7 @@
 
                 <div class="profile-layout">
 
-                    {{-- ═══ Profil Ringkas ═══ --}}
+                    {{-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Profil Ringkas Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â --}}
                     <aside class="profile-summary">
                         <div class="profile-card profile-summary-card">
                             <div class="profile-avatar" aria-hidden="true">{{ $initials }}</div>
@@ -95,7 +95,7 @@
                                     </svg>
                                     <div>
                                         <span class="profile-meta-label">Akun Dibuat</span>
-                                        <span class="profile-meta-value">{{ $admin->created_at ? $admin->created_at->format('d M Y') : '—' }}</span>
+                                        <span class="profile-meta-value">{{ $admin->created_at ? $admin->created_at->format('d M Y') : 'Ã¢â‚¬â€' }}</span>
                                     </div>
                                 </div>
                                 <div class="profile-meta-item">
@@ -113,10 +113,10 @@
                         </div>
                     </aside>
 
-                    {{-- ═══ Kolom Utama ═══ --}}
+                    {{-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Kolom Utama Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â --}}
                     <div class="profile-stack">
 
-                        {{-- ❖ Informasi Akun --}}
+                        {{-- Ã¢Ââ€“ Informasi Akun --}}
                         <section class="profile-card">
                             <div class="profile-card-head">
                                 <div class="profile-card-icon">
@@ -150,7 +150,7 @@
                                 </div>
                                 <div class="info-item">
                                     <span class="info-label">Akun Dibuat</span>
-                                    <span class="info-value">{{ $admin->created_at ? $admin->created_at->format('d M Y') : '—' }}</span>
+                                    <span class="info-value">{{ $admin->created_at ? $admin->created_at->format('d M Y') : 'Ã¢â‚¬â€' }}</span>
                                 </div>
                                 <div class="info-item">
                                     <span class="info-label">Status Akun</span>
@@ -159,7 +159,7 @@
                             </div>
                         </section>
 
-                        {{-- ❖ Edit Profil --}}
+                        {{-- Ã¢Ââ€“ Edit Profil --}}
                         <section class="profile-card">
                             <div class="profile-card-head">
                                 <div class="profile-card-icon">
@@ -198,7 +198,7 @@
                             </form>
                         </section>
 
-                        {{-- ❖ Keamanan Akun --}}
+                        {{-- Ã¢Ââ€“ Keamanan Akun --}}
                         <section class="profile-card">
                             <div class="profile-card-head">
                                 <div class="profile-card-icon ic-shield">

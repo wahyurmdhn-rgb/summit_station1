@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}">
     <title>Laporan Operasional & Keuangan - Summit Station Admin</title>
-    <link rel="stylesheet" href="{{ asset('css/summit-admin.css') . '?v=' . time() }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . filemtime(public_path('css/summit-footer.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-admin.css') . '?v=' . asset_v('css/summit-admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . asset_v('css/summit-footer.css') }}">
 </head>
 <body>
 
@@ -14,10 +14,10 @@
     <div class="top-banner-line"></div>
 
     <div class="admin-layout">
-        <!-- ─── 1. Sidebar Admin ─── -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 1. Sidebar Admin Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
         @include('admin.partials.sidebar', ['activeMenu' => 'laporan'])
 
-        <!-- ─── 2. Main Content ─── -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 2. Main Content Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
         <div class="admin-main">
             <!-- Header -->
             @include('admin.partials.header', [
@@ -56,7 +56,7 @@
                             </div>
                         </form>
 
-                        <a href="{{ route('admin.laporan.export') }}" class="btn-export-csv">
+                        <a href="{{ route('admin.laporan.export', ['period' => $period]) }}" class="btn-export-csv">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                 <polyline points="7 10 12 15 17 10"></polyline>
@@ -85,7 +85,7 @@
                             <span class="user-stat-number">{{ number_format($totalOrdersCount) }}</span>
                             <span class="user-stat-growth">{{ $completedOrdersCount }} Selesai</span>
                         </div>
-                        <div class="user-stat-subtext">{{ $activeOrdersCount }} Aktif • {{ $pendingOrdersCount }} Menunggu</div>
+                        <div class="user-stat-subtext">{{ $activeOrdersCount }} Aktif Ã¢â‚¬Â¢ {{ $pendingOrdersCount }} Menunggu</div>
                     </div>
 
                     <!-- Total Items Rented -->
@@ -221,7 +221,7 @@
                 </div>
             </main>
 
-            <!-- ─── Footer ─── -->
+            <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Footer Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
             @include('partials.footer', ['footerContext' => 'admin'])
         </div>
     </div>

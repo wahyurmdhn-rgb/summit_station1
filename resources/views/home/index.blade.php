@@ -1,13 +1,13 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}">
     <title>Summit Station - Rental Peralatan Mendaki Premium</title>
-    <link rel="stylesheet" href="{{ asset('css/summit-home.css') . '?v=' . filemtime(public_path('css/summit-home.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . filemtime(public_path('css/summit-footer.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-navbar.css') . '?v=' . filemtime(public_path('css/summit-navbar.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-home.css') . '?v=' . asset_v('css/summit-home.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . asset_v('css/summit-footer.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-navbar.css') . '?v=' . asset_v('css/summit-navbar.css') }}">
 </head>
 <body>
 

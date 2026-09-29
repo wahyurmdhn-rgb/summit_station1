@@ -136,55 +136,55 @@ class BookingProductConsistencyTest extends TestCase
         ]);
 
         // ─── TEST 2: Product A (Apex Ultralight V2) ───
-        $resA = $this->get('/catalog/' . $prodA->id);
+        $resA = $this->get('/catalog/'.$prodA->id);
         $resA->assertStatus(200);
         $resA->assertSee('Apex Ultralight V2');
         $resA->assertSee('250.000');
-        $resA->assertSee('value="' . $prodA->id . '"', false);
+        $resA->assertSee('value="'.$prodA->id.'"', false);
         $resA->assertDontSee('Terra 65 Expedition');
 
         // ─── TEST 3: Product B (Terra 65 Expedition) ───
-        $resB = $this->get('/catalog/' . $prodB->id);
+        $resB = $this->get('/catalog/'.$prodB->id);
         $resB->assertStatus(200);
         $resB->assertSee('Terra 65 Expedition');
         $resB->assertSee('125.000');
-        $resB->assertSee('value="' . $prodB->id . '"', false);
+        $resB->assertSee('value="'.$prodB->id.'"', false);
         $resB->assertDontSee('Apex Ultralight V2');
 
         // ─── TEST 4: Product C (MSR Hubba Hubba NX) ───
-        $resC = $this->get('/catalog/' . $prodC->id);
+        $resC = $this->get('/catalog/'.$prodC->id);
         $resC->assertStatus(200);
         $resC->assertSee('MSR Hubba Hubba NX');
         $resC->assertSee('140.000');
-        $resC->assertSee('value="' . $prodC->id . '"', false);
+        $resC->assertSee('value="'.$prodC->id.'"', false);
 
         // ─── TEST 5: Product D (Lowa Renegade GTX) ───
-        $resD = $this->get('/catalog/' . $prodD->id);
+        $resD = $this->get('/catalog/'.$prodD->id);
         $resD->assertStatus(200);
         $resD->assertSee('Lowa Renegade GTX');
         $resD->assertSee('65.000');
-        $resD->assertSee('value="' . $prodD->id . '"', false);
+        $resD->assertSee('value="'.$prodD->id.'"', false);
 
         // ─── TEST 6: Product E (Petzl Swift RL 900) ───
-        $resE = $this->get('/catalog/' . $prodE->id);
+        $resE = $this->get('/catalog/'.$prodE->id);
         $resE->assertStatus(200);
         $resE->assertSee('Petzl Swift RL 900');
         $resE->assertSee('15.000');
-        $resE->assertSee('value="' . $prodE->id . '"', false);
+        $resE->assertSee('value="'.$prodE->id.'"', false);
 
         // ─── TEST 7: Bundle 1 (Mountain Summit Package) ───
-        $resBundle1 = $this->get('/catalog/bundle/' . $bundle1->id);
+        $resBundle1 = $this->get('/catalog/bundle/'.$bundle1->id);
         $resBundle1->assertStatus(200);
         $resBundle1->assertSee('Mountain Summit Package');
         $resBundle1->assertSee('250.000');
-        $resBundle1->assertSee('name="bundle_id" value="' . $bundle1->id . '"', false);
+        $resBundle1->assertSee('name="bundle_id" value="'.$bundle1->id.'"', false);
 
         // ─── TEST 8: Bundle 2 (4-Person Camping Package) ───
-        $resBundle2 = $this->get('/catalog/bundle/' . $bundle2->id);
+        $resBundle2 = $this->get('/catalog/bundle/'.$bundle2->id);
         $resBundle2->assertStatus(200);
         $resBundle2->assertSee('4-Person Camping Package');
         $resBundle2->assertSee('180.000');
-        $resBundle2->assertSee('name="bundle_id" value="' . $bundle2->id . '"', false);
+        $resBundle2->assertSee('name="bundle_id" value="'.$bundle2->id.'"', false);
 
         // ─── TEST 9: Direct URL & 404 Handling ───
         $resInvalidProduct = $this->get('/catalog/999999');
@@ -232,11 +232,11 @@ class BookingProductConsistencyTest extends TestCase
                     'price_per_day' => 250000,
                     'subtotal' => 1000000,
                     'image' => 'tent.jpg',
-                ]
-            ]
+                ],
+            ],
         ])->post('/payment/process', [
             'payment_method' => 'qris',
-            'proof' => UploadedFile::fake()->create('proof.jpg', 100),
+            'proof' => UploadedFile::fake()->createWithContent('proof.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')),
         ])->assertRedirect('/history');
 
         // Assert database record 100% matches Product A

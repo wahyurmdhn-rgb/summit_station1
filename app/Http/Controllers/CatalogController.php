@@ -196,13 +196,29 @@ class CatalogController extends Controller
             }
         }
 
-        $features = is_array($dbProduct->features) ? $dbProduct->features : [];
+        $features = $this->normalizeFeatures($dbProduct->features);
 
-        $features = collect($features)->filter(fn ($feature) => ! in_array(strtolower(trim((string) ($feature['title'] ?? ''))), [
-            'ketahanan cuaca',
-            'integritas struktural',
-            'ventilasi aktif',
-        ], true))->values()->all();
+        // Default feature highlights bila produk belum punya data features
+        // sendiri, agar section keunggulan tetap tampil di halaman detail.
+        if (empty($features)) {
+            $features = [
+                [
+                    'title' => 'Weather Resistance',
+                    'icon' => 'droplet',
+                    'desc' => 'Material tahan cuaca ekstrem menjaga perlengkapan tetap kering dan siap dipakai di segala medan.',
+                ],
+                [
+                    'title' => 'Structural Integrity',
+                    'icon' => 'tent',
+                    'desc' => 'Rangka kokoh dan stabil memberikan perlindungan maksimal saat kondisi lapangan berubah cepat.',
+                ],
+                [
+                    'title' => 'Active Ventilation',
+                    'icon' => 'wind',
+                    'desc' => 'Sirkulasi udara aktif mengurangi kelembapan dan menjaga kenyamanan selama ekspedisi.',
+                ],
+            ];
+        }
 
         $isSuspended = $this->checkIsSuspended();
         $isConsentPending = $this->checkIsConsentPending();
@@ -218,6 +234,8 @@ class CatalogController extends Controller
                 $realRating = number_format((float) $productReviews->avg('rating'), 1);
             }
         } catch (\Throwable $e) {
+            \App\Support\ErrorReporter::soft($e, 'CatalogController::show product reviews', ['product_id' => $dbProduct->id]);
+
             try {
                 $productReviews = $dbProduct->reviews()->with('user')->latest()->get();
                 $realReviewsCount = $productReviews->count();
@@ -226,6 +244,7 @@ class CatalogController extends Controller
                 }
             } catch (\Throwable $e2) {
                 // Table or relationship issue
+                \App\Support\ErrorReporter::soft($e2, 'CatalogController::show product reviews fallback', ['product_id' => $dbProduct->id]);
             }
         }
 
@@ -317,6 +336,8 @@ class CatalogController extends Controller
                 $bundleRating = number_format((float) $bundleReviews->avg('rating'), 1);
             }
         } catch (\Throwable $e) {
+            \App\Support\ErrorReporter::soft($e, 'CatalogController::showBundle reviews', ['bundle_id' => $bundle->id]);
+
             $bundleReviews = collect();
             $bundleReviewsCount = 0;
             $bundleRating = '0.0';
@@ -352,6 +373,64 @@ class CatalogController extends Controller
             'isConsentPending' => $isConsentPending,
             'productReviews' => $bundleReviews,
         ]);
+    }
+
+    /**
+     * Samakan bentuk data `features` ke ['title' => ..., 'icon' => ..., 'desc' => ...].
+     *
+     * View detail produk accessing `$feat['title']` / `$feat['desc']` secara
+     * langsung. Data lama di database bisa berupa list string biasa, atau
+     * associative array dengan kunci lain — bentuk itu akan membuat halaman
+     * error 500. Fungsi ini mempertahankan seluruh data yang bisa dibaca,
+     * hanya melengkapinya yang kurang, dan membuang entri yang sama sekali
+     * tidak punya teks.
+     *
+     * @param  mixed  $raw
+     * @return array<int, array{title: string, icon: string, desc: string}>
+     */
+    private function normalizeFeatures($raw): array
+    {
+        if (is_string($raw)) {
+            $decoded = json_decode($raw, true);
+            $raw = is_array($decoded) ? $decoded : [$raw];
+        }
+
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        // Bentuk asosiatif tunggal: ['title' => '...', 'desc' => '...']
+        if (isset($raw['title']) || isset($raw['desc'])) {
+            $raw = [$raw];
+        }
+
+        $normalized = [];
+
+        foreach ($raw as $entry) {
+            if (is_string($entry)) {
+                $title = trim($entry);
+                $desc = '';
+                $icon = 'tent';
+            } elseif (is_array($entry)) {
+                $title = trim((string) ($entry['title'] ?? $entry['name'] ?? $entry['label'] ?? ''));
+                $desc = trim((string) ($entry['desc'] ?? $entry['description'] ?? ''));
+                $icon = (string) ($entry['icon'] ?? 'tent');
+            } else {
+                continue;
+            }
+
+            if ($title === '' && $desc === '') {
+                continue;
+            }
+
+            $normalized[] = [
+                'title' => $title !== '' ? $title : 'Keunggulan',
+                'icon' => $icon !== '' ? $icon : 'tent',
+                'desc' => $desc,
+            ];
+        }
+
+        return $normalized;
     }
 
     private function checkIsSuspended(): bool

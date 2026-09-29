@@ -35,6 +35,8 @@ class HomeController extends Controller
                 : 0.0;
         } catch (\Throwable $e) {
             // Fallback: reviews table might be missing columns
+            \App\Support\ErrorReporter::soft($e, 'HomeController::index reviews');
+
             try {
                 $reviews = Review::with(['user', 'product'])
                     ->orderBy('created_at', 'desc')
@@ -45,6 +47,7 @@ class HomeController extends Controller
                     : 0.0;
             } catch (\Throwable $e2) {
                 // Table doesn't exist or is completely broken
+                \App\Support\ErrorReporter::soft($e2, 'HomeController::index reviews fallback');
             }
         }
 
@@ -72,6 +75,8 @@ class HomeController extends Controller
                 ->limit(8)
                 ->get();
         } catch (\Throwable $e) {
+            \App\Support\ErrorReporter::soft($e, 'HomeController::featuredProducts');
+
             return collect();
         }
     }

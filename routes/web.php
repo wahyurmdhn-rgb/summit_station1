@@ -16,6 +16,9 @@ use App\Http\Controllers\FileController;
 // Admin Protected Routes
 Route::middleware(['admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
+    // Alias lama ke dashboard admin (tanpa nama agar tidak bentrok dengan
+    // route bernama di atas). Tetap dipertahankan karena URL ini dipakai
+    // bookmark lama dan tests\Smoke\RefundMysqlSmokeTest.
     Route::get('/admin/dashboard', [AdminController::class, 'index']);
     
     // Alat Routes
@@ -158,6 +161,7 @@ Route::get('/store-location', function () {
 // File Bukti Terkontrol (admin / pemilik booking) — penyajian dari storage privat.
 Route::get('/files/payment-proof/{payment}', [FileController::class, 'paymentProof'])->name('file.payment-proof');
 Route::get('/files/return-proof/{return}', [FileController::class, 'returnProof'])->name('file.return-proof');
+Route::get('/files/return-inspection-photo/{return}', [FileController::class, 'returnInspectionPhoto'])->name('file.return-inspection-photo');
 Route::get('/files/parent-consent/{user}', [FileController::class, 'parentConsent'])->name('file.parent-consent');
 Route::get('/files/ktp-guardian/{user}', [FileController::class, 'ktpGuardian'])->name('file.ktp-guardian');
 Route::get('/files/student-card/{user}', [FileController::class, 'studentCard'])->name('file.student-card');

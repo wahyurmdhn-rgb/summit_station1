@@ -86,8 +86,8 @@ class MinorConsentRentalBlockTest extends TestCase
                     'price_per_day' => 125000,
                     'subtotal' => 375000,
                     'image' => 'tent.jpg',
-                ]
-            ]
+                ],
+            ],
         ])->get('/payment');
 
         $response->assertSessionHasErrors('error');
@@ -110,11 +110,11 @@ class MinorConsentRentalBlockTest extends TestCase
                     'price_per_day' => 125000,
                     'subtotal' => 375000,
                     'image' => 'tent.jpg',
-                ]
-            ]
+                ],
+            ],
         ])->post('/payment/process', [
             'payment_method' => 'qris',
-            'proof' => UploadedFile::fake()->create('proof.jpg', 100),
+            'proof' => UploadedFile::fake()->createWithContent('proof.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')),
         ]);
 
         $response->assertSessionHasErrors('error');
@@ -173,7 +173,7 @@ class MinorConsentRentalBlockTest extends TestCase
         $product = $this->makeProduct();
 
         $response = $this->withSession($this->customerSession($user))
-            ->get('/catalog/' . $product->id);
+            ->get('/catalog/'.$product->id);
 
         $response->assertStatus(200);
         $response->assertSee('Persetujuan orang tua');

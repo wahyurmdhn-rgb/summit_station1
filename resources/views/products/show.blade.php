@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 @php
     $bookingToday = now()->format('Y-m-d');
     $bookingPrice = (int) ($product['price'] ?? 0);
@@ -7,12 +7,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}">
     <title>{{ $product['name'] }} - Summit Station</title>
-    <link rel="stylesheet" href="{{ asset('css/summit-detail.css') . '?v=' . filemtime(public_path('css/summit-detail.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-image-viewer.css') . '?v=' . filemtime(public_path('css/summit-image-viewer.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . filemtime(public_path('css/summit-footer.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-navbar.css') . '?v=' . filemtime(public_path('css/summit-navbar.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-detail.css') . '?v=' . asset_v('css/summit-detail.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-image-viewer.css') . '?v=' . asset_v('css/summit-image-viewer.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . asset_v('css/summit-footer.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-navbar.css') . '?v=' . asset_v('css/summit-navbar.css') }}">
     <style>
         .date-picker {
             border: 1px solid #d5d3cb;
@@ -504,6 +504,6 @@
         }
     </script>
     <script src="{{ asset('js/summit-navbar.js') }}"></script>
-    <script src="{{ asset('js/summit-image-viewer.js') . '?v=' . filemtime(public_path('js/summit-image-viewer.js')) }}"></script>
+    <script src="{{ asset('js/summit-image-viewer.js') . '?v=' . asset_v('js/summit-image-viewer.js') }}"></script>
 </body>
 </html>

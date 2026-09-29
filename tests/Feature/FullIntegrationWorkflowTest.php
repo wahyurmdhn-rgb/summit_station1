@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Admin;
 use App\Models\Category;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ReturnRecord;
@@ -67,7 +66,7 @@ class FullIntegrationWorkflowTest extends TestCase
         $catalogResponse->assertStatus(200);
         $catalogResponse->assertSee('Apex Sentinel 4P');
 
-        $detailResponse = $this->get('/catalog/' . $product->id);
+        $detailResponse = $this->get('/catalog/'.$product->id);
         $detailResponse->assertStatus(200);
         $detailResponse->assertSee('Apex Sentinel 4P');
 
@@ -99,11 +98,11 @@ class FullIntegrationWorkflowTest extends TestCase
                     'price_per_day' => 125000,
                     'subtotal' => 500000,
                     'image' => 'tent.jpg',
-                ]
-            ]
+                ],
+            ],
         ])->post('/payment/process', [
             'payment_method' => 'qris',
-            'proof' => UploadedFile::fake()->create('proof.jpg', 100),
+            'proof' => UploadedFile::fake()->createWithContent('proof.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')),
         ]);
         $paymentProcessResponse->assertRedirect('/history');
 
@@ -129,7 +128,7 @@ class FullIntegrationWorkflowTest extends TestCase
         $adminPembayaranResponse->assertSee($order->code);
 
         // Admin approves Payment
-        $approveResponse = $this->post('/admin/pembayaran/' . $payment->id . '/approve');
+        $approveResponse = $this->post('/admin/pembayaran/'.$payment->id.'/approve');
         $approveResponse->assertRedirect('/admin/pembayaran');
 
         $order->refresh();
@@ -138,7 +137,7 @@ class FullIntegrationWorkflowTest extends TestCase
         $this->assertEquals('success', $payment->status);
 
         // 7. Admin records return inspection and completes return
-        $recordReturnResponse = $this->post('/admin/pengembalian/' . $order->id . '/record', [
+        $recordReturnResponse = $this->post('/admin/pengembalian/'.$order->id.'/record', [
             'condition' => 'excellent',
             'inspection_note' => 'Barang lengkap dan bersih',
         ]);
@@ -148,7 +147,7 @@ class FullIntegrationWorkflowTest extends TestCase
             ->whereNull('order_item_id')
             ->latest('id')
             ->firstOrFail();
-        $completeReturnResponse = $this->post('/admin/pengembalian/' . $order->id . '/complete', [
+        $completeReturnResponse = $this->post('/admin/pengembalian/'.$order->id.'/complete', [
             'return_record_id' => $returnRecord->id,
         ]);
         $completeReturnResponse->assertRedirect('/admin/pengembalian');

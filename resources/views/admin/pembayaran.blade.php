@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}">
     <title>Pembayaran - Log Audit Keuangan - Summit Station</title>
-    <link rel="stylesheet" href="{{ asset('css/summit-admin.css') . '?v=' . time() }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . filemtime(public_path('css/summit-footer.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-admin.css') . '?v=' . asset_v('css/summit-admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . asset_v('css/summit-footer.css') }}">
 </head>
 <body>
 
@@ -14,10 +14,10 @@
     <div class="top-banner-line"></div>
 
     <div class="admin-layout">
-        <!-- ─── Sidebar ─── -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Sidebar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
         @include('admin.partials.sidebar', ['activeMenu' => 'pembayaran'])
 
-        <!-- ─── Main Content Area ─── -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Content Area Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
         <div class="admin-main">
             <!-- Header with Breadcrumb & Admin Profile -->
             @include('admin.partials.header', [
@@ -39,7 +39,7 @@
                     </div>
                 @endif
 
-                <!-- ─── 4 Statistic Cards Row ─── -->
+                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 4 Statistic Cards Row Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                 <div class="stats-grid-penyewaan">
                     <!-- Card 1: TOTAL REVENUE -->
                     <div class="stat-card-penyewaan">
@@ -58,7 +58,7 @@
                             </div>
                         </div>
                         <div class="stat-subtext-note green">
-                            <span>↗</span>
+                            <span>Ã¢â€ â€”</span>
                             <span>Total pendapatan dari seluruh pembayaran disetujui</span>
                         </div>
                     </div>
@@ -117,7 +117,7 @@
                     </div>
                 </div>
 
-                <!-- ─── Main Two-Column / Flexible Layout ─── -->
+                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Two-Column / Flexible Layout Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                 <div class="pembayaran-main-container">
                     <!-- Left Section: Heading, Filter, and Financial Audit Log Table -->
                     <div class="pembayaran-table-section">
@@ -158,7 +158,7 @@
                             </div>
                         </div>
 
-                        <!-- ─── Financial Audit Log Table ─── -->
+                        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Financial Audit Log Table Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                         <div class="alat-table-container">
                             <div class="table-responsive">
                                 <table class="alat-table">
@@ -192,11 +192,11 @@
 
                                                 $methodName = $payment->formatted_method;
                                                 $methodIcon = match (strtolower($payment->method)) {
-                                                    'bca', 'bank_transfer', 'bca_transfer' => '🏛',
-                                                    'mandiri', 'mandiri_va' => '💳',
-                                                    'gopay' => '📱',
-                                                    'qris' => '📷',
-                                                    default => '💰',
+                                                    'bca', 'bank_transfer', 'bca_transfer' => 'Ã°Å¸Ââ€º',
+                                                    'mandiri', 'mandiri_va' => 'Ã°Å¸â€™Â³',
+                                                    'gopay' => 'Ã°Å¸â€œÂ±',
+                                                    'qris' => 'Ã°Å¸â€œÂ·',
+                                                    default => 'Ã°Å¸â€™Â°',
                                                 };
                                             @endphp
                                             <tr onclick="selectPaymentForVerification({{ json_encode([
@@ -228,7 +228,7 @@
                                                             <span style="font-size: 11px; color: #185d31; font-weight: 700;">#{{ $payment->order->code }}</span>
                                                         @endif
                                                         <span style="font-size: 11px; color: #64748b;">
-                                                            {{ $payment->created_at ? $payment->created_at->format('M d, Y • H:i') : '-' }}
+                                                            {{ $payment->created_at ? $payment->created_at->format('M d, Y Ã¢â‚¬Â¢ H:i') : '-' }}
                                                         </span>
                                                     </div>
                                                 </td>
@@ -273,7 +273,7 @@
                                                                  class="proof-thumbnail-img">
                                                         </button>
                                                     @else
-                                                        <span class="proof-none-badge" title="Bukti belum dikirim">—</span>
+                                                        <span class="proof-none-badge" title="Bukti belum dikirim">Ã¢â‚¬â€</span>
                                                     @endif
                                                 </td>
 
@@ -328,11 +328,11 @@
                                                                         'amount' => $payment->amount,
                                                                         'amount_formatted' => 'Rp ' . number_format($payment->amount, 0, ',', '.'),
                                                                         'status' => $payment->status,
-                                                                        'reference' => $payment->reference ?? '7728399102-X',
-                                                                        'timestamp' => $payment->created_at ? $payment->created_at->format('Y-m-d H:i') : '2023-10-24 14:18',
+                                                                        'reference' => $payment->reference,
+                                                                        'timestamp' => $payment->created_at?->format('Y-m-d H:i'),
                                                                         'proof_url' => $payment->proof_url,
                                                                         'has_proof' => (bool) $payment->has_proof,
-                                                                        'match_warning' => $payment->match_warning ?? 'System mendeteksi kecocokan nama 99% antara pengirim dan profil user. Nomor rekening telah terlihat 3 kali sebelumnya.',
+                                                                        'match_warning' => null,
                                                                     ]) }})">
                                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -354,11 +354,11 @@
                                                                         'amount' => $payment->amount,
                                                                         'amount_formatted' => 'Rp ' . number_format($payment->amount, 0, ',', '.'),
                                                                         'status' => $payment->status,
-                                                                        'reference' => $payment->reference ?? '7728399102-X',
-                                                                        'timestamp' => $payment->created_at ? $payment->created_at->format('Y-m-d H:i') : '2023-10-24 14:18',
+                                                                        'reference' => $payment->reference,
+                                                                        'timestamp' => $payment->created_at?->format('Y-m-d H:i'),
                                                                         'proof_url' => $payment->proof_url,
                                                                         'has_proof' => (bool) $payment->has_proof,
-                                                                        'match_warning' => $payment->match_warning ?? 'System mendeteksi kecocokan nama 99% antara pengirim dan profil user. Nomor rekening telah terlihat 3 kali sebelumnya.',
+                                                                        'match_warning' => null,
                                                                     ]) }})">
                                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -422,7 +422,7 @@
                         </div>
                     </div>
 
-                    <!-- ─── Right Section: Payment Verification Panel / Drawer ─── -->
+                    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Right Section: Payment Verification Panel / Drawer Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                     <div id="verificationDrawer" class="payment-verification-drawer">
                         <div class="verification-drawer-header">
                             <h2 class="verification-drawer-title">Verifikasi Pembayaran</h2>
@@ -535,7 +535,7 @@
                             </button>
                         </div>
                         <div id="drawer_status_settled" style="display: none; text-align: center; padding: 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; color: #166534; font-weight: 700; font-size: 13px; margin-top: 10px;">
-                            ✓ Pembayaran telah disetujui (Lunas)
+                            Ã¢Å“â€œ Pembayaran telah disetujui (Lunas)
                         </div>
                     </div>
                 </div>
@@ -546,7 +546,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Approve Payment ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Approve Payment Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="approveModal" class="modal-overlay">
         <div class="modal-card" style="width: 440px;">
             <div class="modal-header">
@@ -568,7 +568,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Reject Payment ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Reject Payment Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="rejectModal" class="modal-overlay">
         <div class="modal-card" style="width: 460px;">
             <div class="modal-header">
@@ -594,7 +594,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Lightbox Proof Image ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Lightbox Proof Image Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="proofLightboxModal" class="modal-overlay">
         <div class="modal-card" style="width: 600px; max-width: 90vw;">
             <div class="modal-header">
@@ -610,7 +610,7 @@
         </div>
     </div>
 
-    <!-- ─── JavaScript Interaction ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ JavaScript Interaction Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <script>
         let currentVerificationPayment = {
             id: null,
@@ -631,7 +631,17 @@
 
         function setDrawerText(id, value) {
             var el = document.getElementById(id);
-            if (el) el.textContent = value;
+            if (el) el.textContent = (value === null || value === undefined || value === '') ? 'Tidak tersedia' : value;
+        }
+
+        function updateMatchWarning(warning) {
+            var text = document.getElementById('drawer_match_warning');
+            if (!text) return;
+            if (warning) {
+                text.textContent = warning;
+            } else {
+                text.textContent = 'Verifikasi kecocokan nama pengirim otomatis tidak tersedia untuk transaksi ini. Mohon verifikasi manual dari bukti transfer yang diunggah.';
+            }
         }
 
         function updateProofDisplay(hasProof, proofUrl) {
@@ -655,15 +665,13 @@
         function selectPaymentForVerification(paymentData) {
             currentVerificationPayment = paymentData;
 
-            setDrawerText('drawer_receipt_bank', paymentData.method + ' Bukti Transaksi Berhasil');
             setDrawerText('drawer_receipt_amount', paymentData.amount_formatted);
             setDrawerText('drawer_sender_name', paymentData.customer_name);
             setDrawerText('drawer_receipt_method', paymentData.method);
             setDrawerText('drawer_receipt_trx', paymentData.trx_code);
-            setDrawerText('drawer_receipt_ref', paymentData.reference);
             setDrawerText('drawer_meta_ref', paymentData.reference);
             setDrawerText('drawer_meta_time', paymentData.timestamp);
-            setDrawerText('drawer_match_warning', paymentData.match_warning);
+            updateMatchWarning(paymentData.match_warning);
 
             updateProofDisplay(paymentData.has_proof, paymentData.proof_url);
 

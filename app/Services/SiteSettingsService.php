@@ -39,7 +39,10 @@ class SiteSettingsService
             $map = $rows->pluck('value', 'key')->toArray();
         } catch (\Throwable $e) {
             // Tabel `settings` belum tersedia (mis. saat migrasi belum berjalan).
-            // Gunakan nilai default agar halaman publik tetap berfungsi.
+            // Gunakan nilai default agar halaman publik tetap berfungsi, tapi
+            // jangan ditelan tanpa jejak.
+            \App\Support\ErrorReporter::soft($e, 'SiteSettingsService::all');
+
             return self::DEFAULTS;
         }
 

@@ -56,6 +56,20 @@ class ReturnRecord extends Model
     }
 
     /**
+     * URL tampilan foto inspeksi admin (terpisah dari bukti pengembalian user).
+     */
+    public function getInspectionPhotoUrlAttribute(): ?string
+    {
+        $raw = (string) ($this->inspection_photo ?? '');
+
+        if ($raw === '' || $raw === 'null') {
+            return null;
+        }
+
+        return route('file.return-inspection-photo', $this->id);
+    }
+
+    /**
      * Label kondisi yang user-friendly.
      */
     public function getConditionLabelAttribute(): string

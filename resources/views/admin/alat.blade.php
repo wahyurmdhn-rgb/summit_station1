@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}">
     <title>Alat - Kelola Produk - Summit Station</title>
-    <link rel="stylesheet" href="{{ asset('css/summit-admin.css') . '?v=' . time() }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . filemtime(public_path('css/summit-footer.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-admin.css') . '?v=' . asset_v('css/summit-admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . asset_v('css/summit-footer.css') }}">
 </head>
 <body>
 
@@ -14,10 +14,10 @@
     <div class="top-banner-line"></div>
 
     <div class="admin-layout">
-        <!-- ─── Sidebar ─── -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Sidebar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
         @include('admin.partials.sidebar', ['activeMenu' => 'alat'])
 
-        <!-- ─── Main Content ─── -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Content Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
         <div class="admin-main">
             <!-- Top Header -->
             @include('admin.partials.header', [
@@ -39,7 +39,7 @@
                     </div>
                 @endif
 
-                <!-- ─── Page Heading & Top Value Row ─── -->
+                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Page Heading & Top Value Row Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                 <div class="alat-header-row">
                     <div class="alat-title-block">
                         <div class="inventory-tag">KONTROL INVENTARIS</div>
@@ -87,7 +87,7 @@
                     </div>
                 </div>
 
-                <!-- ─── 3 Stats Cards Row ─── -->
+                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 3 Stats Cards Row Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                 <div class="stats-grid-alat">
                     <!-- Stat 1: Total SKUs -->
                     <div class="stat-card-alat">
@@ -143,7 +143,7 @@
                     </div>
                 </div>
 
-                <!-- ─── Filter & Counter Row ─── -->
+                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Filter & Counter Row Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                 <form method="GET" action="{{ route('admin.alat') }}" class="filter-bar-row">
                     @if ($searchTerm)
                         <input type="hidden" name="search" value="{{ $searchTerm }}">
@@ -153,7 +153,7 @@
                         <!-- Category Filter Dropdown -->
                         <div style="position: relative; display: inline-block;">
                             <select name="category" class="filter-select" onchange="this.form.submit()">
-                                <option value="all" {{ $selectedCategory === 'all' ? 'selected' : '' }}>≡ Semua Kategori</option>
+                                <option value="all" {{ $selectedCategory === 'all' ? 'selected' : '' }}>Ã¢â€°Â¡ Semua Kategori</option>
                                 <option value="paket-sewa" {{ $selectedCategory === 'paket-sewa' ? 'selected' : '' }}>Paket Sewa</option>
                                 @foreach ($categories as $cat)
                                     <option value="{{ $cat->slug }}" {{ $selectedCategory === $cat->slug ? 'selected' : '' }}>
@@ -166,7 +166,7 @@
                         <!-- Sort Dropdown -->
                         <div style="position: relative; display: inline-block;">
                             <select name="sort" class="filter-select" onchange="this.form.submit()">
-                                <option value="terbaru" {{ $selectedSort === 'terbaru' ? 'selected' : '' }}>≡ Terbaru</option>
+                                <option value="terbaru" {{ $selectedSort === 'terbaru' ? 'selected' : '' }}>Ã¢â€°Â¡ Terbaru</option>
                                 <option value="stok_asc" {{ $selectedSort === 'stok_asc' ? 'selected' : '' }}>Stok Terendah</option>
                                 <option value="stok_desc" {{ $selectedSort === 'stok_desc' ? 'selected' : '' }}>Stok Tertinggi</option>
                                 <option value="harga_asc" {{ $selectedSort === 'harga_asc' ? 'selected' : '' }}>Harga Terendah</option>
@@ -181,7 +181,7 @@
                     </div>
                 </form>
 
-                <!-- ─── Table Produk / Alat ─── -->
+                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Table Produk / Alat Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                 <div class="alat-table-container">
                     <div class="table-responsive">
                         <table class="alat-table">
@@ -394,7 +394,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Tambah Alat ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Tambah Alat Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="addModal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
@@ -508,7 +508,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Edit Alat ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Edit Alat Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="editModal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
@@ -622,7 +622,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Edit Paket Sewa ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Edit Paket Sewa Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="bundleEditModal" class="modal-overlay">
         <div class="modal-card" style="width: 640px; max-width: 95vw;">
             <div class="modal-header">
@@ -677,7 +677,7 @@
                                            style="width:16px; height:16px; cursor:pointer;">
                                     <div style="flex:1; font-size:13px; color:#334155;">
                                         <strong>{{ $opt->name }}</strong>
-                                        <span style="color:#94a3b8; font-size:11px;"> · {{ $opt->sku }}</span>
+                                        <span style="color:#94a3b8; font-size:11px;"> Ã‚Â· {{ $opt->sku }}</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:6px;">
                                         <label style="font-size:11px; color:#64748b;">Qty</label>
@@ -702,7 +702,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Tambah Paket Sewa ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Tambah Paket Sewa Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="bundleAddModal" class="modal-overlay">
         <div class="modal-card" style="width: 640px; max-width: 95vw;">
             <div class="modal-header">
@@ -750,7 +750,7 @@
                                            style="width:16px; height:16px; cursor:pointer;">
                                     <div style="flex:1; font-size:13px; color:#334155;">
                                         <strong>{{ $opt->name }}</strong>
-                                        <span style="color:#94a3b8; font-size:11px;"> · {{ $opt->sku }}</span>
+                                        <span style="color:#94a3b8; font-size:11px;"> Ã‚Â· {{ $opt->sku }}</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:6px;">
                                         <label style="font-size:11px; color:#64748b;">Qty</label>
@@ -775,7 +775,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Kelola Kategori ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Kelola Kategori Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="categoryModal" class="modal-overlay">
         <div class="modal-card" style="width: 560px;">
             <div class="modal-header">
@@ -815,7 +815,7 @@
         </div>
     </div>
 
-    <!-- ─── Modal Konfirmasi Hapus ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Konfirmasi Hapus Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <div id="deleteModal" class="modal-overlay">
         <div class="modal-card" style="width: 440px;">
             <div class="modal-header">
@@ -844,7 +844,7 @@
         </div>
     </div>
 
-    <!-- ─── Scripts ─── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Scripts Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <script>
         function openAddModal() {
             document.getElementById('addModal').classList.add('active');

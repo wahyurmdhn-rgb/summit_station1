@@ -12,19 +12,23 @@ class EnsureCustomerAuth
      * Handle an incoming request.
      * Memastikan user sudah login sebagai customer sebelum melakukan booking/payment.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         $isLoggedIn = $request->session()->has('account_id')
-            && in_array($request->session()->get('account_role'), ['customer', 'admin']);
+            && $request->session()->get('account_role') === 'customer';
 
         if (! $isLoggedIn) {
+            if ($request->session()->get('account_role') === 'admin') {
+                abort(403);
+            }
+
             // Simpan URL tujuan agar setelah login bisa kembali ke halaman semula.
             // Gunakan key session khusus (bukan flash) agar tidak terhapus saat login page di-render.
             if ($request->isMethod('GET')) {
                 $intended = $request->getPathInfo()
-                    . ($request->getQueryString() ? '?' . $request->getQueryString() : '');
+                    .($request->getQueryString() ? '?'.$request->getQueryString() : '');
             } else {
                 $referer = $request->headers->get('referer');
                 if ($referer) {
@@ -34,7 +38,7 @@ class EnsureCustomerAuth
                     if ($basePath !== '' && str_starts_with($path, $basePath)) {
                         $path = substr($path, strlen($basePath)) ?: '/';
                     }
-                    $intended = $path . (isset($parsed['query']) ? '?' . $parsed['query'] : '');
+                    $intended = $path.(isset($parsed['query']) ? '?'.$parsed['query'] : '');
                 } else {
                     $intended = '/catalog';
                 }

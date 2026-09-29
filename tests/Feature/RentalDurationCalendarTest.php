@@ -263,7 +263,7 @@ class RentalDurationCalendarTest extends TestCase
             ],
         ])->post('/payment/process', [
             'payment_method' => 'qris',
-            'proof' => UploadedFile::fake()->create('proof.jpg', 100),
+            'proof' => UploadedFile::fake()->createWithContent('proof.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')),
         ]);
 
         $response->assertRedirect('/history');
@@ -314,7 +314,7 @@ class RentalDurationCalendarTest extends TestCase
             'payment_deadline' => time() + 300,
         ])->post('/payment/process', [
             'payment_method' => 'qris',
-            'proof' => UploadedFile::fake()->create('proof.jpg', 100),
+            'proof' => UploadedFile::fake()->createWithContent('proof.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')),
         ])->assertRedirect('/history');
 
         $order = Order::where('user_id', $this->owner->id)->firstOrFail();
@@ -345,7 +345,7 @@ class RentalDurationCalendarTest extends TestCase
         ReturnRecord::create([
             'order_id' => $order->id,
             'user_id' => $this->owner->id,
-            'code' => 'RET-' . strtoupper(uniqid()),
+            'code' => 'RET-'.strtoupper(uniqid()),
             'items_json' => json_encode([['name' => $this->product->name, 'qty' => 1]]),
             'condition' => 'good',
             'status' => 'approved',
@@ -415,7 +415,7 @@ class RentalDurationCalendarTest extends TestCase
         $this->withSession([
             'account_id' => $this->owner->id,
             'account_role' => 'customer',
-        ])->json('POST', '/cart/update/' . $this->product->id, [
+        ])->json('POST', '/cart/update/'.$this->product->id, [
             'days' => 2,
             'quantity' => 1,
             'rent_start' => $this->today(),

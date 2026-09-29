@@ -6,7 +6,11 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\ReturnRecord;
 use App\Models\User;
+use Illuminate\Contracts\Routing\ResponseFactory;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -28,17 +32,12 @@ class FileController extends Controller
      * Sajikan bukti pembayaran milik satu payment (dengan otorisasi).
      * Menangani file lama (path public) maupun baru (path privat).
      */
-    public function paymentProof(int $paymentId): StreamedResponse|\Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
+    public function paymentProof(int $paymentId): StreamedResponse|BinaryFileResponse|RedirectResponse
     {
         $payment = Payment::with('order')->findOrFail($paymentId);
         $this->authorizeOrder($payment->order);
 
         $raw = (string) ($payment->proof_image ?? '');
-
-        // Legacy: proof_image berisi URL publik penuh -> pertahankan perilaku lama.
-        if (str_starts_with($raw, 'http://') || str_starts_with($raw, 'https://') || str_starts_with($raw, '//')) {
-            return redirect($raw);
-        }
 
         if ($raw === '' || $raw === 'null') {
             abort(404, 'Bukti pembayaran tidak ditemukan.');
@@ -51,7 +50,7 @@ class FileController extends Controller
      * Sajikan bukti pengembalian milik satu ReturnRecord (dengan otorisasi).
      * Mendukung file lama (disk public) maupun baru (disk privat).
      */
-    public function returnProof(int $returnId): \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response|StreamedResponse
+    public function returnProof(int $returnId): ResponseFactory|Response|StreamedResponse
     {
         $record = ReturnRecord::with('order')->findOrFail($returnId);
         $this->authorizeOrder($record->order);
@@ -66,12 +65,31 @@ class FileController extends Controller
     }
 
     /**
+     * Sajikan foto inspeksi admin untuk satu ReturnRecord (dengan otorisasi).
+     * Terpisah dari bukti pengembalian user agar tidak saling menimpa.
+     */
+    public function returnInspectionPhoto(int $returnId): ResponseFactory|Response|StreamedResponse
+    {
+        $record = ReturnRecord::with('order')->findOrFail($returnId);
+        $this->authorizeOrder($record->order);
+
+        $raw = (string) ($record->inspection_photo ?? '');
+
+        if ($raw === '' || $raw === 'null') {
+            abort(404, 'Foto inspeksi tidak ditemukan.');
+        }
+
+        return $this->responseFromDisks($raw);
+    }
+
+    /**
      * Sajikan bukti persetujuan orang tua milik satu User (dengan otorisasi).
      * Hanya admin atau user pemiliknya sendiri yang boleh mengakses.
      */
     public function parentConsent(int $userId): StreamedResponse
     {
         $user = User::findOrFail($userId);
+
         return $this->serveUserDoc($user, 'parent_consent_path', 'Bukti persetujuan tidak ditemukan.');
     }
 
@@ -81,6 +99,7 @@ class FileController extends Controller
     public function ktpGuardian(int $userId): StreamedResponse
     {
         $user = User::findOrFail($userId);
+
         return $this->serveUserDoc($user, 'ktp_orang_tua_path', 'KTP orang tua tidak ditemukan.');
     }
 
@@ -90,6 +109,7 @@ class FileController extends Controller
     public function studentCard(int $userId): StreamedResponse
     {
         $user = User::findOrFail($userId);
+
         return $this->serveUserDoc($user, 'kartu_pelajar_path', 'Kartu pelajar tidak ditemukan.');
     }
 
@@ -147,6 +167,10 @@ class FileController extends Controller
      */
     private function responseFromDisks(string $path)
     {
+        if (! $this->isSafeStoragePath($path)) {
+            abort(404, 'File bukti tidak ditemukan.');
+        }
+
         foreach (['local', 'public'] as $disk) {
             if (Storage::disk($disk)->exists($path)) {
                 return Storage::disk($disk)->response($path);
@@ -154,5 +178,14 @@ class FileController extends Controller
         }
 
         abort(404, 'File bukti tidak ditemukan.');
+    }
+
+    private function isSafeStoragePath(string $path): bool
+    {
+        return $path !== ''
+            && ! str_contains($path, '\\')
+            && ! str_contains($path, '..')
+            && ! str_starts_with($path, '/')
+            && ! preg_match('#^[a-z][a-z0-9+.-]*:#i', $path);
     }
 }

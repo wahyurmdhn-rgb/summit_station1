@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Admin;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -19,77 +18,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Production-safe: seed master catalog only. Do not create demo users,
+        // credentials, orders, payments, returns, refunds, or reviews here.
         $this->call([
             CategorySeeder::class,
             ProductSeeder::class,
             BundleSeeder::class,
         ]);
-
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name' => 'Test User',
-                'avatar_path' => 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
-            ]
-        );
-
-        $customer = User::firstOrCreate(
-            ['email' => 'customer@summit.test'],
-            [
-                'name' => 'Customer Summit',
-                'username' => 'customer',
-                'domicile' => 'Jakarta',
-                'avatar_path' => 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=200&q=80',
-                'password' => 'password',
-            ]
-        );
-
-        $aris = User::firstOrCreate(
-            ['email' => 'aris.h@example.com'],
-            [
-                'name' => 'Aris Hidayat',
-                'username' => 'arish',
-                'domicile' => 'Bandung',
-                'avatar_path' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
-                'password' => 'password',
-            ]
-        );
-
-        $siti = User::firstOrCreate(
-            ['email' => 'siti.m@domain.io'],
-            [
-                'name' => 'Siti Maemunah',
-                'username' => 'sitim',
-                'domicile' => 'Surabaya',
-                'avatar_path' => 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&q=80',
-                'password' => 'password',
-            ]
-        );
-
-        $budi = User::firstOrCreate(
-            ['email' => 'budi.k@web.com'],
-            [
-                'name' => 'Budi Kusuma',
-                'username' => 'budik',
-                'domicile' => 'Yogyakarta',
-                'avatar_path' => 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80',
-                'password' => 'password',
-            ]
-        );
-
-        Admin::firstOrCreate(
-            ['email' => 'admin@summit.test'],
-            [
-                'name' => 'Admin Summit',
-                'password' => 'password',
-            ]
-        );
-
-        $this->seedDemoOrders($customer);
-        $this->seedMockupOrders($aris, $siti, $budi);
-        $this->seedPaymentMockupData();
-        $this->seedReturnMockupData();
-        $this->seedUserMockupData();
     }
 
     private function seedUserMockupData(): void
@@ -260,7 +195,7 @@ class DatabaseSeeder extends Seeder
 
             Payment::create([
                 'order_id' => $ord2->id,
-                'method' => 'mandiri_va',
+                'method' => 'bank_transfer',
                 'amount' => 890000,
                 'status' => 'success',
                 'reference' => '883921102-A',
@@ -654,4 +589,3 @@ class DatabaseSeeder extends Seeder
         }
     }
 }
-

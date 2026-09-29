@@ -5776,6 +5776,19 @@ button.menu-link {
     text-overflow: ellipsis;
 }
 
+.admin-role-badge {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #166534;
+    background: #dcfce7;
+    border: 1px solid #bbf7d0;
+    border-radius: 4px;
+    padding: 2px 5px;
+    line-height: 1;
+}
+
 @media (max-width: 760px) {
     .admin-profile-name {
         display: none;

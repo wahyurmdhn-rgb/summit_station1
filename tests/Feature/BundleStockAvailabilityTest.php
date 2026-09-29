@@ -229,7 +229,7 @@ class BundleStockAvailabilityTest extends TestCase
             [$backpack, 2],
         ]);
 
-        $cartKey = 'bundle_' . $bundle->id;
+        $cartKey = 'bundle_'.$bundle->id;
         $cart = [
             $cartKey => [
                 'id' => $cartKey,
@@ -270,7 +270,7 @@ class BundleStockAvailabilityTest extends TestCase
             [$backpack, 2],
         ]);
 
-        $cartKey = 'bundle_' . $bundle->id;
+        $cartKey = 'bundle_'.$bundle->id;
         $cart = [
             $cartKey => [
                 'id' => $cartKey,
@@ -293,7 +293,7 @@ class BundleStockAvailabilityTest extends TestCase
             'payment_deadline' => time() + 300,
         ])->post('/payment/process', [
             'payment_method' => 'qris',
-            'proof' => UploadedFile::fake()->create('proof.jpg', 100),
+            'proof' => UploadedFile::fake()->createWithContent('proof.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')),
         ]);
 
         $response->assertSessionHasErrors();

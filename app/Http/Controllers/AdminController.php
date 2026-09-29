@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -50,7 +51,8 @@ class AdminController extends Controller
 
         $stats = [
             'total_pendapatan' => $totalPendapatan,
-            'total_produk' => (int) Product::count(),
+            // Kontrak aplikasi: "Total Produk" mencakup produk satuan + paket sewa.
+            'total_produk' => (int) Product::count() + (int) Bundle::count(),
             'total_paket' => (int) Bundle::count(),
             'total_pengguna' => (int) User::count(),
             'total_pemesanan' => (int) Order::count(),
@@ -207,18 +209,31 @@ class AdminController extends Controller
 
         $url = $data['url'] ?? '';
 
-        // Amankan redirect: hanya terima URL relatif atau URL dengan host aplikasi yang sama.
-        $baseUrl = rtrim((string) config('app.url'), '/');
-        $safe = false;
-        if ($url !== '') {
-            if (str_starts_with($url, '/')) {
-                $safe = true;
-            } elseif (str_starts_with($url, $baseUrl . '/')) {
-                $safe = true;
+        // Amankan redirect: hanya izinkan path internal atau URL dengan host aplikasi.
+        // Menolak open redirect seperti //evil.com, /\evil.com, https://evil.com.
+        $destination = route('admin.dashboard');
+
+        if (is_string($url) && $url !== '' && ! str_contains($url, '\\')) {
+            $parts = parse_url($url);
+            $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+            $host = $parts['host'] ?? null;
+            $path = (string) ($parts['path'] ?? '');
+            $appHost = strtolower((string) parse_url((string) config('app.url'), PHP_URL_HOST));
+
+            if ($host === null && $scheme === '') {
+                // Path relatif internal. Harus diawali "/" dan bukan protocol-relative.
+                if ($path !== '' && str_starts_with($path, '/')) {
+                    $destination = $url;
+                }
+            } elseif ($host !== null
+                && $appHost !== ''
+                && strcasecmp((string) $host, $appHost) === 0
+                && in_array($scheme, ['', 'http', 'https'], true)) {
+                $destination = $url;
             }
         }
 
-        return redirect($safe ? $url : route('admin.dashboard'));
+        return redirect($destination);
     }
 
     /**
@@ -1387,6 +1402,8 @@ class AdminController extends Controller
 
             $completedCount = (int) Order::where('status', 'completed')->count();
         } catch (\Throwable $e) {
+            \App\Support\ErrorReporter::soft($e, 'AdminController::pengembalian data');
+
             $loadError = true;
             $orders = new \Illuminate\Pagination\LengthAwarePaginator(
                 [],
@@ -1424,19 +1441,18 @@ class AdminController extends Controller
             'inspection_note'   => 'nullable|string|max:1000',
             'damage_description'=> 'nullable|string|max:1000',
             'damage_cost'       => 'nullable|integer|min:0',
-            'proof_path'        => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
+            // Field ini milik admin (foto kondisi barang), BUKAN bukti pengembalian
+            // milik customer. Namanya sengaja `inspection_photo` agar tidak tertukar
+            // dengan kolom `proof_path` yang menyimpan bukti customer.
+            'inspection_photo'  => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
         ]);
 
-        // Foto bukti pengembalian user harus dipertahankan bila admin tidak
-        // mengunggah foto inspeksi baru.
-        $existingReturn = ReturnRecord::where('order_id', $order->id)
-            ->whereNull('order_item_id')
-            ->first();
-
-        // Upload inspection photo if present (storage privat; disajikan via route terkontrol).
+        // Foto bukti pengembalian milik user tersimpan di `proof_path` dan
+        // TIDAK boleh ditimpa. Foto inspeksi admin disimpan terpisah di
+        // `inspection_photo` agar kedua bukti tetap utuh.
         $photoPath = null;
-        if ($request->hasFile('proof_path')) {
-            $photoPath = $request->file('proof_path')->store('returns');
+        if ($request->hasFile('inspection_photo')) {
+            $photoPath = $request->file('inspection_photo')->store('returns');
         }
 
         // Create or update return record for this order
@@ -1449,9 +1465,7 @@ class AdminController extends Controller
             'damage_cost'        => $request->input('damage_cost', 0),
         ];
         if ($photoPath !== null) {
-            $returnData['proof_path'] = $photoPath;
-        } elseif ($existingReturn && $existingReturn->proof_path) {
-            $returnData['proof_path'] = $existingReturn->proof_path;
+            $returnData['inspection_photo'] = $photoPath;
         }
 
         $returnRecord = ReturnRecord::updateOrCreate(
@@ -1827,21 +1841,10 @@ class AdminController extends Controller
         // 4 Statistic Cards (Dynamic from database)
         $totalMembers = User::count();
         
-        // Active Now: hitung sesi aktif (user yang login) dalam 30 menit terakhir.
-        // Catatan: auth custom memakai session('account_id'), bukan kolom sessions.user_id
-        // milik guard bawaan Laravel, sehingga kolom user_id di tabel sessions selalu kosong.
-        // Karena itu jumlah sesi login aktif tidak bisa dihitung andal dari tabel sessions;
-        // menampilkan 0 lebih jujur daripada mengarang angka (fallback dummy 156 dihapus).
-        $activeSessionsCount = 0;
-        try {
-            $activeSessionsCount = \Illuminate\Support\Facades\DB::table('sessions')
-                ->where('last_activity', '>=', now()->subMinutes(30)->timestamp)
-                ->where('user_id', '>=', 0)
-                ->count();
-        } catch (\Throwable $e) {
-            $activeSessionsCount = 0;
-        }
-        $activeNow = $activeSessionsCount;
+        // Active Now: hanya dihitung bila session driver memang bisa di-query
+        // (database). Bila driver lain (file/array), dikembalikan null agar UI
+        // tidak menampilkan angka yang menyesatkan.
+        $activeNow = $this->activeCustomerSessionsCount();
 
         // New Registrations: past 24 hours
         $newRegistrations = User::where('created_at', '>=', now()->subHours(24))->count();
@@ -1910,6 +1913,60 @@ class AdminController extends Controller
     }
 
     /**
+     * Jumlah customer yang sedang aktif (login) dalam 30 menit terakhir.
+     *
+     * Auth aplikasi ini berbasis session kustom (session('account_id')), bukan
+     * guard bawaan Laravel, sehingga kolom `sessions.user_id` selalu NULL.
+     * Data akun diambil dari payload session (base64(serialize(...))).
+     *
+     * @return int|null null bila session driver tidak bisa di-query (mis. file),
+     *                     sehingga UI tidak menampilkan angka yang menyesatkan.
+     */
+    private function activeCustomerSessionsCount(): ?int
+    {
+        $driver = (string) config('session.driver');
+
+        if ($driver !== 'database') {
+            return null;
+        }
+
+        try {
+            if (! Schema::hasTable('sessions')) {
+                return null;
+            }
+
+            $rows = DB::table('sessions')
+                ->where('last_activity', '>=', now()->subMinutes(30)->getTimestamp())
+                ->get(['id', 'payload']);
+
+            $accountIds = [];
+
+            foreach ($rows as $row) {
+                $data = @unserialize(base64_decode((string) $row->payload));
+
+                if (! is_array($data)) {
+                    continue;
+                }
+
+                if (($data['account_role'] ?? null) !== 'customer') {
+                    continue;
+                }
+
+                $accountId = (int) ($data['account_id'] ?? 0);
+                if ($accountId > 0) {
+                    $accountIds[$accountId] = true;
+                }
+            }
+
+            return count($accountIds);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return null;
+        }
+    }
+
+    /**
      * Tambah User Baru
      */
     public function storeUser(Request $request): RedirectResponse
@@ -1921,7 +1978,9 @@ class AdminController extends Controller
             'phone' => 'nullable|string|max:30',
             'domicile' => 'nullable|string|max:255',
             'status' => 'required|string|in:active,inactive,suspended,pending,pending_verification',
-            'role' => 'nullable|string|in:user,admin,member,customer',
+            // Otorisasi admin memakai tabel `admin`, bukan kolom role di tabel
+            // `users`, sehingga 'admin' TIDAK boleh disetel di sini.
+            'role' => 'nullable|string|in:user,member,customer',
             'password' => 'required|string|min:6',
         ]);
 
@@ -1949,12 +2008,18 @@ class AdminController extends Controller
             'phone' => 'nullable|string|max:30',
             'domicile' => 'nullable|string|max:255',
             'status' => 'required|string|in:active,inactive,suspended,pending,pending_verification',
-            'role' => 'nullable|string|in:user,admin,member,customer',
+            'role' => 'nullable|string|in:user,member,customer',
             'password' => 'nullable|string|min:6',
         ]);
 
         if (empty($validated['password'])) {
             unset($validated['password']);
+        }
+
+        // Normalisasi data lama: role 'admin' di tabel users tidak berlaku dan
+        // tidak memberi akses apa pun, sehingga dibersihkan menjadi 'user'.
+        if (! isset($validated['role']) || ! in_array($validated['role'], ['user', 'member', 'customer'], true)) {
+            $validated['role'] = 'user';
         }
 
         $user->update($validated);
@@ -2105,28 +2170,39 @@ class AdminController extends Controller
     }
 
     /**
+     * Rentang waktu untuk filter periode laporan.
+     *
+     * Dipakai bersama oleh halaman laporan DAN export CSV sehingga keduanya
+     * selalu menampilkan data dengan periode yang identik.
+     *
+     * @return array{0: \Illuminate\Support\Carbon, 1: \Illuminate\Support\Carbon}|null null = seluruh periode
+     */
+    private function reportPeriodRange(string $period): ?array
+    {
+        return match ($period) {
+            'today' => [now()->startOfDay(), now()->endOfDay()],
+            'this_week' => [now()->startOfWeek(), now()->endOfWeek()],
+            'this_month' => [now()->startOfMonth(), now()->endOfMonth()],
+            default => null,
+        };
+    }
+
+    /**
      * ─── LAPORAN & ANALITIK (Halaman Laporan) ───
      */
     public function laporan(Request $request): View
     {
-        $period = $request->input('period', 'all');
+        $period = (string) $request->input('period', 'all');
+        $range = $this->reportPeriodRange($period);
 
         $queryPayments = Payment::where('status', 'success');
         $queryOrders = Order::query();
         $queryReturns = ReturnRecord::query();
 
-        if ($period === 'today') {
-            $queryPayments->whereDate('created_at', today());
-            $queryOrders->whereDate('created_at', today());
-            $queryReturns->whereDate('created_at', today());
-        } elseif ($period === 'this_week') {
-            $queryPayments->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
-            $queryOrders->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
-            $queryReturns->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
-        } elseif ($period === 'this_month') {
-            $queryPayments->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
-            $queryOrders->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
-            $queryReturns->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+        if ($range !== null) {
+            $queryPayments->whereBetween('created_at', $range);
+            $queryOrders->whereBetween('created_at', $range);
+            $queryReturns->whereBetween('created_at', $range);
         }
 
         // Summary Statistics
@@ -2190,7 +2266,17 @@ class AdminController extends Controller
      */
     public function exportCsvLaporan(Request $request): StreamedResponse
     {
-        $orders = Order::with(['user', 'items', 'payments'])->orderBy('created_at', 'desc')->get();
+        // Periode yang sama persis dengan halaman laporan.
+        $period = (string) $request->input('period', 'all');
+        $range = $this->reportPeriodRange($period);
+
+        $ordersQuery = Order::with(['user', 'items', 'payments']);
+
+        if ($range !== null) {
+            $ordersQuery->whereBetween('created_at', $range);
+        }
+
+        $orders = $ordersQuery->orderBy('created_at', 'desc')->get();
         $filename = 'laporan_summit_station_' . now()->format('Y-m-d_His') . '.csv';
 
         $headers = [
@@ -2254,12 +2340,15 @@ class AdminController extends Controller
             $totalReviewsCount = Review::count();
             $averageRating = $totalReviewsCount > 0 ? round((float) Review::avg('rating'), 1) : 0.0;
         } catch (\Throwable $e) {
+            \App\Support\ErrorReporter::soft($e, 'AdminController::website reviews');
+
             try {
                 $reviews = Review::with(['user', 'product'])->orderBy('created_at', 'desc')->paginate(10);
                 $totalReviewsCount = Review::count();
                 $averageRating = $totalReviewsCount > 0 ? round((float) Review::avg('rating'), 1) : 0.0;
             } catch (\Throwable $e2) {
                 // Table doesn't exist
+                \App\Support\ErrorReporter::soft($e2, 'AdminController::website reviews fallback');
             }
         }
 
@@ -2376,8 +2465,24 @@ class AdminController extends Controller
             return back()->with('error', 'Refund ini sudah diproses dan tidak dapat diubah lagi.');
         }
 
-        // Gunakan nominal dari database sebagai patokan.
-        $refundAmount = (int) $refund->refund_amount;
+        // Batas maksimum refund = nominal yang benar-benar dibayar untuk
+        // pesanan ini (payment sukses, atau total order sebagai fallback).
+        $paidAmount = (int) ($refund->payment?->status === 'success'
+            ? $refund->payment->amount
+            : ($refund->order?->total ?? 0));
+
+        $maxRefundable = (int) $refund->original_amount;
+        if ($paidAmount > 0) {
+            $maxRefundable = $maxRefundable > 0 ? min($maxRefundable, $paidAmount) : $paidAmount;
+        }
+
+        if ($maxRefundable <= 0) {
+            return back()->with('error', 'Nominal pembayaran tidak valid, refund tidak dapat diproses.');
+        }
+
+        // Gunakan nominal dari database sebagai patokan, dibatasi agar tidak
+        // pernah melebihi jumlah yang benar-benar dibayarkan.
+        $refundAmount = min((int) $refund->refund_amount, $maxRefundable);
         $adjustmentReason = null;
 
         // Opsi penyesuaian nominal hanya untuk admin — disimpan terpisah.
@@ -2386,10 +2491,27 @@ class AdminController extends Controller
             'adjustment_reason' => ['nullable', 'string', 'max:255'],
         ]);
 
-        if ($request->filled('refund_amount') && $request->integer('refund_amount') > 0
-            && $request->integer('refund_amount') !== $refundAmount) {
-            $refundAmount = $request->integer('refund_amount');
-            $adjustmentReason = $request->input('adjustment_reason') ?: 'Penyesuaian nominal oleh admin';
+        // Kalau admin mengirim nominal secara eksplisit, nominal itu WAJIB
+        // divalidasi — termasuk ketika nilainya sama dengan nominal yang
+        // tersimpan (mis. data lama yang sudah melebihi pembayaran). Tanpa
+        // pemeriksaan ini, nominalLapangan yang berlebihan akan disetujui
+        // secara diam-diam setelah di-clamp.
+        if ($request->filled('refund_amount')) {
+            $requestedAmount = $request->integer('refund_amount');
+
+            if ($requestedAmount <= 0) {
+                return back()->with('error', 'Nominal refund harus lebih besar dari 0.');
+            }
+
+            if ($requestedAmount > $maxRefundable) {
+                return back()->with('error', 'Nominal refund tidak boleh melebihi jumlah yang dibayarkan (Rp '
+                    . number_format($maxRefundable, 0, ',', '.').').');
+            }
+
+            if ($requestedAmount !== (int) $refund->refund_amount) {
+                $refundAmount = $requestedAmount;
+                $adjustmentReason = $request->input('adjustment_reason') ?: 'Penyesuaian nominal oleh admin';
+            }
         }
 
         $refund->update([

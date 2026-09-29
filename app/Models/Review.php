@@ -49,6 +49,8 @@ class Review extends Model
             try {
                 static::$columnCache[$col] = Schema::hasColumn('reviews', $col);
             } catch (\Throwable $e) {
+                \App\Support\ErrorReporter::soft($e, 'Review::hasColumn', ['column' => $col]);
+
                 static::$columnCache[$col] = false;
             }
         }

@@ -56,7 +56,7 @@
         <!-- Logo Summit Station -->
         <div class="reg-brand-header">
             <a href="{{ route('home') }}" class="reg-logo-link" title="Summit Station">
-                <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="Summit Station" class="reg-brand-logo">
+                <img src="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}" alt="Summit Station" class="reg-brand-logo">
             </a>
             <div class="service-pill">
                 <span class="service-dot"></span> Wilayah Jabodetabek
@@ -281,7 +281,7 @@
     <div class="expedition-shell terms-shell">
         <header class="modal-topbar">
             <div class="brand-badge-topbar">
-                <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="Summit Station" class="topbar-logo-img">
+                <img src="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}" alt="Summit Station" class="topbar-logo-img">
                 <strong>SUMMIT STATION</strong>
             </div>
             <nav>
@@ -502,13 +502,13 @@
                         </svg>
                     </div>
                     <div class="completion-text">
-                        <strong>✓ Terima kasih sudah membaca Syarat &amp; Ketentuan</strong>
+                        <strong>âœ“ Terima kasih sudah membaca Syarat &amp; Ketentuan</strong>
                         <span>Silakan centang persetujuan di bawah untuk melanjutkan pendaftaran.</span>
                     </div>
                 </div>
 
                 <div class="terms-end-mark">
-                    <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="Summit Station" class="terms-end-logo">
+                    <img src="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}" alt="Summit Station" class="terms-end-logo">
                 </div>
             </div>
 
@@ -536,7 +536,7 @@
                 Gulir ke bawah untuk membaca seluruh poin
             </small>
         </article>
-        <small class="modal-copy">© 2026 SUMMIT STATION EXPEDITION GEAR. HAK CIPTA DILINDUNGI.</small>
+        <small class="modal-copy">Â© 2026 SUMMIT STATION EXPEDITION GEAR. HAK CIPTA DILINDUNGI.</small>
     </div>
 </section>
 
@@ -544,7 +544,7 @@
     <div class="expedition-shell ktp-shell">
         <header class="modal-topbar">
             <div class="brand-badge-topbar">
-                <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="Summit Station" class="topbar-logo-img">
+                <img src="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}" alt="Summit Station" class="topbar-logo-img">
                 <strong>SUMMIT STATION</strong>
             </div>
             <nav>
@@ -709,7 +709,7 @@
     <div class="expedition-shell parent-shell">
         <header class="modal-topbar">
             <div class="brand-badge-topbar">
-                <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="Summit Station" class="topbar-logo-img">
+                <img src="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}" alt="Summit Station" class="topbar-logo-img">
                 <strong>SUMMIT STATION</strong>
             </div>
             <nav>
@@ -769,7 +769,7 @@
                     <div class="pdf-toolbar" aria-label="Kontrol tampilan PDF">
                         <span class="pdf-toolbar-label">Preview dokumen</span>
                         <div class="pdf-toolbar-controls">
-                            <button type="button" class="pdf-ctl-btn" data-pdf-zoom-out title="Perkecil" aria-label="Perkecil">−</button>
+                            <button type="button" class="pdf-ctl-btn" data-pdf-zoom-out title="Perkecil" aria-label="Perkecil">âˆ’</button>
                             <span class="pdf-zoom-label" data-pdf-zoom-label>100%</span>
                             <button type="button" class="pdf-ctl-btn" data-pdf-zoom-in title="Perbesar" aria-label="Perbesar">+</button>
                             <button type="button" class="pdf-ctl-btn" data-pdf-fullscreen title="Layar penuh" aria-label="Layar penuh">

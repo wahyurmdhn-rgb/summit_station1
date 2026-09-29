@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}">
     <title>Refund Detail {{ $refund->code }} - Summit Station</title>
-    <link rel="stylesheet" href="{{ asset('css/summit-admin.css') . '?v=' . time() }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . filemtime(public_path('css/summit-footer.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-admin.css') . '?v=' . asset_v('css/summit-admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . asset_v('css/summit-footer.css') }}">
     <style>
         .rd-badge-pending { background: #fef3c7; color: #92400e; }
         .rd-badge-approved { background: #dbeafe; color: #1e40af; }
@@ -29,10 +29,10 @@
     <div class="top-banner-line"></div>
 
     <div class="admin-layout">
-        <!-- ─── Sidebar ─── -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Sidebar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
         @include('admin.partials.sidebar', ['activeMenu' => 'refund'])
 
-        <!-- ─── Main Content Area ─── -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Content Area Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
         <div class="admin-main">
             @include('admin.partials.header', [
                 'adminPageTitle' => 'Detail Refund',
@@ -56,7 +56,7 @@
                         <p class="rd-label">PENGEMBALIAN DANA</p>
                         <h1 style="font-size: 24px; font-weight: 900; color: #1a1d1a; margin: 2px 0 0;">{{ $refund->code }}</h1>
                         <p style="font-size: 13px; color: #64748b; margin-top: 4px;">
-                            Diajukan {{ $refund->created_at ? $refund->created_at->format('d M Y • H:i') : '-' }}
+                            Diajukan {{ $refund->created_at ? $refund->created_at->format('d M Y Ã¢â‚¬Â¢ H:i') : '-' }}
                         </p>
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
@@ -131,7 +131,7 @@
                     </div>
                     <div class="rd-card" style="margin-bottom: 0;">
                         <p class="rd-label">Tanggal Pengajuan</p>
-                        <p class="rd-value">{{ $refund->created_at ? $refund->created_at->format('d M Y • H:i') : '-' }}</p>
+                        <p class="rd-value">{{ $refund->created_at ? $refund->created_at->format('d M Y Ã¢â‚¬Â¢ H:i') : '-' }}</p>
                     </div>
                     <div class="rd-card" style="margin-bottom: 0;">
                         <p class="rd-label">Metode Pembayaran</p>
@@ -161,13 +161,13 @@
                         <p class="rd-label">Riwayat Proses</p>
                         <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: #334155;">
                             @if ($refund->approved_at)
-                                <div>✅ <strong>Disetujui</strong> oleh {{ $refund->processedBy?->name ?? 'Admin' }} pada {{ $refund->approved_at->format('d M Y • H:i') }}</div>
+                                <div>Ã¢Å“â€¦ <strong>Disetujui</strong> oleh {{ $refund->processedBy?->name ?? 'Admin' }} pada {{ $refund->approved_at->format('d M Y Ã¢â‚¬Â¢ H:i') }}</div>
                             @endif
                             @if ($refund->rejected_at)
-                                <div>❌ <strong>Ditolak</strong> oleh {{ $refund->processedBy?->name ?? 'Admin' }} pada {{ $refund->rejected_at->format('d M Y • H:i') }}</div>
+                                <div>Ã¢ÂÅ’ <strong>Ditolak</strong> oleh {{ $refund->processedBy?->name ?? 'Admin' }} pada {{ $refund->rejected_at->format('d M Y Ã¢â‚¬Â¢ H:i') }}</div>
                             @endif
                             @if ($refund->completed_at)
-                                <div>💰 <strong>Selesai</strong> (dana dikembalikan) pada {{ $refund->completed_at->format('d M Y • H:i') }}</div>
+                                <div>Ã°Å¸â€™Â° <strong>Selesai</strong> (dana dikembalikan) pada {{ $refund->completed_at->format('d M Y Ã¢â‚¬Â¢ H:i') }}</div>
                             @endif
                         </div>
                     </div>

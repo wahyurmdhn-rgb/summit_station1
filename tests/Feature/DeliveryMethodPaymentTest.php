@@ -19,18 +19,19 @@ class DeliveryMethodPaymentTest extends TestCase
     {
         return User::create([
             'name' => 'Delivery Tester',
-            'username' => 'delivery_' . substr(uniqid(), -6),
-            'email' => 'delivery' . uniqid() . '@summit.id',
+            'username' => 'delivery_'.substr(uniqid(), -6),
+            'email' => 'delivery'.uniqid().'@summit.id',
             'password' => 'password',
         ]);
     }
 
     private function makeProduct(): Product
     {
-        $category = Category::create(['name' => 'Tents', 'slug' => 'tents' . rand(100, 999)]);
+        $category = Category::create(['name' => 'Tents', 'slug' => 'tents'.rand(100, 999)]);
+
         return Product::create([
             'category_id' => $category->id,
-            'sku' => 'SS-DEL-' . rand(1000, 9999),
+            'sku' => 'SS-DEL-'.rand(1000, 9999),
             'name' => 'Summit Delivery X',
             'price_per_day' => 125000,
             'stock_total' => 5,
@@ -90,7 +91,7 @@ class DeliveryMethodPaymentTest extends TestCase
             ->post('/payment/process', [
                 'payment_method' => 'qris',
                 'delivery_method' => 'pickup',
-                'proof' => UploadedFile::fake()->create('proof.jpg', 100),
+                'proof' => UploadedFile::fake()->createWithContent('proof.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')),
             ]);
 
         $response->assertRedirect('/history');
@@ -118,7 +119,7 @@ class DeliveryMethodPaymentTest extends TestCase
                 'recipient_phone' => '081234567890',
                 'delivery_address' => 'Jl. Merapi No. 10, Magelang',
                 'delivery_note' => 'Patokan: dekat SD Merapi',
-                'proof' => UploadedFile::fake()->create('proof.jpg', 100),
+                'proof' => UploadedFile::fake()->createWithContent('proof.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')),
             ]);
 
         $response->assertRedirect('/history');
@@ -149,7 +150,7 @@ class DeliveryMethodPaymentTest extends TestCase
                 'recipient_name' => '',
                 'recipient_phone' => '',
                 'delivery_address' => '',
-                'proof' => UploadedFile::fake()->create('proof.jpg', 100),
+                'proof' => UploadedFile::fake()->createWithContent('proof.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')),
             ])
             ->assertSessionHasErrors('delivery_address');
 
@@ -170,7 +171,7 @@ class DeliveryMethodPaymentTest extends TestCase
                 'recipient_name' => 'Budi Santoso',
                 'recipient_phone' => '08123',
                 'delivery_address' => 'Jl. Merapi No. 10, Magelang',
-                'proof' => UploadedFile::fake()->create('proof.jpg', 100),
+                'proof' => UploadedFile::fake()->createWithContent('proof.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')),
             ])
             ->assertSessionHasErrors('delivery_address');
 
@@ -241,7 +242,7 @@ class DeliveryMethodPaymentTest extends TestCase
             'recipient_phone' => '',
             'delivery_address' => '',
         ])->assertRedirect(route('payment'))
-          ->assertSessionHasErrors('delivery_method');
+            ->assertSessionHasErrors('delivery_method');
     }
 
     public function test_qris_page_get_still_works_and_defaults_to_pickup(): void

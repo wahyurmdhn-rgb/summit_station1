@@ -3,11 +3,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}">
     <title>Lokasi Toko - Summit Station</title>
-    <link rel="stylesheet" href="{{ asset('css/summit-store-location.css') . '?v=' . filemtime(public_path('css/summit-store-location.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . filemtime(public_path('css/summit-footer.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-navbar.css') . '?v=' . filemtime(public_path('css/summit-navbar.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-store-location.css') . '?v=' . asset_v('css/summit-store-location.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . asset_v('css/summit-footer.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-navbar.css') . '?v=' . asset_v('css/summit-navbar.css') }}">
 </head>
 <body>
     @include('layouts.navbar')

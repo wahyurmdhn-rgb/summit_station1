@@ -3,11 +3,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}">
     <title>Riwayat Penyewaan - Summit Station</title>
-    <link rel="stylesheet" href="{{ asset('css/summit-history.css') . '?v=' . filemtime(public_path('css/summit-history.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . filemtime(public_path('css/summit-footer.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/summit-navbar.css') . '?v=' . filemtime(public_path('css/summit-navbar.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-history.css') . '?v=' . asset_v('css/summit-history.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-footer.css') . '?v=' . asset_v('css/summit-footer.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/summit-navbar.css') . '?v=' . asset_v('css/summit-navbar.css') }}">
 </head>
 <body>
     @include('layouts.navbar')
@@ -455,9 +455,9 @@
                                         <div class="reviewed-stars">
                                             @for ($s = 1; $s <= 5; $s++)
                                                 @if ($s <= $order->review->rating)
-                                                    ★
+                                                    â˜…
                                                 @else
-                                                    <span class="star-empty">★</span>
+                                                    <span class="star-empty">â˜…</span>
                                                 @endif
                                             @endfor
                                         </div>
@@ -478,7 +478,7 @@
                     <!-- Return Alert Banner (if applicable) -->
                     @if (in_array($returnDisplayState['state'], ['due', 'overdue', 'waiting']))
                         <div class="order-card-alert alert-{{ $returnDisplayState['badge'] }}">
-                            <span class="alert-icon">{{ $returnDisplayState['state'] === 'overdue' ? '🚨' : ($returnDisplayState['state'] === 'waiting' ? '⏳' : '⚠️') }}</span>
+                            <span class="alert-icon">{{ $returnDisplayState['state'] === 'overdue' ? 'ðŸš¨' : ($returnDisplayState['state'] === 'waiting' ? 'â³' : 'âš ï¸') }}</span>
                             <div class="alert-content">
                                 <strong>{{ $returnDisplayState['label'] }}</strong>
                                 <p>
@@ -1230,11 +1230,11 @@
                 <div class="review-stars-block">
                     <span class="review-sub-label" id="review-stars-label">Pilih Rating Anda</span>
                     <div id="star-rating-container" class="review-stars" role="radiogroup" aria-labelledby="review-stars-label">
-                        <button type="button" class="star-item" data-val="1" onclick="setRating(1, this)" aria-label="1 bintang - Sangat Tidak Puas" aria-pressed="false">★</button>
-                        <button type="button" class="star-item" data-val="2" onclick="setRating(2, this)" aria-label="2 bintang - Tidak Puas" aria-pressed="false">★</button>
-                        <button type="button" class="star-item" data-val="3" onclick="setRating(3, this)" aria-label="3 bintang - Cukup" aria-pressed="false">★</button>
-                        <button type="button" class="star-item" data-val="4" onclick="setRating(4, this)" aria-label="4 bintang - Puas" aria-pressed="false">★</button>
-                        <button type="button" class="star-item" data-val="5" onclick="setRating(5, this)" aria-label="5 bintang - Sangat Puas & Direkomendasikan" aria-pressed="false">★</button>
+                        <button type="button" class="star-item" data-val="1" onclick="setRating(1, this)" aria-label="1 bintang - Sangat Tidak Puas" aria-pressed="false">â˜…</button>
+                        <button type="button" class="star-item" data-val="2" onclick="setRating(2, this)" aria-label="2 bintang - Tidak Puas" aria-pressed="false">â˜…</button>
+                        <button type="button" class="star-item" data-val="3" onclick="setRating(3, this)" aria-label="3 bintang - Cukup" aria-pressed="false">â˜…</button>
+                        <button type="button" class="star-item" data-val="4" onclick="setRating(4, this)" aria-label="4 bintang - Puas" aria-pressed="false">â˜…</button>
+                        <button type="button" class="star-item" data-val="5" onclick="setRating(5, this)" aria-label="5 bintang - Sangat Puas & Direkomendasikan" aria-pressed="false">â˜…</button>
                     </div>
                     <p id="rating-label" class="review-rating-label" role="status" aria-live="polite"></p>
                 </div>
