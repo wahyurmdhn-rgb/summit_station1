@@ -1,5 +1,5 @@
 {{-- ============================================================
-    HEADER ADMIN (global) — memuat lonceng notifikasi global.
+    HEADER ADMIN (global)  memuat lonceng notifikasi global.
     Dipakai bersama oleh semua halaman admin melalui @include('admin.partials.header')
     Data notifikasi ($adminNotifications, $adminUnreadCount) disuntikkan
     otomatis oleh AdminLayoutComposer pada semua halaman admin.

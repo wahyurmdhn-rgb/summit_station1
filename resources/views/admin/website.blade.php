@@ -14,10 +14,10 @@
     <div class="top-banner-line"></div>
 
     <div class="admin-layout">
-        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 1. Sidebar Admin Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+        <!--  1. Sidebar Admin  -->
         @include('admin.partials.sidebar', ['activeMenu' => 'website'])
 
-        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 2. Main Content Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+        <!--  2. Main Content  -->
         <div class="admin-main">
             <!-- Header -->
             @include('admin.partials.header', [
@@ -146,7 +146,7 @@
                     </form>
                 </div>
 
-                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 2. Customer Reviews Management & Moderation Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                <!--  2. Customer Reviews Management & Moderation  -->
                 <div class="user-table-card" style="margin-top: 28px;">
                     <div class="user-table-toolbar">
                         <div>
@@ -157,7 +157,7 @@
                         </div>
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <div style="padding: 8px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 13px; font-weight: 700; color: #1e293b;">
-                                Ã¢Ëœâ€¦ {{ number_format($averageRating ?? 0, 1) }} / 5.0 ({{ $totalReviewsCount ?? 0 }} Total Ulasan)
+                                 {{ number_format($averageRating ?? 0, 1) }} / 5.0 ({{ $totalReviewsCount ?? 0 }} Total Ulasan)
                             </div>
                         </div>
                     </div>
@@ -198,9 +198,9 @@
                                                 <div style="color: #eab308; font-size: 14px; font-weight: 700;">
                                                     @for ($i = 1; $i <= 5; $i++)
                                                         @if ($i <= $rev->rating)
-                                                            Ã¢Ëœâ€¦
+                                                            
                                                         @else
-                                                            <span style="color: #cbd5e1;">Ã¢Ëœâ€¦</span>
+                                                            <span style="color: #cbd5e1;"></span>
                                                         @endif
                                                     @endfor
                                                     <span style="color: #475569; font-size: 12px; margin-left: 4px;">({{ $rev->rating }}/5)</span>
@@ -259,7 +259,7 @@
                 </div>
             </main>
 
-            <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Footer Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+            <!--  Footer  -->
             @include('partials.footer', ['footerContext' => 'admin'])
         </div>
     </div>

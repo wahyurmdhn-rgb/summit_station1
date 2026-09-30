@@ -14,10 +14,10 @@
     <div class="top-banner-line"></div>
 
     <div class="admin-layout">
-        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Sidebar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+        <!--  Sidebar  -->
         @include('admin.partials.sidebar', ['activeMenu' => 'profile'])
 
-        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Content Wrapper Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+        <!--  Main Content Wrapper  -->
         <div class="admin-main">
             <!-- Top Header -->
             @include('admin.partials.header', [
@@ -60,7 +60,7 @@
 
                 <div class="profile-layout">
 
-                    {{-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Profil Ringkas Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â --}}
+                    {{--  Profil Ringkas  --}}
                     <aside class="profile-summary">
                         <div class="profile-card profile-summary-card">
                             <div class="profile-avatar" aria-hidden="true">{{ $initials }}</div>
@@ -95,7 +95,7 @@
                                     </svg>
                                     <div>
                                         <span class="profile-meta-label">Akun Dibuat</span>
-                                        <span class="profile-meta-value">{{ $admin->created_at ? $admin->created_at->format('d M Y') : 'Ã¢â‚¬â€' }}</span>
+                                        <span class="profile-meta-value">{{ $admin->created_at ? $admin->created_at->format('d M Y') : '—' }}</span>
                                     </div>
                                 </div>
                                 <div class="profile-meta-item">
@@ -113,10 +113,10 @@
                         </div>
                     </aside>
 
-                    {{-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Kolom Utama Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â --}}
+                    {{--  Kolom Utama  --}}
                     <div class="profile-stack">
 
-                        {{-- Ã¢Ââ€“ Informasi Akun --}}
+                        {{--  Informasi Akun --}}
                         <section class="profile-card">
                             <div class="profile-card-head">
                                 <div class="profile-card-icon">
@@ -150,7 +150,7 @@
                                 </div>
                                 <div class="info-item">
                                     <span class="info-label">Akun Dibuat</span>
-                                    <span class="info-value">{{ $admin->created_at ? $admin->created_at->format('d M Y') : 'Ã¢â‚¬â€' }}</span>
+                                    <span class="info-value">{{ $admin->created_at ? $admin->created_at->format('d M Y') : '—' }}</span>
                                 </div>
                                 <div class="info-item">
                                     <span class="info-label">Status Akun</span>
@@ -159,7 +159,7 @@
                             </div>
                         </section>
 
-                        {{-- Ã¢Ââ€“ Edit Profil --}}
+                        {{--  Edit Profil --}}
                         <section class="profile-card">
                             <div class="profile-card-head">
                                 <div class="profile-card-icon">
@@ -198,7 +198,7 @@
                             </form>
                         </section>
 
-                        {{-- Ã¢Ââ€“ Keamanan Akun --}}
+                        {{--  Keamanan Akun --}}
                         <section class="profile-card">
                             <div class="profile-card-head">
                                 <div class="profile-card-icon ic-shield">

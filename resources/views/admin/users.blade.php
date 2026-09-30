@@ -14,10 +14,10 @@
     <div class="top-banner-line"></div>
 
     <div class="admin-layout">
-        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 1. Sidebar Admin Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+        <!--  1. Sidebar Admin  -->
         @include('admin.partials.sidebar', ['activeMenu' => 'users'])
 
-        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 2. Main Content Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+        <!--  2. Main Content  -->
         <div class="admin-main">
             <!-- Header -->
             @include('admin.partials.header', [
@@ -52,7 +52,7 @@
                     </div>
                 @endif
 
-                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 3. Page Header: OPERATIONS & User Management Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                <!--  3. Page Header: OPERATIONS & User Management  -->
                 <div class="user-page-header-row">
                     <div class="user-page-header-left">
                         <div class="user-operations-badge">OPERASI</div>
@@ -85,7 +85,7 @@
                     </div>
                 </div>
 
-                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 4. 4 Statistic Cards Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                <!--  4. 4 Statistic Cards  -->
                 <div class="user-stats-grid">
                     <!-- TOTAL MEMBERS -->
                     <div class="user-stat-card">
@@ -103,7 +103,7 @@
                     <div class="user-stat-card">
                         <div class="user-stat-label">AKTIF SEKARANG</div>
                         <div class="user-stat-val-row">
-                            <span class="user-stat-number">{{ $activeNow === null ? 'Ã¢â‚¬â€' : number_format($activeNow) }}</span>
+                            <span class="user-stat-number">{{ $activeNow === null ? '—' : number_format($activeNow) }}</span>
                             @if ($activeNow === null)
                                 <span class="user-stat-dot" title="Tidak tersedia"></span>
                             @else
@@ -134,7 +134,7 @@
                     </div>
                 </div>
 
-                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 5 & 6. User Table Container Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                <!--  5 & 6. User Table Container  -->
                 <div class="user-table-card">
                     <!-- Top Controls / Filter Bar -->
                     <div class="user-filter-bar">
@@ -264,7 +264,7 @@
                         </div>
                     </div>
 
-                    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 6. User Table Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                    <!--  6. User Table  -->
                     <div class="user-table-scroll-container">
                         <table class="user-custom-table">
                             <thead>
@@ -455,7 +455,7 @@
                         </table>
                     </div>
 
-                    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 18. Pagination Footer Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                    <!--  18. Pagination Footer  -->
                     <div class="user-pagination-footer">
                         <div class="pagination-items-per-page">
                             <span>Item per halaman:</span>
@@ -522,12 +522,12 @@
                 </div>
             </main>
 
-            <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 28. Footer Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+            <!--  28. Footer  -->
             @include('partials.footer', ['footerContext' => 'admin'])
         </div>
     </div>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 13. Add New User Modal Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!--  13. Add New User Modal  -->
     <div id="addUserModal" class="user-modal-overlay" onclick="closeAddModal(event)">
         <div class="user-modal-card" onclick="event.stopPropagation()">
             <div class="user-modal-header">
@@ -590,7 +590,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 12. Edit User Modal Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!--  12. Edit User Modal  -->
     <div id="editUserModal" class="user-modal-overlay" onclick="closeEditModal(event)">
         <div class="user-modal-card" onclick="event.stopPropagation()">
             <div class="user-modal-header">
@@ -654,7 +654,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 14. Change Status Modal Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!--  14. Change Status Modal  -->
     <div id="statusUserModal" class="user-modal-overlay" onclick="closeStatusModal(event)">
         <div class="user-modal-card user-status-modal" onclick="event.stopPropagation()">
             <div class="user-modal-header">
@@ -690,19 +690,19 @@
                 <div class="user-status-legend" aria-hidden="true">
                     <div class="user-status-legend-item">
                         <span class="user-status-legend-dot active"></span>
-                        <span><strong>Aktif</strong> Ã¢â‚¬â€ akses normal dan dapat menyewa alat</span>
+                        <span><strong>Aktif</strong> — akses normal dan dapat menyewa alat</span>
                     </div>
                     <div class="user-status-legend-item">
                         <span class="user-status-legend-dot inactive"></span>
-                        <span><strong>Nonaktif</strong> Ã¢â‚¬â€ akun tidak aktif sementara</span>
+                        <span><strong>Nonaktif</strong> — akun tidak aktif sementara</span>
                     </div>
                     <div class="user-status-legend-item">
                         <span class="user-status-legend-dot suspended"></span>
-                        <span><strong>Diblokir</strong> Ã¢â‚¬â€ akses diblokir oleh admin</span>
+                        <span><strong>Diblokir</strong> — akses diblokir oleh admin</span>
                     </div>
                     <div class="user-status-legend-item">
                         <span class="user-status-legend-dot pending"></span>
-                        <span><strong>Verifikasi Menunggu</strong> Ã¢â‚¬â€ memerlukan verifikasi KTP/identitas</span>
+                        <span><strong>Verifikasi Menunggu</strong> — memerlukan verifikasi KTP/identitas</span>
                     </div>
                 </div>
 
@@ -714,7 +714,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 15. Delete User Confirmation Modal Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!--  15. Delete User Confirmation Modal  -->
     <div id="deleteUserModal" class="user-modal-overlay" onclick="closeDeleteModal(event)">
         <div class="user-modal-card" style="max-width: 440px;" onclick="event.stopPropagation()">
             <div class="user-modal-header">
@@ -745,7 +745,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 15b. Verifikasi Persetujuan Orang Tua Modal Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!--  15b. Verifikasi Persetujuan Orang Tua Modal  -->
     <div id="consentUserModal" class="user-modal-overlay" onclick="closeConsentModal(event)">
         <div class="user-modal-card user-status-modal" style="max-width: 460px;" onclick="event.stopPropagation()">
             <div class="user-modal-header">
@@ -810,7 +810,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 16. User Detail Modal Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!--  16. User Detail Modal  -->
     <div id="detailUserModal" class="user-modal-overlay" onclick="closeDetailModal(event)">
         <div class="user-modal-card" style="max-width: 500px;" onclick="event.stopPropagation()">
             <div class="user-modal-header">
@@ -947,7 +947,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ KTP Viewer (Perbesar Foto KTP User) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!--  KTP Viewer (Perbesar Foto KTP User)  -->
     <div id="ktpViewer" class="user-modal-overlay" onclick="closeKtpViewer()">
         <div style="background: #fff; border-radius: 16px; padding: 16px; max-width: min(92vw, 560px);" onclick="event.stopPropagation()">
             <img id="ktpViewerImg" src="" alt="Foto KTP User" style="display: block; max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 10px;">
@@ -957,7 +957,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ JavaScript Modal Controls Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!--  JavaScript Modal Controls  -->
     <script>
         function openAddModal() {
             document.getElementById('addUserModal').classList.add('show');
@@ -1026,7 +1026,7 @@
             document.getElementById('consentModalUserName').textContent = data.name + ' (' + data.email + ')';
             document.getElementById('consentDob').textContent = data.dob || '-';
             document.getElementById('consentAge').textContent = (data.age != null ? data.age + ' tahun' : '-');
-            document.getElementById('consentParent').textContent = data.parent_name ? (data.parent_name + ' Ã¢â‚¬â€ ' + data.parent_relation) : '-';
+            document.getElementById('consentParent').textContent = data.parent_name ? (data.parent_name + ' — ' + data.parent_relation) : '-';
 
             const proofLink = document.getElementById('consentProofLink');
             if (data.consent_proof_url) {

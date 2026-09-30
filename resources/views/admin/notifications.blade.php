@@ -29,7 +29,7 @@
                     <div class="admin-flash-status">{{ session('status') }}</div>
                 @endif
 
-                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Page Heading & Filter Tabs Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                <!--  Page Heading & Filter Tabs  -->
                 <div class="penyewaan-header-row">
                     <div class="penyewaan-title-block">
                         <h1 class="penyewaan-main-heading">Riwayat Notifikasi</h1>
@@ -57,7 +57,7 @@
                     </div>
                 </div>
 
-                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Daftar Notifikasi Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                <!--  Daftar Notifikasi  -->
                 <div class="notif-history-card">
                     @forelse ($notifications as $notif)
                         @php
@@ -67,7 +67,7 @@
                                 : (array) json_decode((string) $rawData, true);
                             $title = $data['title'] ?? 'Notifikasi';
                             $body = $data['body'] ?? '';
-                            $icon = $data['icon'] ?? 'Ã°Å¸â€â€';
+                            $icon = $data['icon'] ?? '🔔';
                             $link = route('admin.notifications.open', $notif->id);
                         @endphp
                         <a href="{{ $link }}" class="admin-notif-item {{ $notif->read_at ? '' : 'unread' }}">
@@ -79,7 +79,7 @@
                                 </div>
                                 <div class="admin-notif-item-body">{{ $body }}</div>
                                 <div class="admin-notif-item-time">
-                                    {{ $notif->created_at ? $notif->created_at->format('d M Y, H:i') . ' Ã¢â‚¬Â¢ ' . $notif->created_at->diffForHumans() : '' }}
+                                    {{ $notif->created_at ? $notif->created_at->format('d M Y, H:i') . ' • ' . $notif->created_at->diffForHumans() : '' }}
                                 </div>
                             </div>
                             @unless ($notif->read_at)
@@ -88,7 +88,7 @@
                         </a>
                     @empty
                         <div class="notif-history-empty">
-                            <div class="notif-history-empty-icon">Ã°Å¸â€â€</div>
+                            <div class="notif-history-empty-icon">🔔</div>
                             <h3>Belum ada notifikasi</h3>
                             <p>
                                 @if ($filter === 'unread')
@@ -102,7 +102,7 @@
                         </div>
                     @endforelse
 
-                    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Pagination Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                    <!--  Pagination  -->
                     @if ($notifications->hasPages())
                         <div class="pagination-container-row" style="border-top: 1px solid #f1f5f9; margin-top: 0; padding-top: 16px;">
                             <div class="results-counter-text">

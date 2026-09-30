@@ -36,10 +36,10 @@
     <div class="top-banner-line"></div>
 
     <div class="admin-layout">
-        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Sidebar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+        <!--  Sidebar  -->
         @include('admin.partials.sidebar', ['activeMenu' => 'refund'])
 
-        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Content Area Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+        <!--  Main Content Area  -->
         <div class="admin-main">
             <!-- Header with Breadcrumb & Admin Profile -->
             @include('admin.partials.header', [
@@ -67,7 +67,7 @@
                     </div>
                 @endif
 
-                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 4 Statistic Cards Row Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                <!--  4 Statistic Cards Row  -->
                 <div class="stats-grid-penyewaan">
                     <div class="stat-card-penyewaan">
                         <div class="stat-card-penyewaan-top">
@@ -143,7 +143,7 @@
                     </div>
                 </div>
 
-                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Refund Table Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                <!--  Refund Table  -->
                 <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; margin-top: 22px;">
                     <div class="penyewaan-header-row" style="padding: 18px 20px 0;">
                         <div class="penyewaan-title-block">
@@ -218,7 +218,7 @@
                                                 <span class="refund-reason-cell">{{ $refund->reason }}</span>
                                             </td>
                                             <td>
-                                                <span style="font-size: 12px; color: #64748b;">{{ $refund->created_at ? $refund->created_at->format('d M Y Ã¢â‚¬Â¢ H:i') : '-' }}</span>
+                                                <span style="font-size: 12px; color: #64748b;">{{ $refund->created_at ? $refund->created_at->format('d M Y • H:i') : '-' }}</span>
                                             </td>
                                             <td>
                                                 <span class="badge-status {{ $refund->status_badge_class }}">
@@ -305,7 +305,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Approve Refund Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!--  Modal Approve Refund  -->
     <div id="approveModal" class="modal-overlay">
         <div class="modal-card" style="width: 480px;">
             <div class="modal-header">
@@ -335,7 +335,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Reject Refund Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!--  Modal Reject Refund  -->
     <div id="rejectModal" class="modal-overlay">
         <div class="modal-card" style="width: 480px;">
             <div class="modal-header">
@@ -361,7 +361,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Complete Refund Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!--  Modal Complete Refund  -->
     <div id="completeModal" class="modal-overlay">
         <div class="modal-card" style="width: 440px;">
             <div class="modal-header">

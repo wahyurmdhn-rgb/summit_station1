@@ -14,10 +14,10 @@
     <div class="top-banner-line"></div>
 
     <div class="admin-layout">
-        <!-- ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Sidebar ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ -->
+        <!--  Sidebar  -->
         @include('admin.partials.sidebar', ['activeMenu' => 'dashboard'])
 
-        <!-- ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Main Content Wrapper ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ -->
+        <!--  Main Content Wrapper  -->
         <div class="admin-main">
             <!-- Top Header -->
             @include('admin.partials.header', [
@@ -27,7 +27,7 @@
 
             <!-- Dashboard Content -->
             <main class="admin-content">
-                <!-- ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â 1. STATISTIK UTAMA ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â -->
+                <!--  1. STATISTIK UTAMA  -->
                 <section class="dash-stats">
                     <!-- Total Pendapatan (Hero) -->
                     <div class="stat-hero">
@@ -56,7 +56,7 @@
                                         <line x1="12" y1="22.08" x2="12" y2="12"></line>
                                     </svg>
                                 </div>
-                                <span class="stat-caption">{{ number_format($stats['total_produk'], 0, ',', '.') }} produk Ã‚Â· {{ number_format($stats['total_paket'], 0, ',', '.') }} paket</span>
+                                <span class="stat-caption">{{ number_format($stats['total_produk'], 0, ',', '.') }} produk · {{ number_format($stats['total_paket'], 0, ',', '.') }} paket</span>
                             </div>
                             <div class="stat-card-body">
                                 <div class="stat-card-label">Total Produk</div>
@@ -159,7 +159,7 @@
                     </div>
                 </section>
 
-                <!-- ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â 2. AKTIVITAS TERBARU ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â -->
+                <!--  2. AKTIVITAS TERBARU  -->
                 <section class="dash-recent">
                     <!-- Booking Terbaru -->
                     <div class="recent-panel">
@@ -187,7 +187,7 @@
                                     </div>
                                     <div class="recent-info">
                                         <span class="recent-title">{{ $order['code'] }}</span>
-                                        <span class="recent-sub">{{ $order['customer'] }} Ã‚Â· Rp {{ number_format($order['total'], 0, ',', '.') }}</span>
+                                        <span class="recent-sub">{{ $order['customer'] }} · Rp {{ number_format($order['total'], 0, ',', '.') }}</span>
                                     </div>
                                     <div class="recent-right">
                                         <span class="badge-status {{ $orderBadge[0] }}"><span class="status-dot"></span>{{ $orderBadge[1] }}</span>
@@ -225,7 +225,7 @@
                     </div>
                 </section>
 
-                <!-- ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â 3. MONITORING PERALATAN POPULER ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â -->
+                <!--  3. MONITORING PERALATAN POPULER  -->
                 <section class="section-popular">
                     <div class="section-header">
                         <div>

@@ -28,7 +28,7 @@
             <main class="admin-content">
 
                 @php
-                    // Ã¢â€â‚¬Ã¢â€â‚¬ Konfigurasi filter: pill tetap mempertahankan search/sort Ã¢â€â‚¬Ã¢â€â‚¬
+                    //  Konfigurasi filter: pill tetap mempertahankan search/sort --
                     $baseQuery = request()->query();
                     unset($baseQuery['filter'], $baseQuery['page']);
                     $pillUrl = function ($f) use ($baseQuery) {
@@ -39,7 +39,7 @@
                         return route('admin.pengembalian', $q);
                     };
 
-                    // Ã¢â€â‚¬Ã¢â€â‚¬ Placeholder gambar (dipakai saat foto barang tidak tersedia) Ã¢â€â‚¬Ã¢â€â‚¬
+                    //  Placeholder gambar (dipakai saat foto barang tidak tersedia) --
                     $rtPlaceholder = 'data:image/svg+xml;utf8,' . rawurlencode(
                         "<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><rect width='160' height='160' fill='%23EDF1EE'/><path d='M28 118 L58 68 L78 96 L94 66 L132 118 Z' fill='%23A9C4B4'/><path d='M16 118 h128 v8 H16 Z' fill='%23D6E3DB'/></svg>"
                     );
@@ -50,7 +50,7 @@
                     <div class="pengembalian-title-area">
                         <div class="logistics-label-line">PROSES PENGEMBALIAN</div>
                         <h1 class="pengembalian-main-heading">Pengembalian</h1>
-                        <p class="pengembalian-subtitle">Kelola seluruh proses pengembalian alat Ã¢â‚¬â€ inspeksi, denda, hingga penyelesaian.</p>
+                        <p class="pengembalian-subtitle">Kelola seluruh proses pengembalian alat — inspeksi, denda, hingga penyelesaian.</p>
                     </div>
                 </div>
 
@@ -194,7 +194,7 @@
                                     $userName = $user?->name ?? 'Pelanggan';
                                     $userEmail = $user?->email ?? '';
 
-                                    // Ã¢â€â‚¬Ã¢â€â‚¬ Keterlambatan (berbasis backend) Ã¢â€â‚¬Ã¢â€â‚¬
+                                    //  Keterlambatan (berbasis backend) --
                                     $actualDateObj = ($returnRecord && $returnRecord->returned_at)
                                         ? $returnRecord->returned_at
                                         : ($order->status === 'completed' ? $order->updated_at : null);
@@ -208,9 +208,9 @@
 
                                     $actualReturnText = 'Belum Dikembalikan';
                                     if ($returnRecord && $returnRecord->returned_at) {
-                                        $actualReturnText = $returnRecord->returned_at->format('M d, Y') . ' Ã¢â‚¬Â¢ ' . $returnRecord->returned_at->format('H:i');
+                                        $actualReturnText = $returnRecord->returned_at->format('M d, Y') . ' • ' . $returnRecord->returned_at->format('H:i');
                                     } elseif ($order->status === 'completed') {
-                                        $actualReturnText = $order->updated_at->format('M d, Y') . ' Ã¢â‚¬Â¢ ' . $order->updated_at->format('H:i');
+                                        $actualReturnText = $order->updated_at->format('M d, Y') . ' • ' . $order->updated_at->format('H:i');
                                     }
 
                                     $condition = $returnRecord?->condition;
@@ -218,7 +218,7 @@
                                     $inspected = (bool) ($returnRecord && $condition !== null);
                                     $hasDamage = in_array($condition, ['minor_damage', 'major_damage']);
 
-                                    // Ã¢â€â‚¬Ã¢â€â‚¬ Status pengembalian Ã¢â€â‚¬Ã¢â€â‚¬
+                                    //  Status pengembalian --
                                     // Selalu diturunkan dari data aktual di database
                                     // (ReturnRecord.returned_at, kondisi, status order),
                                     // bukan dari asumsi/teks frontend.
@@ -236,11 +236,11 @@
                                         $conditionClass = 'condition-waiting';
                                     }
 
-                                    // Ã¢â€â‚¬Ã¢â€â‚¬ Denda kerusakan (dari ReturnRecord) Ã¢â€â‚¬Ã¢â€â‚¬
+                                    //  Denda kerusakan (dari ReturnRecord) --
                                     $damageDenda = ($returnRecord && (int) $returnRecord->damage_cost > 0) ? $returnRecord : null;
                                     $damageDendaPaid = $damageDenda?->is_denda_paid ?? false;
 
-                                    // Ã¢â€â‚¬Ã¢â€â‚¬ Pembayaran denda (FINE-*) Ã¢â€â‚¬Ã¢â€â‚¬
+                                    //  Pembayaran denda (FINE-*) --
                                     $dendaPayments = $order->payments
                                         ->filter(fn ($p) => $p->is_denda_payment)
                                         ->sortByDesc('id')
@@ -264,7 +264,7 @@
                                         }
                                     }
 
-                                    // Ã¢â€â‚¬Ã¢â€â‚¬ Sanksi keterlambatan Ã¢â€â‚¬Ã¢â€â‚¬
+                                    //  Sanksi keterlambatan --
                                     $showLateBlock = $latePenalty
                                         && (int) $latePenalty->total_fee > 0
                                         && ! in_array($latePenalty->status, ['tidak_ada_sanksi', 'dibatalkan'], true);
@@ -287,7 +287,7 @@
                                     $needsLateAssignment = $daysOverdue > 0 && (! $latePenalty || $latePenalty->status === 'dibatalkan');
                                     $hasAnyDendaItem = $damageDenda || $showLateBlock || $needsLateAssignment;
 
-                                    // Ã¢â€â‚¬Ã¢â€â‚¬ Kelayakan tombol "Selesai" Ã¢â€â‚¬Ã¢â€â‚¬
+                                    //  Kelayakan tombol "Selesai" --
                                     $isCompleted = $order->status === 'completed';
 
                                     $allFinesPaid = true;
@@ -325,7 +325,7 @@
                                             : ($damageDenda && ! $damageDendaPaid ? 'Denda kerusakan belum lunas' : 'Denda belum lunas');
                                     }
 
-                                    // Ã¢â€â‚¬Ã¢â€â‚¬ Payload modal Ã¢â€â‚¬Ã¢â€â‚¬
+                                    //  Payload modal --
                                     $inspectionPayload = [
                                         'order_id' => $order->id,
                                         'return_record_id' => $returnRecord?->id,
@@ -420,7 +420,7 @@
                                             <span class="rc-badge {{ $isOverdue ? 'badge-late' : 'badge-ontime' }}">
                                                 <span class="rc-badge-dot"></span>
                                                 @if ($isOverdue)
-                                                    Ã¢ÂÂ° Terlambat {{ $daysOverdue }} Hari
+                                                    ⏰ Terlambat {{ $daysOverdue }} Hari
                                                 @else
                                                     Tepat Waktu
                                                 @endif
@@ -691,7 +691,7 @@
                     <div id="modalProductName" class="rt-modal-product-name">Nama Produk</div>
                     <div class="rt-modal-meta">Pelanggan: <strong id="modalCustomerName">Alex Thompson</strong></div>
                     <div class="rt-modal-meta">Pesanan: <strong id="modalOrderCode" class="rt-modal-code">#ORD-9921-X</strong></div>
-                    <div class="rt-modal-sub">Diharapkan: <span id="modalExpectedReturn">Oct 24, 2023</span> Ã¢â‚¬Â¢ Aktual: <span id="modalActualReturn">Oct 24, 14:30</span></div>
+                    <div class="rt-modal-sub">Diharapkan: <span id="modalExpectedReturn">Oct 24, 2023</span> • Aktual: <span id="modalActualReturn">Oct 24, 14:30</span></div>
                 </div>
             </div>
 
@@ -769,8 +769,8 @@
 
             <p class="rt-modal-body">Apakah Anda yakin ingin menyelesaikan pengembalian pesanan <strong id="completeOrderCode" class="rt-modal-code">#ORD</strong> untuk customer <strong id="completeCustomerName">Customer</strong>?</p>
             <div class="rt-modal-note">
-                Ã¢Å“â€œ Status pesanan akan diubah menjadi <strong>Selesai</strong>.<br>
-                Ã¢Å“â€œ Stok alat yang dalam kondisi baik akan otomatis dikembalikan ke inventaris.
+                 Status pesanan akan diubah menjadi <strong>Selesai</strong>.<br>
+                 Stok alat yang dalam kondisi baik akan otomatis dikembalikan ke inventaris.
             </div>
 
             <form id="completeForm" method="POST" action="" data-lock>
@@ -801,7 +801,7 @@
                 <img id="penaltyModalProductImage" src="" alt="Product" class="inspection-info-img" onerror="rtImgFallback(this)">
                 <div style="flex: 1; min-width: 0;">
                     <div id="penaltyModalProductName" class="rt-modal-product-name">Nama Alat</div>
-                    <div class="rt-modal-meta">Customer: <strong id="penaltyModalCustomerName">Nama Customer</strong> Ã¢â‚¬Â¢ Pesanan: <strong id="penaltyModalOrderCode" class="rt-modal-code">#ORD</strong></div>
+                    <div class="rt-modal-meta">Customer: <strong id="penaltyModalCustomerName">Nama Customer</strong> • Pesanan: <strong id="penaltyModalOrderCode" class="rt-modal-code">#ORD</strong></div>
                     <div class="rt-modal-sub">Kondisi Fisik: <strong id="penaltyModalConditionLabel">-</strong></div>
                 </div>
             </div>
@@ -908,13 +908,13 @@
     <script>
         window.RTPlaceholder = @json($rtPlaceholder);
 
-        // Ã¢â€â‚¬Ã¢â€â‚¬ Fallback gambar agar layout tidak rusak saat foto tidak tersedia Ã¢â€â‚¬Ã¢â€â‚¬
+        //  Fallback gambar agar layout tidak rusak saat foto tidak tersedia --
         function rtImgFallback(img) {
             img.onerror = null;
             img.src = window.RTPlaceholder || '';
         }
 
-        // Ã¢â€â‚¬Ã¢â€â‚¬ Toast notifikasi dari flash session Ã¢â€â‚¬Ã¢â€â‚¬
+        //  Toast notifikasi dari flash session --
         (function () {
             var root = document.getElementById('rtToastRoot');
             if (!root) return;
@@ -955,7 +955,7 @@
             }, 5000);
         }
 
-        // Ã¢â€â‚¬Ã¢â€â‚¬ Cegah double-submit pada semua form aksi (POST) Ã¢â€â‚¬Ã¢â€â‚¬
+        //  Cegah double-submit pada semua form aksi (POST) --
         (function () {
             var forms = document.querySelectorAll('form[data-lock]');
             forms.forEach(function (form) {
@@ -976,7 +976,7 @@
             });
         })();
 
-        // Ã¢â€â‚¬Ã¢â€â‚¬ Inspeksi Modal Ã¢â€â‚¬Ã¢â€â‚¬
+        //  Inspeksi Modal --
         function openInspectionModal(data) {
             document.getElementById('modalProductImage').src = data.product_image || window.RTPlaceholder;
             document.getElementById('modalProductName').textContent = data.product_name;
@@ -1030,7 +1030,7 @@
             document.getElementById('damageFieldsGroup').style.display = isDamage ? 'block' : 'none';
         }
 
-        // Ã¢â€â‚¬Ã¢â€â‚¬ Complete Confirmation Modal Ã¢â€â‚¬Ã¢â€â‚¬
+        //  Complete Confirmation Modal --
         function openCompleteModal(data) {
             document.getElementById('completeOrderCode').textContent = '#' + data.order_code;
             document.getElementById('completeCustomerName').textContent = data.customer_name;
@@ -1052,7 +1052,7 @@
             if (event.target === document.getElementById('completeModal')) hideCompleteModal();
         }
 
-        // Ã¢â€â‚¬Ã¢â€â‚¬ Late Penalty Modal Ã¢â€â‚¬Ã¢â€â‚¬
+        //  Late Penalty Modal --
         function openLatePenaltyModal(data) {
             document.getElementById('penaltyModalProductImage').src = data.product_image || window.RTPlaceholder;
             document.getElementById('penaltyModalProductName').textContent = data.product_name;
@@ -1096,7 +1096,7 @@
         function hideLatePenaltyModal() { closeModal('latePenaltyModal'); }
 
         // Saat memilih "Kenakan Denda (Menunggu Pembayaran)", order tidak boleh
-        // langsung diselesaikan Ã¢â‚¬â€ checkbox auto-complete dinonaktifkan hingga
+        // langsung diselesaikan  checkbox auto-complete dinonaktifkan hingga
         // sanksi dituntaskan (lunas / dibebaskan).
         function syncPenaltyComplete(status) {
             var wrap = document.getElementById('penaltyCompleteOrderWrap');
@@ -1116,7 +1116,7 @@
             if (event.target === document.getElementById('latePenaltyModal')) hideLatePenaltyModal();
         }
 
-        // Ã¢â€â‚¬Ã¢â€â‚¬ Cancel Penalty Modal Ã¢â€â‚¬Ã¢â€â‚¬
+        //  Cancel Penalty Modal --
         function confirmCancelLatePenalty(orderId, orderCode) {
             document.getElementById('cancelPenaltyOrderCode').textContent = '#' + orderCode;
             document.getElementById('cancelPenaltyForm').action = "/admin/pengembalian/" + orderId + "/penalty/cancel";
@@ -1131,7 +1131,7 @@
             if (event.target === document.getElementById('cancelPenaltyModal')) hideCancelPenaltyModal();
         }
 
-        // Ã¢â€â‚¬Ã¢â€â‚¬ Utility Ã¢â€â‚¬Ã¢â€â‚¬
+        //  Utility --
         function closeModal(id) {
             document.getElementById(id).classList.remove('show');
             document.body.classList.remove('rt-modal-open');

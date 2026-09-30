@@ -14,10 +14,10 @@
     <div class="top-banner-line"></div>
 
     <div class="admin-layout">
-        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 1. Sidebar Admin Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+        <!--  1. Sidebar Admin  -->
         @include('admin.partials.sidebar', ['activeMenu' => 'laporan'])
 
-        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 2. Main Content Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+        <!--  2. Main Content  -->
         <div class="admin-main">
             <!-- Header -->
             @include('admin.partials.header', [
@@ -85,7 +85,7 @@
                             <span class="user-stat-number">{{ number_format($totalOrdersCount) }}</span>
                             <span class="user-stat-growth">{{ $completedOrdersCount }} Selesai</span>
                         </div>
-                        <div class="user-stat-subtext">{{ $activeOrdersCount }} Aktif Ã¢â‚¬Â¢ {{ $pendingOrdersCount }} Menunggu</div>
+                        <div class="user-stat-subtext">{{ $activeOrdersCount }} Aktif • {{ $pendingOrdersCount }} Menunggu</div>
                     </div>
 
                     <!-- Total Items Rented -->
@@ -221,7 +221,7 @@
                 </div>
             </main>
 
-            <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Footer Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+            <!--  Footer  -->
             @include('partials.footer', ['footerContext' => 'admin'])
         </div>
     </div>

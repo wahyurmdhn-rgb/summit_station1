@@ -14,10 +14,10 @@
     <div class="top-banner-line"></div>
 
     <div class="admin-layout">
-        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Sidebar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+        <!--  Sidebar  -->
         @include('admin.partials.sidebar', ['activeMenu' => 'pembayaran'])
 
-        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Content Area Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+        <!--  Main Content Area  -->
         <div class="admin-main">
             <!-- Header with Breadcrumb & Admin Profile -->
             @include('admin.partials.header', [
@@ -39,7 +39,7 @@
                     </div>
                 @endif
 
-                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 4 Statistic Cards Row Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                <!--  4 Statistic Cards Row  -->
                 <div class="stats-grid-penyewaan">
                     <!-- Card 1: TOTAL REVENUE -->
                     <div class="stat-card-penyewaan">
@@ -58,7 +58,7 @@
                             </div>
                         </div>
                         <div class="stat-subtext-note green">
-                            <span>Ã¢â€ â€”</span>
+                            <span></span>
                             <span>Total pendapatan dari seluruh pembayaran disetujui</span>
                         </div>
                     </div>
@@ -117,7 +117,7 @@
                     </div>
                 </div>
 
-                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Two-Column / Flexible Layout Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                <!--  Main Two-Column / Flexible Layout  -->
                 <div class="pembayaran-main-container">
                     <!-- Left Section: Heading, Filter, and Financial Audit Log Table -->
                     <div class="pembayaran-table-section">
@@ -158,7 +158,7 @@
                             </div>
                         </div>
 
-                        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Financial Audit Log Table Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                        <!--  Financial Audit Log Table  -->
                         <div class="alat-table-container">
                             <div class="table-responsive">
                                 <table class="alat-table">
@@ -192,11 +192,11 @@
 
                                                 $methodName = $payment->formatted_method;
                                                 $methodIcon = match (strtolower($payment->method)) {
-                                                    'bca', 'bank_transfer', 'bca_transfer' => 'Ã°Å¸Ââ€º',
-                                                    'mandiri', 'mandiri_va' => 'Ã°Å¸â€™Â³',
-                                                    'gopay' => 'Ã°Å¸â€œÂ±',
-                                                    'qris' => 'Ã°Å¸â€œÂ·',
-                                                    default => 'Ã°Å¸â€™Â°',
+                                                    'bca', 'bank_transfer', 'bca_transfer' => '🏦',
+                                                    'mandiri', 'mandiri_va' => '',
+                                                    'gopay' => '',
+                                                    'qris' => '',
+                                                    default => '',
                                                 };
                                             @endphp
                                             <tr onclick="selectPaymentForVerification({{ json_encode([
@@ -228,7 +228,7 @@
                                                             <span style="font-size: 11px; color: #185d31; font-weight: 700;">#{{ $payment->order->code }}</span>
                                                         @endif
                                                         <span style="font-size: 11px; color: #64748b;">
-                                                            {{ $payment->created_at ? $payment->created_at->format('M d, Y Ã¢â‚¬Â¢ H:i') : '-' }}
+                                                            {{ $payment->created_at ? $payment->created_at->format('M d, Y • H:i') : '-' }}
                                                         </span>
                                                     </div>
                                                 </td>
@@ -273,7 +273,7 @@
                                                                  class="proof-thumbnail-img">
                                                         </button>
                                                     @else
-                                                        <span class="proof-none-badge" title="Bukti belum dikirim">Ã¢â‚¬â€</span>
+                                                        <span class="proof-none-badge" title="Bukti belum dikirim">—</span>
                                                     @endif
                                                 </td>
 
@@ -422,7 +422,7 @@
                         </div>
                     </div>
 
-                    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Right Section: Payment Verification Panel / Drawer Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                    <!--  Right Section: Payment Verification Panel / Drawer  -->
                     <div id="verificationDrawer" class="payment-verification-drawer">
                         <div class="verification-drawer-header">
                             <h2 class="verification-drawer-title">Verifikasi Pembayaran</h2>
@@ -535,7 +535,7 @@
                             </button>
                         </div>
                         <div id="drawer_status_settled" style="display: none; text-align: center; padding: 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; color: #166534; font-weight: 700; font-size: 13px; margin-top: 10px;">
-                            Ã¢Å“â€œ Pembayaran telah disetujui (Lunas)
+                             Pembayaran telah disetujui (Lunas)
                         </div>
                     </div>
                 </div>
@@ -546,7 +546,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Approve Payment Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!--  Modal Approve Payment  -->
     <div id="approveModal" class="modal-overlay">
         <div class="modal-card" style="width: 440px;">
             <div class="modal-header">
@@ -568,7 +568,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Reject Payment Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!--  Modal Reject Payment  -->
     <div id="rejectModal" class="modal-overlay">
         <div class="modal-card" style="width: 460px;">
             <div class="modal-header">
@@ -594,7 +594,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Modal Lightbox Proof Image Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!--  Modal Lightbox Proof Image  -->
     <div id="proofLightboxModal" class="modal-overlay">
         <div class="modal-card" style="width: 600px; max-width: 90vw;">
             <div class="modal-header">
@@ -610,7 +610,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ JavaScript Interaction Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!--  JavaScript Interaction  -->
     <script>
         let currentVerificationPayment = {
             id: null,
