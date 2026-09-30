@@ -47,10 +47,9 @@ class RefundController extends Controller
                 abort(403, 'Anda tidak memiliki izin untuk mengajukan refund pada pesanan ini.');
             }
 
-            // Pastikan booking sudah dibayar (ada payment success atau order paid).
+            // Pastikan booking sudah dibayar melalui payment yang benar-benar sukses.
             $paidPayment = $orderModel->payments->first(fn ($p) => $p->status === 'success');
-            $isPaid = $paidPayment !== null || $orderModel->status === 'paid'
-                || in_array($orderModel->status, ['active', 'completed']);
+            $isPaid = $paidPayment !== null;
 
             if (! $isPaid) {
                 return back()->withErrors(['refund' => 'Refund hanya dapat diajukan untuk booking yang sudah dibayar.']);

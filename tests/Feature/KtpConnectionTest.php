@@ -25,7 +25,7 @@ class KtpConnectionTest extends TestCase
         return new UploadedFile($path, $name, 'image/png', null, true);
     }
 
-    private function createUser(string $name, string $email, string $ktpPath = null, string $dob = null): User
+    private function createUser(string $name, string $email, ?string $ktpPath = null, ?string $dob = null): User
     {
         return User::create([
             'name' => $name,
@@ -43,7 +43,8 @@ class KtpConnectionTest extends TestCase
 
     private function storeKtpFile(string $filename): string
     {
-        Storage::disk('public')->put($filename, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='));
+        Storage::disk('local')->put($filename, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='));
+
         return $filename;
     }
 
@@ -70,7 +71,7 @@ class KtpConnectionTest extends TestCase
      */
     public function test_register_stores_ktp_and_links_to_user(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
 
         $photo = $this->makePng('ktp_register.png');
 
@@ -96,9 +97,9 @@ class KtpConnectionTest extends TestCase
         $this->assertNull($user->ktp_orang_tua_path);
         $this->assertNull($user->kartu_pelajar_path);
 
-        // KTP terhubung via users.id (user_id) dan file benar-benar tersimpan.
+        // KTP terhubung via users.id (user_id) dan file benar-benar tersimpan di disk privat.
         $this->assertDatabaseHas('users', ['id' => $user->id, 'ktp_user_path' => $user->ktp_user_path]);
-        Storage::disk('public')->assertExists($user->ktp_user_path);
+        Storage::disk('local')->assertExists($user->ktp_user_path);
     }
 
     /**
@@ -201,14 +202,14 @@ class KtpConnectionTest extends TestCase
      */
     public function test_profile_shows_logged_in_users_ktp(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
         $ktpPath = $this->storeKtpFile('ktp_uploads/profil-user.png');
         $user = $this->createUser('Profile KTP User', 'profilktp@example.com', $ktpPath);
 
         $response = $this->withSession($this->customerSession($user))->get('/profile');
 
         $response->assertStatus(200);
-        $response->assertSee(asset('storage/' . $ktpPath), false);
+        $response->assertSee(route('file.ktp-user', $user->id), false);
         $response->assertSee('KTP');
     }
 
@@ -217,7 +218,7 @@ class KtpConnectionTest extends TestCase
      */
     public function test_profile_shows_ktp_unavailable_when_missing(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
         $user = $this->createUser('Profile Tanpa KTP', 'profilnoktp@example.com', null);
 
         $response = $this->withSession($this->customerSession($user))->get('/profile');
@@ -264,7 +265,7 @@ class KtpConnectionTest extends TestCase
      */
     public function test_admin_sees_ktp_on_users_page(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
         $ktpPath = $this->storeKtpFile('ktp_uploads/admin-view.png');
         $user = $this->createUser('KTP Admin View', 'adminview@example.com', $ktpPath);
 
@@ -272,7 +273,7 @@ class KtpConnectionTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee($user->name);
-        $response->assertSee(str_replace('/', '\\/', asset('storage/' . $ktpPath)), false);
+        $response->assertSee(str_replace('/', '\\/', route('file.ktp-user', $user->id)), false);
     }
 
     /**
@@ -312,17 +313,26 @@ class KtpConnectionTest extends TestCase
      */
     public function test_user_a_cannot_see_user_b_ktp(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
         $ktpA = $this->storeKtpFile('ktp_uploads/user-a.png');
         $ktpB = $this->storeKtpFile('ktp_uploads/user-b.png');
         $userA = $this->createUser('User A', 'usera@example.com', $ktpA);
-        $this->createUser('User B', 'userb@example.com', $ktpB);
+        $userB = $this->createUser('User B', 'userb@example.com', $ktpB);
 
         $response = $this->withSession($this->customerSession($userA))->get('/profile');
 
         $response->assertStatus(200);
-        $response->assertSee(asset('storage/' . $ktpA), false);
-        $response->assertDontSee(asset('storage/' . $ktpB), false);
+        $response->assertSee(route('file.ktp-user', $userA->id), false);
+        $response->assertDontSee(route('file.ktp-user', $userB->id), false);
+
+        // Akses langsung file.ktp-user
+        $this->withSession($this->customerSession($userA))
+            ->get(route('file.ktp-user', $userA->id))
+            ->assertOk();
+
+        $this->withSession($this->customerSession($userA))
+            ->get(route('file.ktp-user', $userB->id))
+            ->assertForbidden();
     }
 
     /**
@@ -390,7 +400,6 @@ class KtpConnectionTest extends TestCase
      */
     public function test_regular_customer_cannot_access_admin_users_page(): void
     {
-        Storage::fake('public');
         $user = $this->createUser('Customer Biasa', 'customerb@example.com', null);
 
         $response = $this->withSession($this->customerSession($user))->get('/admin/users');
@@ -404,15 +413,15 @@ class KtpConnectionTest extends TestCase
      */
     public function test_admin_sees_distinct_ktp_per_user(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
         $ktpA = $this->storeKtpFile('ktp_uploads/user-alpha.png');
         $ktpB = $this->storeKtpFile('ktp_uploads/user-beta.png');
 
         $userA = $this->createUser('Alpha User', 'alpha@example.com', $ktpA);
         $userB = $this->createUser('Beta User', 'beta@example.com', $ktpB);
 
-        $urlA = asset('storage/' . $ktpA);
-        $urlB = asset('storage/' . $ktpB);
+        $urlA = route('file.ktp-user', $userA->id);
+        $urlB = route('file.ktp-user', $userB->id);
         $this->assertNotSame($urlA, $urlB);
 
         $response = $this->withSession($this->adminSession())->get('/admin/users');

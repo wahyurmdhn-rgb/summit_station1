@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LatePenalty;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\ReturnRecord;
@@ -9,6 +10,7 @@ use App\Services\AdminNotificationService;
 use App\Services\RentalNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReturnController extends Controller
 {
@@ -27,63 +29,63 @@ class ReturnController extends Controller
         }
 
         $userId = (int) session('account_id');
-        $orderModel = Order::with(['user', 'returns'])->find((int) $order);
 
-        if (! $orderModel) {
-            return back()->withErrors(['return' => 'Pesanan tidak ditemukan.']);
-        }
+        return DB::transaction(function () use ($request, $order, $userId) {
+            $orderModel = Order::with(['user', 'returns'])->lockForUpdate()->find((int) $order);
 
-        // SECURITY: user hanya boleh mengajukan pengembalian untuk booking miliknya.
-        if ((int) $orderModel->user_id !== $userId) {
-            abort(403, 'Anda tidak memiliki izin untuk mengajukan pengembalian pada pesanan ini.');
-        }
+            if (! $orderModel) {
+                return back()->withErrors(['return' => 'Pesanan tidak ditemukan.']);
+            }
 
-        // Hanya penyewaan yang sedang aktif berjalan.
-        if ($orderModel->status !== 'active') {
-            return back()->withErrors(['return' => 'Pengembalian hanya dapat diajukan untuk penyewaan yang sedang aktif.']);
-        }
+            // SECURITY: user hanya boleh mengajukan pengembalian untuk booking miliknya.
+            if ((int) $orderModel->user_id !== $userId) {
+                abort(403, 'Anda tidak memiliki izin untuk mengajukan pengembalian pada pesanan ini.');
+            }
 
-        // Cegah pengajuan ganda selama masih diproses / sudah disetujui.
-        $hasOpenReturn = $orderModel->returns->first(fn ($r) => in_array($r->status, ['pending', 'approved']));
-        if ($hasOpenReturn) {
-            return back()->withErrors(['return' => 'Pengajuan pengembalian untuk booking ini sudah dikirim dan sedang diproses.']);
-        }
+            // Hanya penyewaan yang sedang aktif berjalan.
+            if ($orderModel->status !== 'active') {
+                return back()->withErrors(['return' => 'Pengembalian hanya dapat diajukan untuk penyewaan yang sedang aktif.']);
+            }
 
-        $validated = $request->validate([
-            'return_proof' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
-        ], [
-            'return_proof.required' => 'Foto bukti pengembalian wajib diupload.',
-            'return_proof.image' => 'File yang diunggah harus berupa gambar.',
-            'return_proof.mimes' => 'Format foto tidak valid. Gunakan format JPG, JPEG, PNG, atau WEBP.',
-            'return_proof.max' => 'Ukuran foto melebihi batas maksimal 5MB.',
-        ]);
+            // Cegah pengajuan ganda selama masih diproses / sudah disetujui.
+            $hasOpenReturn = $orderModel->returns
+                ->contains(fn ($r) => in_array($r->status, ['pending', 'approved']));
+            if ($hasOpenReturn) {
+                return back()->withErrors(['return' => 'Pengajuan pengembalian untuk booking ini sudah dikirim dan sedang diproses.']);
+            }
 
-        // Simpan foto bukti ke storage PRIVAT (disk default local); disajikan
-        // via route terkontrol agar tidak bisa diakses tanpa otorisasi.
-        $proofPath = $request->file('return_proof')->store('returns');
+            $validated = $request->validate([
+                'return_proof' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
+            ], [
+                'return_proof.required' => 'Foto bukti pengembalian wajib diupload.',
+                'return_proof.image' => 'File yang diunggah harus berupa gambar.',
+                'return_proof.mimes' => 'Format foto tidak valid. Gunakan format JPG, JPEG, PNG, atau WEBP.',
+                'return_proof.max' => 'Ukuran foto melebihi batas maksimal 5MB.',
+            ]);
 
-        ReturnRecord::create([
-            'order_id' => $orderModel->id,
-            'order_item_id' => null,
-            'proof_path' => $proofPath,
-            'status' => 'pending',
-            'returned_at' => now(),
-        ]);
+            $proofPath = $request->file('return_proof')->store('returns');
 
-        // Notifikasi aktivitas ke seluruh admin: ada pengajuan pengembalian baru + foto.
-        AdminNotificationService::notifyAdmins(
-            'return',
-            '🔔 Pengembalian Barang',
-            "User {$orderModel->user?->name} telah mengajukan pengembalian barang untuk pesanan #{$orderModel->code} dan mengunggah foto bukti pengembalian.",
-            '📦',
-            route('admin.pengembalian'),
-        );
+            ReturnRecord::create([
+                'order_id' => $orderModel->id,
+                'order_item_id' => null,
+                'proof_path' => $proofPath,
+                'status' => 'pending',
+                'returned_at' => now(),
+            ]);
 
-        // Notifikasi konfirmasi ke user pemilik booking.
-        RentalNotificationService::notifyReturnSubmitted($orderModel);
+            AdminNotificationService::notifyAdmins(
+                'return',
+                '🔔 Pengembalian Barang',
+                "User {$orderModel->user?->name} telah mengajukan pengembalian barang untuk pesanan #{$orderModel->code} dan mengunggah foto bukti pengembalian.",
+                '📦',
+                route('admin.pengembalian'),
+            );
 
-        return redirect()->route('history')
-            ->with('status', 'Pengajuan pengembalian berhasil dikirim. Silakan bawa peralatan ke basecamp Summit Station untuk inspeksi.');
+            RentalNotificationService::notifyReturnSubmitted($orderModel);
+
+            return redirect()->route('history')
+                ->with('status', 'Pengajuan pengembalian berhasil dikirim. Silakan bawa peralatan ke basecamp Summit Station untuk inspeksi.');
+        });
     }
 
     /**
@@ -168,14 +170,14 @@ class ReturnController extends Controller
             'method' => 'qris',
             'amount' => $amount,
             'status' => 'pending',
-            'reference' => Payment::FINE_REFERENCE_PREFIX . strtoupper(uniqid()),
+            'reference' => Payment::FINE_REFERENCE_PREFIX.strtoupper(uniqid()),
             'proof_image' => $proofPath,
             'created_at' => now(),
         ]);
 
         if ($lateNeedsPay && $latePenalty) {
             $latePenalty->update([
-                'status'     => \App\Models\LatePenalty::STATUS_VERIFYING,
+                'status' => LatePenalty::STATUS_VERIFYING,
                 'payment_id' => $payment->id,
             ]);
         }
@@ -185,8 +187,8 @@ class ReturnController extends Controller
             'return',
             '💸 Pembayaran Denda',
             "User {$orderModel->user?->name} mengunggah bukti pembayaran denda Rp "
-                . number_format($amount, 0, ',', '.')
-                . " untuk pesanan #{$orderModel->code}.",
+                .number_format($amount, 0, ',', '.')
+                ." untuk pesanan #{$orderModel->code}.",
             '💸',
             route('admin.pengembalian'),
         );

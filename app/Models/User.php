@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Carbon;
 
 class User extends Authenticatable
 {
@@ -75,24 +75,25 @@ class User extends Authenticatable
         $words = preg_split('/\s+/', trim($this->name));
         $initials = '';
         foreach ($words as $w) {
-            if (!empty($w)) {
+            if (! empty($w)) {
                 $initials .= mb_strtoupper(mb_substr($w, 0, 1));
             }
             if (mb_strlen($initials) >= 2) {
                 break;
             }
         }
+
         return $initials ?: 'U';
     }
 
     /**
-     * URL publik foto KTP milik User sendiri (dipakai untuk user 17+).
+     * URL terkontrol foto KTP milik User sendiri (dipakai untuk user 17+).
      * Mengembalikan null bila User belum mengupload KTP.
      */
     public function getKtpUrlAttribute(): ?string
     {
         if (! empty($this->attributes['ktp_user_path'])) {
-            return asset('storage/' . $this->attributes['ktp_user_path']);
+            return route('file.ktp-user', $this->getKey());
         }
 
         return null;
@@ -164,7 +165,7 @@ class User extends Authenticatable
             return null;
         }
 
-        return \Illuminate\Support\Carbon::parse($dob)->age;
+        return Carbon::parse($dob)->age;
     }
 
     /**

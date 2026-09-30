@@ -83,6 +83,17 @@ class FileController extends Controller
     }
 
     /**
+     * Sajikan KTP user sendiri (user >= 17 tahun) dengan otorisasi.
+     * Disimpan pada disk privat dan disajikan lewat route berizin.
+     */
+    public function ktpUser(int $userId): StreamedResponse
+    {
+        $user = User::findOrFail($userId);
+
+        return $this->serveUserDoc($user, 'ktp_user_path', 'KTP tidak ditemukan.');
+    }
+
+    /**
      * Sajikan bukti persetujuan orang tua milik satu User (dengan otorisasi).
      * Hanya admin atau user pemiliknya sendiri yang boleh mengakses.
      */
@@ -130,7 +141,7 @@ class FileController extends Controller
 
         $raw = (string) ($user->{$column} ?? '');
 
-        if ($raw === '' || $raw === 'null') {
+        if ($raw === '' || $raw === 'null' || ! $this->isSafeStoragePath($raw)) {
             abort(404, $missing);
         }
 

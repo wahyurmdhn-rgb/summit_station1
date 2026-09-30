@@ -15,9 +15,14 @@ use App\Models\ReturnRecord;
 use App\Models\Review;
 use App\Models\User;
 use App\Notifications\RefundStatusNotification;
+use App\Services\AdminNotificationService;
 use App\Services\RentalNotificationService;
+use App\Services\SiteSettingsService;
+use App\Support\ErrorReporter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Response;
@@ -67,7 +72,7 @@ class AdminController extends Controller
         //    belum ada data penyewaan. Semua bersumber dari database.
         $popularGear = $this->dashboardPopularGear(4);
 
-        $sidebarCounts = \App\Services\AdminNotificationService::sidebarBadgeCounts();
+        $sidebarCounts = AdminNotificationService::sidebarBadgeCounts();
         $pendingRefundCount = $sidebarCounts['refund'] ?? 0;
         $pendingPengembalianCount = $sidebarCounts['pengembalian'] ?? 0;
 
@@ -400,7 +405,7 @@ class AdminController extends Controller
                 'type' => 'paket',
                 'type_label' => 'Paket Sewa',
                 'name' => $b->name,
-                'kode' => 'PKT-' . $b->id,
+                'kode' => 'PKT-'.$b->id,
                 'category' => 'Paket Sewa',
                 'category_slug' => 'paket-sewa',
                 'price' => (int) $b->price,
@@ -436,13 +441,15 @@ class AdminController extends Controller
 
         // Sorting
         $items = match ($sort) {
-            'stok_asc'  => $items->sortBy('stock'),
+            'stok_asc' => $items->sortBy('stock'),
             'stok_desc' => $items->sortByDesc('stock'),
             'harga_asc' => $items->sortBy('price'),
-            'harga_desc'=> $items->sortByDesc('price'),
-            'nama_asc'  => $items->sortBy('name', SORT_STRING | SORT_FLAG_CASE),
-            'type'      => $items->sortBy(function ($i) { return [$i['type_label'], $i['category'], $i['name']]; }),
-            default     => $items, // 'terbaru' -> urutan asli (produk, kemudian paket)
+            'harga_desc' => $items->sortByDesc('price'),
+            'nama_asc' => $items->sortBy('name', SORT_STRING | SORT_FLAG_CASE),
+            'type' => $items->sortBy(function ($i) {
+                return [$i['type_label'], $i['category'], $i['name']];
+            }),
+            default => $items, // 'terbaru' -> urutan asli (produk, kemudian paket)
         };
         $items = $items->values();
 
@@ -451,7 +458,7 @@ class AdminController extends Controller
         $page = max(1, (int) $request->input('page', 1));
         $total = $items->count();
         $chunk = $items->slice(($page - 1) * $perPage, $perPage)->values();
-        $products = new \Illuminate\Pagination\LengthAwarePaginator(
+        $products = new LengthAwarePaginator(
             $chunk,
             $total,
             $perPage,
@@ -498,6 +505,7 @@ class AdminController extends Controller
         $bundle->save();
 
         $statusText = $bundle->is_active ? 'diaktifkan' : 'dinonaktifkan';
+
         return redirect()->route('admin.alat')->with('status', "Paket Sewa {$bundle->name} berhasil {$statusText}.");
     }
 
@@ -524,7 +532,7 @@ class AdminController extends Controller
         $bundle = Bundle::findOrFail($id);
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:bundles,name,' . $id],
+            'name' => ['required', 'string', 'max:255', 'unique:bundles,name,'.$id],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
             'image' => ['nullable', 'string', 'max:255'],
@@ -626,10 +634,10 @@ class AdminController extends Controller
             $data['main_image'] = 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=600&q=80';
         }
 
-        $data['condition'] = !empty($data['condition']) ? $data['condition'] : 'Excellent';
-        $data['grade'] = !empty($data['grade']) ? $data['grade'] : 'PRO-GRADE';
-        $data['weight'] = !empty($data['weight']) ? $data['weight'] : null;
-        $data['capacity'] = !empty($data['capacity']) ? $data['capacity'] : null;
+        $data['condition'] = ! empty($data['condition']) ? $data['condition'] : 'Excellent';
+        $data['grade'] = ! empty($data['grade']) ? $data['grade'] : 'PRO-GRADE';
+        $data['weight'] = ! empty($data['weight']) ? $data['weight'] : null;
+        $data['capacity'] = ! empty($data['capacity']) ? $data['capacity'] : null;
 
         $data['specs'] = [
             'BERAT' => $data['weight'] ?: '3.2 kg',
@@ -638,7 +646,7 @@ class AdminController extends Controller
             'GRADE' => $data['grade'],
         ];
 
-        $data['is_active'] = $request->has('is_active') ? (bool)$request->is_active : true;
+        $data['is_active'] = $request->has('is_active') ? (bool) $request->is_active : true;
 
         Product::create($data);
 
@@ -654,7 +662,7 @@ class AdminController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'sku' => ['required', 'string', 'max:32', 'unique:products,sku,' . $id],
+            'sku' => ['required', 'string', 'max:32', 'unique:products,sku,'.$id],
             'category_id' => ['required', 'exists:categories,id'],
             'subtitle' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -669,10 +677,10 @@ class AdminController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
-        $data['condition'] = !empty($data['condition']) ? $data['condition'] : ($product->condition ?: 'Excellent');
-        $data['grade'] = !empty($data['grade']) ? $data['grade'] : ($product->grade ?: 'PRO-GRADE');
-        $data['weight'] = !empty($data['weight']) ? $data['weight'] : null;
-        $data['capacity'] = !empty($data['capacity']) ? $data['capacity'] : null;
+        $data['condition'] = ! empty($data['condition']) ? $data['condition'] : ($product->condition ?: 'Excellent');
+        $data['grade'] = ! empty($data['grade']) ? $data['grade'] : ($product->grade ?: 'PRO-GRADE');
+        $data['weight'] = ! empty($data['weight']) ? $data['weight'] : null;
+        $data['capacity'] = ! empty($data['capacity']) ? $data['capacity'] : null;
 
         $existingSpecs = is_array($product->specs) ? $product->specs : [];
         $existingSpecs['BERAT'] = $data['weight'] ?: ($existingSpecs['BERAT'] ?? $existingSpecs['berat'] ?? '3.2 kg');
@@ -681,11 +689,11 @@ class AdminController extends Controller
         $existingSpecs['GRADE'] = $data['grade'];
         $data['specs'] = $existingSpecs;
 
-        $data['is_active'] = $request->has('is_active') ? (bool)$request->is_active : false;
+        $data['is_active'] = $request->has('is_active') ? (bool) $request->is_active : false;
 
         $product->update($data);
 
-        return redirect()->route('admin.alat')->with('status', 'Data alat ' . $product->name . ' berhasil diperbarui.');
+        return redirect()->route('admin.alat')->with('status', 'Data alat '.$product->name.' berhasil diperbarui.');
     }
 
     /**
@@ -698,6 +706,7 @@ class AdminController extends Controller
         $product->save();
 
         $statusText = $product->is_active ? 'diaktifkan' : 'dinonaktifkan';
+
         return redirect()->route('admin.alat')->with('status', "Alat {$product->name} berhasil {$statusText}.");
     }
 
@@ -739,7 +748,7 @@ class AdminController extends Controller
         $category = Category::findOrFail($id);
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:categories,name,' . $id],
+            'name' => ['required', 'string', 'max:255', 'unique:categories,name,'.$id],
         ]);
 
         $category->name = trim($data['name']);
@@ -782,7 +791,7 @@ class AdminController extends Controller
         while (Category::where('slug', $candidate)
             ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
             ->exists()) {
-            $candidate = $slug . '-' . $i;
+            $candidate = $slug.'-'.$i;
             $i++;
         }
 
@@ -810,13 +819,13 @@ class AdminController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('code', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($uq) use ($search) {
-                      $uq->where('name', 'like', "%{$search}%")
-                         ->orWhere('email', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('items', function ($iq) use ($search) {
-                      $iq->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('user', function ($uq) use ($search) {
+                        $uq->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('items', function ($iq) use ($search) {
+                        $iq->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -833,11 +842,11 @@ class AdminController extends Controller
 
         $rawForecast = (int) Order::whereIn('status', ['active', 'completed', 'paid'])->sum('total');
         if ($rawForecast >= 1000000) {
-            $revenueForecast = 'Rp ' . round($rawForecast / 1000000, 1) . 'M';
+            $revenueForecast = 'Rp '.round($rawForecast / 1000000, 1).'M';
         } elseif ($rawForecast >= 1000) {
-            $revenueForecast = 'Rp ' . round($rawForecast / 1000) . 'K';
+            $revenueForecast = 'Rp '.round($rawForecast / 1000).'K';
         } else {
-            $revenueForecast = 'Rp ' . number_format($rawForecast, 0, ',', '.');
+            $revenueForecast = 'Rp '.number_format($rawForecast, 0, ',', '.');
         }
 
         return view('admin.penyewaan', [
@@ -910,18 +919,19 @@ class AdminController extends Controller
     public function confirmPenyewaan(int $id): RedirectResponse
     {
         $order = DB::transaction(function () use ($id) {
-            $order = Order::with(['items.product', 'items.bundle.products', 'user'])->findOrFail($id);
-            $wasActive = $order->status === 'active';
+            $order = Order::with(['items.product', 'items.bundle.products', 'user'])->lockForUpdate()->findOrFail($id);
+
+            if ($order->status !== 'pending') {
+                return $order;
+            }
+
             $order->status = 'active';
             $order->paid_at = now();
             $order->save();
 
             // Stok hanya berkurang SATU KALI, tepat saat memasuki status 'active'
-            // (dari pending). Jika pesanan sudah active, jangan kurangi lagi
-            // agar tidak terjadi double decrement.
-            if (! $wasActive) {
-                $this->decrementOrderStock($order);
-            }
+            // (dari pending).
+            $this->decrementOrderStock($order);
 
             RentalNotificationService::notifyAccepted($order);
 
@@ -943,7 +953,7 @@ class AdminController extends Controller
             $wasActive = $order->status === 'active';
             $order->status = 'cancelled';
             if ($reason = $request->input('reason')) {
-                $order->notes = ($order->notes ? $order->notes . ' | ' : '') . "Alasan penolakan: " . $reason;
+                $order->notes = ($order->notes ? $order->notes.' | ' : '').'Alasan penolakan: '.$reason;
             }
             $order->save();
 
@@ -1011,7 +1021,7 @@ class AdminController extends Controller
 
         $orders = $query->latest()->get();
 
-        $filename = "penyewaan_export_" . date('Y-m-d_His') . ".csv";
+        $filename = 'penyewaan_export_'.date('Y-m-d_His').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv',
@@ -1091,15 +1101,15 @@ class AdminController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('reference', 'like', "%{$search}%")
-                  ->orWhere('id', 'like', "%{$search}%")
-                  ->orWhere('method', 'like', "%{$search}%")
-                  ->orWhereHas('order', function ($oq) use ($search) {
-                      $oq->where('code', 'like', "%{$search}%")
-                         ->orWhereHas('user', function ($uq) use ($search) {
-                             $uq->where('name', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%");
-                         });
-                  });
+                    ->orWhere('id', 'like', "%{$search}%")
+                    ->orWhere('method', 'like', "%{$search}%")
+                    ->orWhereHas('order', function ($oq) use ($search) {
+                        $oq->where('code', 'like', "%{$search}%")
+                            ->orWhereHas('user', function ($uq) use ($search) {
+                                $uq->where('name', 'like', "%{$search}%")
+                                    ->orWhere('email', 'like', "%{$search}%");
+                            });
+                    });
             });
         }
 
@@ -1151,6 +1161,11 @@ class AdminController extends Controller
             return redirect()->route('admin.pembayaran')->with('info', "Pembayaran {$payment->trx_code} sudah disetujui sebelumnya.");
         }
 
+        // Hanya payment berstatus pending yang dapat diapprove.
+        if ($payment->status !== 'pending') {
+            return redirect()->route('admin.pembayaran')->with('error', "Pembayaran {$payment->trx_code} tidak dapat disetujui (status: {$payment->status}).");
+        }
+
         DB::transaction(function () use ($payment) {
             $payment->status = 'success';
             $payment->paid_at = now();
@@ -1191,6 +1206,10 @@ class AdminController extends Controller
             return $this->rejectDendaPayment($request, $id);
         }
 
+        if ($payment->status !== 'pending') {
+            return redirect()->route('admin.pembayaran')->with('error', "Pembayaran {$payment->trx_code} tidak dapat ditolak (status: {$payment->status}).");
+        }
+
         $wasCancelled = $payment->order && $payment->order->status === 'cancelled';
 
         DB::transaction(function () use ($payment, $request) {
@@ -1201,7 +1220,7 @@ class AdminController extends Controller
                 $wasActive = $payment->order->status === 'active';
                 $payment->order->status = 'cancelled';
                 if ($reason = $request->input('reason')) {
-                    $payment->order->notes = ($payment->order->notes ? $payment->order->notes . ' | ' : '') . "Penolakan pembayaran: " . $reason;
+                    $payment->order->notes = ($payment->order->notes ? $payment->order->notes.' | ' : '').'Penolakan pembayaran: '.$reason;
                 }
                 $payment->order->save();
 
@@ -1237,7 +1256,7 @@ class AdminController extends Controller
 
         $payments = $query->latest()->get();
 
-        $filename = "pembayaran_export_" . date('Y-m-d_His') . ".csv";
+        $filename = 'pembayaran_export_'.date('Y-m-d_His').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv',
@@ -1295,9 +1314,9 @@ class AdminController extends Controller
      */
     public function pengembalian(Request $request): View
     {
-        $filter    = $request->input('filter', 'all');
-        $sort      = $request->input('sort', 'desc');
-        $search    = trim((string) $request->input('search', ''));
+        $filter = $request->input('filter', 'all');
+        $sort = $request->input('sort', 'desc');
+        $search = trim((string) $request->input('search', ''));
         $loadError = false;
 
         try {
@@ -1310,9 +1329,9 @@ class AdminController extends Controller
             if ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('orders.code', 'like', "%{$search}%")
-                      ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%")
-                                                        ->orWhere('email', 'like', "%{$search}%"))
-                      ->orWhereHas('items', fn ($i) => $i->where('name', 'like', "%{$search}%"));
+                        ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%"))
+                        ->orWhereHas('items', fn ($i) => $i->where('name', 'like', "%{$search}%"));
                 });
             }
 
@@ -1324,7 +1343,7 @@ class AdminController extends Controller
                 // record level order (order_item_id NULL), bukan record per-item.
                 // Order yang sudah completed tidak dihitung menunggu inspeksi lagi.
                 $query->where('status', '!=', 'completed')
-                      ->whereHas('returns', fn ($r) => $r->whereNull('order_item_id')->whereNull('condition'));
+                    ->whereHas('returns', fn ($r) => $r->whereNull('order_item_id')->whereNull('condition'));
             } elseif ($filter === 'damaged') {
                 $query->whereHas('returns', fn ($r) => $r->whereNull('order_item_id')->whereIn('condition', ['minor_damage', 'major_damage']));
             } elseif ($filter === 'terlambat') {
@@ -1333,10 +1352,10 @@ class AdminController extends Controller
                 $query->where(function ($q) {
                     $q->where(function ($q2) {
                         $q2->whereIn('orders.status', ['active', 'paid'])
-                           ->whereDate('orders.rent_end', '<', today());
+                            ->whereDate('orders.rent_end', '<', today());
                     })->orWhereHas('returns', function ($q2) {
                         $q2->whereNull('order_item_id')
-                           ->whereRaw('DATE(return_records.returned_at) > DATE(orders.rent_end)');
+                            ->whereRaw('DATE(return_records.returned_at) > DATE(orders.rent_end)');
                     });
                 });
             } elseif ($filter === 'ada_denda') {
@@ -1344,10 +1363,10 @@ class AdminController extends Controller
                 // keterlambatan yang masih aktif.
                 $query->where(function ($q) {
                     $q->whereHas('returns', fn ($r) => $r->where('damage_cost', '>', 0))
-                      ->orWhereHas('latePenalty', fn ($p) => $p
-                          ->where('total_fee', '>', 0)
-                          ->where('status', '!=', LatePenalty::STATUS_NO_SANCTION)
-                          ->where('status', '!=', LatePenalty::STATUS_CANCELLED));
+                        ->orWhereHas('latePenalty', fn ($p) => $p
+                            ->where('total_fee', '>', 0)
+                            ->where('status', '!=', LatePenalty::STATUS_NO_SANCTION)
+                            ->where('status', '!=', LatePenalty::STATUS_CANCELLED));
                 });
             } elseif ($filter === 'selesai') {
                 $query->where('status', 'completed');
@@ -1362,12 +1381,12 @@ class AdminController extends Controller
             $totalReturns = (int) Order::whereIn('status', ['active', 'paid', 'completed'])->count();
 
             $pendingInspection = (int) ReturnRecord::query()
-            ->join('orders', 'orders.id', '=', 'return_records.order_id')
-            ->where('orders.status', '!=', 'completed')
-            ->whereNull('return_records.order_item_id')
-            ->whereNull('return_records.condition')
-            ->distinct()
-            ->count('return_records.id');
+                ->join('orders', 'orders.id', '=', 'return_records.order_id')
+                ->where('orders.status', '!=', 'completed')
+                ->whereNull('return_records.order_item_id')
+                ->whereNull('return_records.condition')
+                ->distinct()
+                ->count('return_records.id');
 
             // Terlambat = rental aktif yang melewati rent_end ATAU pengembalian
             // tercatat dilakukan setelah rent_end (konsisten dengan Order::calculateOverdue).
@@ -1380,16 +1399,16 @@ class AdminController extends Controller
                 ->count('return_records.order_id');
 
             $overdue = (int) Order::whereIn('status', ['active', 'paid'])
-                    ->whereDate('rent_end', '<', today())
-                    ->count()
+                ->whereDate('rent_end', '<', today())
+                ->count()
                 + $overdueLate;
 
             // Denda belum lunas = denda kerusakan tanpa damage_paid_at atau
             // sanksi keterlambatan yang masih menunggu pembayaran/verifikasi.
             $fineOrderIds = ReturnRecord::whereNull('order_item_id')
-                    ->where('damage_cost', '>', 0)
-                    ->whereNull('damage_paid_at')
-                    ->pluck('order_id')
+                ->where('damage_cost', '>', 0)
+                ->whereNull('damage_paid_at')
+                ->pluck('order_id')
                 ->merge(
                     LatePenalty::whereIn('status', [
                         LatePenalty::STATUS_UNPROCESSED,
@@ -1402,10 +1421,10 @@ class AdminController extends Controller
 
             $completedCount = (int) Order::where('status', 'completed')->count();
         } catch (\Throwable $e) {
-            \App\Support\ErrorReporter::soft($e, 'AdminController::pengembalian data');
+            ErrorReporter::soft($e, 'AdminController::pengembalian data');
 
             $loadError = true;
-            $orders = new \Illuminate\Pagination\LengthAwarePaginator(
+            $orders = new LengthAwarePaginator(
                 [],
                 0,
                 10,
@@ -1437,14 +1456,14 @@ class AdminController extends Controller
         $order = Order::with(['items.product', 'user'])->findOrFail($orderId);
 
         $request->validate([
-            'condition'         => 'required|in:excellent,good,needs_cleaning,minor_damage,major_damage',
-            'inspection_note'   => 'nullable|string|max:1000',
-            'damage_description'=> 'nullable|string|max:1000',
-            'damage_cost'       => 'nullable|integer|min:0',
+            'condition' => 'required|in:excellent,good,needs_cleaning,minor_damage,major_damage',
+            'inspection_note' => 'nullable|string|max:1000',
+            'damage_description' => 'nullable|string|max:1000',
+            'damage_cost' => 'nullable|integer|min:0',
             // Field ini milik admin (foto kondisi barang), BUKAN bukti pengembalian
             // milik customer. Namanya sengaja `inspection_photo` agar tidak tertukar
             // dengan kolom `proof_path` yang menyimpan bukti customer.
-            'inspection_photo'  => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
+            'inspection_photo' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
         ]);
 
         // Foto bukti pengembalian milik user tersimpan di `proof_path` dan
@@ -1457,12 +1476,12 @@ class AdminController extends Controller
 
         // Create or update return record for this order
         $returnData = [
-            'status'             => 'approved',
-            'returned_at'        => now(),
-            'condition'          => $request->input('condition'),
-            'inspection_note'    => $request->input('inspection_note'),
+            'status' => 'approved',
+            'returned_at' => now(),
+            'condition' => $request->input('condition'),
+            'inspection_note' => $request->input('inspection_note'),
             'damage_description' => $request->input('damage_description'),
-            'damage_cost'        => $request->input('damage_cost', 0),
+            'damage_cost' => $request->input('damage_cost', 0),
         ];
         if ($photoPath !== null) {
             $returnData['inspection_photo'] = $photoPath;
@@ -1474,10 +1493,10 @@ class AdminController extends Controller
         );
 
         // Notifikasi aktivitas pengembalian kepada seluruh admin.
-        \App\Services\AdminNotificationService::notifyAdmins(
+        AdminNotificationService::notifyAdmins(
             'return',
             '📦 Pengembalian Barang',
-            "Barang untuk pesanan #{$order->code} (user " . ($order->user?->name ?? 'guest') . ") telah dikembalikan dan tercatat dengan kondisi: " . $returnRecord->condition_label . ".",
+            "Barang untuk pesanan #{$order->code} (user ".($order->user?->name ?? 'guest').') telah dikembalikan dan tercatat dengan kondisi: '.$returnRecord->condition_label.'.',
             '↩️',
             route('admin.pengembalian'),
         );
@@ -1666,8 +1685,8 @@ class AdminController extends Controller
                     && ((int) $penalty->payment_id === (int) $payment->id
                         || $penalty->status === LatePenalty::STATUS_VERIFYING)) {
                     $penalty->update([
-                        'status'     => LatePenalty::STATUS_PAID,
-                        'paid_at'    => now(),
+                        'status' => LatePenalty::STATUS_PAID,
+                        'paid_at' => now(),
                         'payment_id' => $payment->id,
                     ]);
                     RentalNotificationService::notifyLatePenaltyPaid($order, $penalty);
@@ -1694,7 +1713,7 @@ class AdminController extends Controller
 
         $request->validate([
             'return_record_id' => ['nullable', 'integer', 'min:1'],
-            'status'      => 'required|in:menunggu_pembayaran,menunggu_verifikasi,tidak_ada_sanksi,belum_diproses,sudah_dibayar',
+            'status' => 'required|in:menunggu_pembayaran,menunggu_verifikasi,tidak_ada_sanksi,belum_diproses,sudah_dibayar',
             'admin_notes' => 'nullable|string|max:1000',
         ]);
 
@@ -1730,15 +1749,15 @@ class AdminController extends Controller
         $penalty = LatePenalty::updateOrCreate(
             ['order_id' => $order->id],
             [
-                'user_id'          => $order->user_id,
+                'user_id' => $order->user_id,
                 'return_record_id' => $latestReturn?->id,
-                'days_overdue'     => $daysOverdue,
-                'fee_per_day'      => $feePerDay,
-                'total_fee'        => $totalFee,
-                'status'           => $status,
-                'admin_notes'      => $request->input('admin_notes'),
-                'paid_at'          => $status === 'sudah_dibayar' ? now() : null,
-                'cancelled_at'     => null,
+                'days_overdue' => $daysOverdue,
+                'fee_per_day' => $feePerDay,
+                'total_fee' => $totalFee,
+                'status' => $status,
+                'admin_notes' => $request->input('admin_notes'),
+                'paid_at' => $status === 'sudah_dibayar' ? now() : null,
+                'cancelled_at' => null,
             ]
         );
 
@@ -1771,7 +1790,7 @@ class AdminController extends Controller
 
         $msg = $status === 'tidak_ada_sanksi'
             ? "Sanksi denda keterlambatan untuk pesanan #{$order->code} dibebaskan (Tidak Ada Sanksi)."
-            : "Sanksi keterlambatan ({$daysOverdue} hari - Rp " . number_format($totalFee, 0, ',', '.') . ") berhasil ditetapkan.";
+            : "Sanksi keterlambatan ({$daysOverdue} hari - Rp ".number_format($totalFee, 0, ',', '.').') berhasil ditetapkan.';
 
         return redirect()->route('admin.pengembalian')->with('success', $msg);
     }
@@ -1790,7 +1809,7 @@ class AdminController extends Controller
         }
 
         $penalty->update([
-            'status'       => 'dibatalkan',
+            'status' => 'dibatalkan',
             'cancelled_at' => now(),
         ]);
 
@@ -1840,7 +1859,7 @@ class AdminController extends Controller
 
         // 4 Statistic Cards (Dynamic from database)
         $totalMembers = User::count();
-        
+
         // Active Now: hanya dihitung bila session driver memang bisa di-query
         // (database). Bila driver lain (file/array), dikembalikan null agar UI
         // tidak menampilkan angka yang menyesatkan.
@@ -1861,10 +1880,10 @@ class AdminController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('username', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('domicile', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('domicile', 'like', "%{$search}%");
             });
         }
 
@@ -1882,7 +1901,7 @@ class AdminController extends Controller
             if (in_array($domicileFilter, $allowedDomiciles, true)) {
                 $query->where(function ($q) use ($domicileFilter) {
                     $q->where('domicile', $domicileFilter)
-                      ->orWhere('domicile', 'like', "{$domicileFilter}%");
+                        ->orWhere('domicile', 'like', "{$domicileFilter}%");
                 });
             }
         }
@@ -1920,7 +1939,7 @@ class AdminController extends Controller
      * Data akun diambil dari payload session (base64(serialize(...))).
      *
      * @return int|null null bila session driver tidak bisa di-query (mis. file),
-     *                     sehingga UI tidak menampilkan angka yang menyesatkan.
+     *                  sehingga UI tidak menampilkan angka yang menyesatkan.
      */
     private function activeCustomerSessionsCount(): ?int
     {
@@ -1985,7 +2004,7 @@ class AdminController extends Controller
         ]);
 
         if (empty($validated['username'])) {
-            $validated['username'] = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '', str_replace(' ', '_', $validated['name']))) . rand(10, 99);
+            $validated['username'] = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '', str_replace(' ', '_', $validated['name']))).rand(10, 99);
         }
         $validated['role'] = $validated['role'] ?? 'user';
 
@@ -2003,8 +2022,8 @@ class AdminController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-            'username' => 'nullable|string|max:50|unique:users,username,' . $user->id,
+            'email' => 'required|email|max:255|unique:users,email,'.$user->id,
+            'username' => 'nullable|string|max:50|unique:users,username,'.$user->id,
             'phone' => 'nullable|string|max:30',
             'domicile' => 'nullable|string|max:255',
             'status' => 'required|string|in:active,inactive,suspended,pending,pending_verification',
@@ -2041,6 +2060,7 @@ class AdminController extends Controller
         $user->update(['status' => $validated['status']]);
 
         $statusLabel = $user->status_label;
+
         return redirect()->route('admin.users')->with('success', "Status user '{$user->name}' berhasil diubah menjadi {$statusLabel}.");
     }
 
@@ -2070,6 +2090,7 @@ class AdminController extends Controller
         ]);
 
         $label = $validated['parent_consent_status'] === 'verified' ? 'terverifikasi' : 'ditolak';
+
         return redirect()->route('admin.users')->with('success', "Persetujuan orang tua user '{$user->name}' berhasil di-set {$label}.");
     }
 
@@ -2100,10 +2121,10 @@ class AdminController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('username', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('domicile', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('domicile', 'like', "%{$search}%");
             });
         }
 
@@ -2121,17 +2142,17 @@ class AdminController extends Controller
             if (in_array($domicileFilter, $allowedDomiciles, true)) {
                 $query->where(function ($q) use ($domicileFilter) {
                     $q->where('domicile', $domicileFilter)
-                      ->orWhere('domicile', 'like', "{$domicileFilter}%");
+                        ->orWhere('domicile', 'like', "{$domicileFilter}%");
                 });
             }
         }
 
         $users = $query->orderBy('created_at', 'desc')->get();
 
-        $filename = 'users_export_' . now()->format('Y-m-d_His') . '.csv';
+        $filename = 'users_export_'.now()->format('Y-m-d_His').'.csv';
 
         $headers = [
-            'Content-Type'        => 'text/csv',
+            'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
@@ -2155,7 +2176,7 @@ class AdminController extends Controller
                     $user->id,
                     $user->name,
                     $user->email,
-                    $user->username ? '@' . ltrim($user->username, '@') : '-',
+                    $user->username ? '@'.ltrim($user->username, '@') : '-',
                     $user->phone ?? '-',
                     $user->domicile ?? '-',
                     $user->status_label,
@@ -2175,7 +2196,7 @@ class AdminController extends Controller
      * Dipakai bersama oleh halaman laporan DAN export CSV sehingga keduanya
      * selalu menampilkan data dengan periode yang identik.
      *
-     * @return array{0: \Illuminate\Support\Carbon, 1: \Illuminate\Support\Carbon}|null null = seluruh periode
+     * @return array{0: Carbon, 1: Carbon}|null null = seluruh periode
      */
     private function reportPeriodRange(string $period): ?array
     {
@@ -2222,6 +2243,7 @@ class AdminController extends Controller
         $categories = Category::withCount('products')->get()->map(function ($cat) {
             $productIds = $cat->products->pluck('id');
             $rentalCount = OrderItem::whereIn('product_id', $productIds)->sum('quantity');
+
             return [
                 'name' => $cat->name,
                 'slug' => $cat->slug,
@@ -2277,10 +2299,10 @@ class AdminController extends Controller
         }
 
         $orders = $ordersQuery->orderBy('created_at', 'desc')->get();
-        $filename = 'laporan_summit_station_' . now()->format('Y-m-d_His') . '.csv';
+        $filename = 'laporan_summit_station_'.now()->format('Y-m-d_His').'.csv';
 
         $headers = [
-            'Content-Type'        => 'text/csv',
+            'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
@@ -2324,7 +2346,7 @@ class AdminController extends Controller
      */
     public function website(): View
     {
-        $settings = \App\Services\SiteSettingsService::all();
+        $settings = SiteSettingsService::all();
 
         // Statistik dinamis tetap dihitung dari database.
         $settings['featured_products_count'] = Product::where('is_active', true)->count();
@@ -2340,7 +2362,7 @@ class AdminController extends Controller
             $totalReviewsCount = Review::count();
             $averageRating = $totalReviewsCount > 0 ? round((float) Review::avg('rating'), 1) : 0.0;
         } catch (\Throwable $e) {
-            \App\Support\ErrorReporter::soft($e, 'AdminController::website reviews');
+            ErrorReporter::soft($e, 'AdminController::website reviews');
 
             try {
                 $reviews = Review::with(['user', 'product'])->orderBy('created_at', 'desc')->paginate(10);
@@ -2348,7 +2370,7 @@ class AdminController extends Controller
                 $averageRating = $totalReviewsCount > 0 ? round((float) Review::avg('rating'), 1) : 0.0;
             } catch (\Throwable $e2) {
                 // Table doesn't exist
-                \App\Support\ErrorReporter::soft($e2, 'AdminController::website reviews fallback');
+                ErrorReporter::soft($e2, 'AdminController::website reviews fallback');
             }
         }
 
@@ -2370,7 +2392,7 @@ class AdminController extends Controller
             'hero_subtitle' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        \App\Services\SiteSettingsService::saveMany($data);
+        SiteSettingsService::saveMany($data);
 
         return redirect()->route('admin.website')
             ->with('success', 'Pengaturan informasi website dan spotlight toko berhasil diperbarui.');
@@ -2466,15 +2488,18 @@ class AdminController extends Controller
         }
 
         // Batas maksimum refund = nominal yang benar-benar dibayar untuk
-        // pesanan ini (payment sukses, atau total order sebagai fallback).
-        $paidAmount = (int) ($refund->payment?->status === 'success'
-            ? $refund->payment->amount
-            : ($refund->order?->total ?? 0));
+        // pesanan ini (payment sukses yang tercatat).
+        $paidPayment = $refund->payment?->status === 'success'
+            ? $refund->payment
+            : $refund->order?->payments->first(fn ($p) => $p->status === 'success');
+        $paidAmount = (int) ($paidPayment?->amount ?? 0);
+
+        if ($paidAmount <= 0) {
+            return back()->with('error', 'Tidak ada pembayaran sukses yang dapat direfund.');
+        }
 
         $maxRefundable = (int) $refund->original_amount;
-        if ($paidAmount > 0) {
-            $maxRefundable = $maxRefundable > 0 ? min($maxRefundable, $paidAmount) : $paidAmount;
-        }
+        $maxRefundable = $maxRefundable > 0 ? min($maxRefundable, $paidAmount) : $paidAmount;
 
         if ($maxRefundable <= 0) {
             return back()->with('error', 'Nominal pembayaran tidak valid, refund tidak dapat diproses.');
@@ -2505,7 +2530,7 @@ class AdminController extends Controller
 
             if ($requestedAmount > $maxRefundable) {
                 return back()->with('error', 'Nominal refund tidak boleh melebihi jumlah yang dibayarkan (Rp '
-                    . number_format($maxRefundable, 0, ',', '.').').');
+                    .number_format($maxRefundable, 0, ',', '.').').');
             }
 
             if ($requestedAmount !== (int) $refund->refund_amount) {
@@ -2524,7 +2549,7 @@ class AdminController extends Controller
 
         // Notification ke user pemilik booking.
         $this->notifyRefundOwner($refund, 'Refund Disetujui',
-            "Refund booking #{$refund->order?->code} telah disetujui oleh admin sebesar Rp " . number_format($refundAmount, 0, ',', '.') . '.',
+            "Refund booking #{$refund->order?->code} telah disetujui oleh admin sebesar Rp ".number_format($refundAmount, 0, ',', '.').'.',
             '✅');
 
         return redirect()->route('admin.refund')
@@ -2581,23 +2606,35 @@ class AdminController extends Controller
             return back()->with('error', 'Refund harus disetujui terlebih dahulu sebelum diselesaikan.');
         }
 
-        $refund->update([
-            'status' => Refund::STATUS_COMPLETED,
-            'completed_at' => now(),
-            'processed_by' => session('account_id'),
-        ]);
+        DB::transaction(function () use ($refund) {
+            $refund = Refund::where('id', $refund->id)
+                ->where('status', Refund::STATUS_APPROVED)
+                ->lockForUpdate()
+                ->first();
 
-        // Perbarui payment menjadi refunded di database yang sama.
-        if ($refund->payment) {
-            $refund->payment->update(['status' => 'refunded']);
-        }
+            if (! $refund) {
+                return;
+            }
+
+            $refund->update([
+                'status' => Refund::STATUS_COMPLETED,
+                'completed_at' => now(),
+                'processed_by' => session('account_id'),
+            ]);
+
+            if ($refund->payment) {
+                $refund->payment->update(['status' => 'refunded']);
+            }
+        });
+
+        $refund->refresh();
 
         $this->notifyRefundOwner($refund, 'Refund Selesai',
             "Refund booking #{$refund->order?->code} telah selesai diproses.",
             '💰');
 
         // Notifikasi aktivitas untuk tim admin (status refund selesai).
-        \App\Services\AdminNotificationService::notifyAdmins(
+        AdminNotificationService::notifyAdmins(
             'refund_done',
             '💰 Refund Selesai',
             "Refund {$refund->code} untuk booking #{$refund->order?->code} telah selesai diproses dan dana berhasil dikembalikan.",

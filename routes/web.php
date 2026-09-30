@@ -1,17 +1,17 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\AdminController;
 use App\Http\Controllers\RefundController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\UserNotificationController;
-use App\Http\Controllers\FileController;
+use Illuminate\Support\Facades\Route;
 
 // Admin Protected Routes
 Route::middleware(['admin'])->group(function () {
@@ -20,7 +20,7 @@ Route::middleware(['admin'])->group(function () {
     // route bernama di atas). Tetap dipertahankan karena URL ini dipakai
     // bookmark lama dan tests\Smoke\RefundMysqlSmokeTest.
     Route::get('/admin/dashboard', [AdminController::class, 'index']);
-    
+
     // Alat Routes
     Route::get('/admin/alat', [AdminController::class, 'alat'])->name('admin.alat');
     Route::post('/admin/alat', [AdminController::class, 'storeAlat'])->name('admin.alat.store');
@@ -164,6 +164,7 @@ Route::get('/files/return-proof/{return}', [FileController::class, 'returnProof'
 Route::get('/files/return-inspection-photo/{return}', [FileController::class, 'returnInspectionPhoto'])->name('file.return-inspection-photo');
 Route::get('/files/parent-consent/{user}', [FileController::class, 'parentConsent'])->name('file.parent-consent');
 Route::get('/files/ktp-guardian/{user}', [FileController::class, 'ktpGuardian'])->name('file.ktp-guardian');
+Route::get('/files/ktp-user/{user}', [FileController::class, 'ktpUser'])->name('file.ktp-user');
 Route::get('/files/student-card/{user}', [FileController::class, 'studentCard'])->name('file.student-card');
 
 Route::get('/contact-admin', function () {

@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Order;
-use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -13,6 +13,7 @@ use Tests\TestCase;
 class AdminPenyewaanTest extends TestCase
 {
     use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -103,11 +104,19 @@ class AdminPenyewaanTest extends TestCase
             'status' => 'pending',
         ]);
 
+        Payment::create([
+            'order_id' => $order->id,
+            'method' => 'bank_transfer',
+            'amount' => 100000,
+            'status' => 'success',
+            'reference' => 'PAY-CONFIRM-001',
+        ]);
+
         $response = $this->withSession([
             'account_id' => 1,
             'account_name' => 'Admin Summit',
             'account_role' => 'admin',
-        ])->post('/admin/penyewaan/' . $order->id . '/confirm');
+        ])->post('/admin/penyewaan/'.$order->id.'/confirm');
 
         $response->assertRedirect('/admin/penyewaan');
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'active']);
@@ -130,7 +139,7 @@ class AdminPenyewaanTest extends TestCase
             'account_id' => 1,
             'account_name' => 'Admin Summit',
             'account_role' => 'admin',
-        ])->post('/admin/penyewaan/' . $order->id . '/reject', [
+        ])->post('/admin/penyewaan/'.$order->id.'/reject', [
             'reason' => 'Stok alat sedang maintenance',
         ]);
 
@@ -155,7 +164,7 @@ class AdminPenyewaanTest extends TestCase
             'account_id' => 1,
             'account_name' => 'Admin Summit',
             'account_role' => 'admin',
-        ])->post('/admin/penyewaan/' . $order->id . '/complete');
+        ])->post('/admin/penyewaan/'.$order->id.'/complete');
 
         $response->assertRedirect('/admin/penyewaan');
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'completed']);

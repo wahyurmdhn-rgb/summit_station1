@@ -6,8 +6,8 @@ use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -22,13 +22,16 @@ class AuthController extends Controller
      * Extension & ukuran maksimal bukti persetujuan orang tua yang diterima.
      */
     private const CONSENT_EXTENSIONS = ['jpg', 'jpeg', 'png', 'pdf'];
+
     private const CONSENT_MAX_KB = 5120;
+
     public function customerLoginForm(Request $request): View|RedirectResponse
     {
         if ($request->session()->has('account_id')) {
             if ($request->session()->get('account_role') === 'admin') {
                 return redirect()->route('admin.dashboard');
             }
+
             return redirect('/');
         }
 
@@ -41,6 +44,7 @@ class AuthController extends Controller
             if ($request->session()->get('account_role') === 'admin') {
                 return redirect()->route('admin.dashboard');
             }
+
             return redirect('/');
         }
 
@@ -64,13 +68,13 @@ class AuthController extends Controller
 
         if ($account->status === 'suspended') {
             return back()->withErrors([
-                'email' => 'Akun Anda telah ditangguhkan (SUSPENDED). Silakan hubungi Administrator Summit Station.'
+                'email' => 'Akun Anda telah ditangguhkan (SUSPENDED). Silakan hubungi Administrator Summit Station.',
             ])->onlyInput('email');
         }
 
         if ($account->status === 'inactive') {
             return back()->withErrors([
-                'email' => 'Akun Anda berstatus nonaktif. Silakan hubungi Administrator Summit Station.'
+                'email' => 'Akun Anda berstatus nonaktif. Silakan hubungi Administrator Summit Station.',
             ])->onlyInput('email');
         }
 
@@ -84,6 +88,7 @@ class AuthController extends Controller
         ]);
 
         $intendedUrl = $this->resolveIntendedUrl($data['redirect'] ?? null);
+
         return redirect($intendedUrl)->with('status', 'Login berhasil.');
     }
 
@@ -111,7 +116,8 @@ class AuthController extends Controller
         ]);
 
         session()->forget('checkout_intended');
-        return redirect()->route('admin.dashboard')->with('status', 'Selamat datang, Admin ' . $admin->name);
+
+        return redirect()->route('admin.dashboard')->with('status', 'Selamat datang, Admin '.$admin->name);
     }
 
     public function registerForm(): View
@@ -150,7 +156,7 @@ class AuthController extends Controller
                 'parent_relation' => ['required', 'string', 'max:120'],
                 'parent_phone' => ['required', 'string', 'max:30', 'regex:/^[0-9+\s\-]+$/'],
                 'parent_consent_accepted' => ['accepted'],
-                'parent_consent_proof' => ['required', 'file', 'mimes:' . implode(',', self::CONSENT_EXTENSIONS), 'max:' . self::CONSENT_MAX_KB],
+                'parent_consent_proof' => ['required', 'file', 'mimes:'.implode(',', self::CONSENT_EXTENSIONS), 'max:'.self::CONSENT_MAX_KB],
                 // User di bawah 17 tahun wajib menyertakan KTP orang tua/wali
                 // dan kartu pelajar sebagai dokumen identitas & jaminan.
                 'ktp_orang_tua' => ['required', 'file', 'mimes:jpeg,jpg,png', 'max:10240'],
@@ -177,7 +183,7 @@ class AuthController extends Controller
         // orang tua/wali (ktp_orang_tua) — field ini tidak boleh terisi.
         $ktpUserPath = null;
         if (! $needsParentConsent && $request->hasFile('ktp_user')) {
-            $ktpUserPath = $request->file('ktp_user')->store('ktp_uploads', 'public');
+            $ktpUserPath = $request->file('ktp_user')->store('ktp_uploads');
         }
 
         // Dokumen sensitive user di bawah 17 tahun disimpan pada disk PRIVAT
@@ -188,12 +194,12 @@ class AuthController extends Controller
         if ($needsParentConsent) {
             if ($request->hasFile('ktp_orang_tua')) {
                 $file = $request->file('ktp_orang_tua');
-                $filename = 'ktp_ortu_' . now()->format('Ymd_His') . '_' . uniqid() . '.' . strtolower($file->getClientOriginalExtension());
+                $filename = 'ktp_ortu_'.now()->format('Ymd_His').'_'.uniqid().'.'.strtolower($file->getClientOriginalExtension());
                 $ktpOrtuPath = $file->storeAs('ktp_orang_tua', $filename);
             }
             if ($request->hasFile('kartu_pelajar')) {
                 $file = $request->file('kartu_pelajar');
-                $filename = 'kartu_pelajar_' . now()->format('Ymd_His') . '_' . uniqid() . '.' . strtolower($file->getClientOriginalExtension());
+                $filename = 'kartu_pelajar_'.now()->format('Ymd_His').'_'.uniqid().'.'.strtolower($file->getClientOriginalExtension());
                 $kartuPelajarPath = $file->storeAs('kartu_pelajar', $filename);
             }
         }
@@ -203,7 +209,7 @@ class AuthController extends Controller
         $consentPath = null;
         if ($needsParentConsent && $request->hasFile('parent_consent_proof')) {
             $file = $request->file('parent_consent_proof');
-            $filename = 'consent_' . now()->format('Ymd_His') . '_' . uniqid() . '.' . strtolower($file->getClientOriginalExtension());
+            $filename = 'consent_'.now()->format('Ymd_His').'_'.uniqid().'.'.strtolower($file->getClientOriginalExtension());
             $consentPath = $file->storeAs('parent_consents', $filename);
         }
 
@@ -237,6 +243,7 @@ class AuthController extends Controller
         ]);
 
         $intendedUrl = $this->resolveIntendedUrl(null);
+
         return redirect($intendedUrl)->with('status', 'Akun berhasil dibuat.');
     }
 
