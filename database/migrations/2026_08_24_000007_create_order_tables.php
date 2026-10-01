@@ -45,7 +45,7 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
-            $table->enum('method', ['qris', 'gopay', 'dana', 'ovo', 'shopeepay', 'bank_transfer'])->index();
+            $table->enum('method', ['qris', 'gopay', 'dana', 'ovo', 'bank_transfer'])->index();
             $table->unsignedInteger('amount');
             $table->enum('status', ['pending', 'success', 'failed', 'refunded'])->default('pending')->index();
             $table->string('reference', 64)->nullable();

@@ -108,34 +108,15 @@
                          data-id="{{ $pm['id'] }}"
                          style="cursor: pointer;">
                         <div class="pm-icon-box pm-icon-{{ $pm['id'] }}">
-                            @if ($pm['id'] === 'qris')
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="3" y="3" width="7" height="7" rx="1"></rect>
-                                    <rect x="14" y="3" width="7" height="7" rx="1"></rect>
-                                    <rect x="3" y="14" width="7" height="7" rx="1"></rect>
-                                    <rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none"></rect>
-                                    <rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none"></rect>
-                                    <rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none"></rect>
-                                    <path d="M14 14h3v3h-3zM17 17h3v3h-3zM14 17v3"></path>
-                                </svg>
-                            @elseif ($pm['id'] === 'gopay')
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm4 9H8v-1.5l2-2V10h4v1.5l2 2V15z"/>
-                                </svg>
-                            @elseif ($pm['id'] === 'dana')
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                                    <line x1="2" y1="10" x2="22" y2="10"></line>
-                                </svg>
-                            @elseif ($pm['id'] === 'ovo')
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <text x="12" y="16" text-anchor="middle" font-size="8" font-weight="bold" fill="white">OVO</text>
-                                </svg>
-                            @else
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M19 7h-3a4 4 0 0 0-8 0H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM12 5a2 2 0 0 1 2 2h-4a2 2 0 0 1 2-2z"/>
-                                </svg>
+                            @php
+                                $svgPath = "images/payment-brands/{$pm['id']}.svg";
+                                $pngPath = "images/payment-brands/{$pm['id']}.png";
+                                $logoSrc = file_exists(public_path($svgPath))
+                                    ? asset($svgPath)
+                                    : (file_exists(public_path($pngPath)) ? asset($pngPath) : null);
+                            @endphp
+                            @if ($logoSrc)
+                                <img class="pm-brand-logo" src="{{ $logoSrc }}" alt="{{ $pm['name'] }}">
                             @endif
                         </div>
                         <div class="pm-info">

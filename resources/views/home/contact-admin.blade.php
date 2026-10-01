@@ -107,7 +107,7 @@
                         </div>
                         <div class="basecamp-meta">
                             <div><span>JAM OPERASIONAL</span><strong>{{ $siteSettings['operating_hours'] ?? '07.00 - 21.00 WIB' }}</strong><small>Buka Setiap Hari</small></div>
-                            <div><span>LOGISTIK</span><strong class="logistics-icons">â†— â—ˆ</strong></div>
+                            <div><span>LOGISTIK</span><strong class="logistics-icons">↗ ◈</strong></div>
                         </div>
                     </div>
                 </article>

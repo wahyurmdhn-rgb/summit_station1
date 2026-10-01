@@ -68,7 +68,6 @@ class Payment extends Model
             'qris' => 'QRIS',
             'dana' => 'DANA',
             'ovo' => 'OVO',
-            'shopeepay' => 'ShopeePay',
             default => strtoupper($this->method),
         };
     }

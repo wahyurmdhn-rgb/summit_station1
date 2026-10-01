@@ -62,7 +62,6 @@ class PaymentPageTest extends TestCase
         $response->assertSee('GOPAY');
         $response->assertSee('DANA');
         $response->assertSee('OVO');
-        $response->assertSee('SHOPEEPAY');
     }
 
     public function test_cart_links_to_payment(): void

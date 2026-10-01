@@ -258,11 +258,17 @@ a {
     overflow: hidden;
 }
 
+.pm-brand-logo {
+    display: block;
+    width: 30px;
+    height: 24px;
+    object-fit: contain;
+}
+
 .pm-icon-qris      { background: #f0f5ff; color: #1a3a8c; }
 .pm-icon-gopay     { background: #e8f4ff; color: #007bb5; }
 .pm-icon-dana      { background: #fff3e0; color: #e67e22; }
 .pm-icon-ovo       { background: #f3e8ff; color: #6b21a8; }
-.pm-icon-shopeepay { background: #fff1f1; color: #ee4d2d; }
 
 .pm-info {
     display: flex;

@@ -24,7 +24,7 @@ class PaymentController extends Controller
      */
     private const PAYMENT_DURATION = 300;
 
-    private const ALLOWED_METHODS = ['qris', 'gopay', 'dana', 'ovo', 'shopeepay', 'bank_transfer'];
+    private const ALLOWED_METHODS = ['qris', 'gopay', 'dana', 'ovo', 'bank_transfer'];
 
     private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'pdf'];
 
@@ -627,7 +627,6 @@ class PaymentController extends Controller
             ['id' => 'gopay',     'name' => 'GOPAY',     'desc' => 'Dompet Digital',        'icon' => 'gopay'],
             ['id' => 'dana',      'name' => 'DANA',      'desc' => 'Pembayaran Instan',     'icon' => 'dana'],
             ['id' => 'ovo',       'name' => 'OVO',       'desc' => 'Siap Cashback',         'icon' => 'ovo'],
-            ['id' => 'shopeepay', 'name' => 'SHOPEEPAY', 'desc' => 'Transaksi Lancar',      'icon' => 'shopeepay'],
         ];
     }
 }
