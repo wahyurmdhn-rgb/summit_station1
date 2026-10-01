@@ -18,7 +18,7 @@
                 <p class="eyebrow"><span></span> KOMUNIKASI BASECAMP</p>
                 <h1>Kirim Pesan ke Summit Station</h1>
                 <p class="lead">Baik Anda sedang merencanakan pendakian atau membutuhkan dukungan alat segera, koordinator ekspedisi kami siap membantu.</p>
-                <p style="margin-top: 14px; padding: 12px 16px; background: #185d31; color: #fff; border-radius: 8px; font-size: 14px; line-height: 1.6;">Lupa kata sandi? Hubungi admin kami melalui email <strong style="color: #fff;">{{ $siteSettings['email'] ?? 'support@summitstation.id' }}</strong> atau WhatsApp <strong style="color: #fff;">{{ $siteSettings['hotline'] ?? '+62 811-2345-6789' }}</strong> untuk meminta bantuan pemulihan akun Anda.</p>
+                <p style="margin-top: 14px; padding: 12px 16px; background: #185d31; color: #fff; border-radius: 8px; font-size: 14px; line-height: 1.6;">Lupa kata sandi? Hubungi admin kami melalui WhatsApp <strong style="color: #fff;">{{ $siteSettings['hotline'] ?? '+62 811-2345-6789' }}</strong> atau Instagram <strong style="color: #fff;">@summit_station</strong> untuk meminta bantuan pemulihan akun Anda.</p>
             </div>
             <img class="contact-logo" src="{{ asset('images/logo.png') . '?v=' . asset_v('images/logo.png') }}" alt="Summit Station emblem">
         </section>
@@ -29,27 +29,23 @@
                 <p class="dispatch-lead">Gunakan salah satu saluran resmi berikut untuk bantuan penyewaan, panduan alat, atau pemulihan akun. Tim koordinator ekspedisi kami siap membantu.</p>
 
                 <div class="contact-channel-list">
-                    <a class="contact-channel" href="mailto:{{ e($siteSettings['email'] ?? 'support@summitstation.id') }}">
-                        <span class="contact-icon mail">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"></path>
-                            </svg>
-                        </span>
-                        <span>
-                            <small>EMAIL RESMI</small>
-                            <strong>{{ $siteSettings['email'] ?? 'support@summitstation.id' }}</strong>
-                        </span>
-                    </a>
-
                     <a class="contact-channel" href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $siteSettings['hotline'] ?? '+6281123456789') }}" target="_blank" rel="noopener">
                         <span class="contact-icon chat">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M4 4h16v11H8l-4 4V4z"></path>
-                            </svg>
+                            @include('partials.social-brand-icon', ['brand' => 'whatsapp'])
                         </span>
                         <span>
                             <small>WHATSAPP</small>
                             <strong>{{ $siteSettings['hotline'] ?? '+62 811-2345-6789' }}</strong>
+                        </span>
+                    </a>
+
+                    <a class="contact-channel" href="https://www.instagram.com/summit_station/" target="_blank" rel="noopener">
+                        <span class="contact-icon insta">
+                            @include('partials.social-brand-icon', ['brand' => 'instagram'])
+                        </span>
+                        <span>
+                            <small>INSTAGRAM</small>
+                            <strong>@summit_station</strong>
                         </span>
                     </a>
                 </div>
@@ -65,25 +61,22 @@
 
             <aside class="contact-side">
                 <div class="contact-cards">
-                    <article>
+                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $siteSettings['hotline'] ?? '+6281123456789') }}" target="_blank" rel="noopener">
                         <span class="contact-icon chat">
-                            <svg width="23" height="23" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M4 4h16v11H8l-4 4V4z"></path>
-                            </svg>
+                            @include('partials.social-brand-icon', ['brand' => 'whatsapp'])
                         </span>
                         <small>INSTAN</small>
                         <h2>WhatsApp</h2>
                         <p>Rata-rata balasan: 5 menit</p>
-                    </article>
-                    <article>
-                        <span class="contact-icon mail">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"></path>
-                            </svg>
+                    </a>
+                    <a href="https://www.instagram.com/summit_station/" target="_blank" rel="noopener">
+                        <span class="contact-icon insta">
+                            @include('partials.social-brand-icon', ['brand' => 'instagram'])
                         </span>
-                        <h2>Email Resmi</h2>
-                        <p>{{ $siteSettings['email'] ?? 'hq@summitstation.co' }}</p>
-                    </article>
+                        <small>INSTAGRAM</small>
+                        <h2>Instagram</h2>
+                        <p>@summit_station</p>
+                    </a>
                 </div>
 
                 <article class="basecamp-card">

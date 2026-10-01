@@ -411,14 +411,15 @@
 
                     <div class="form-row-grid-2">
                         <div class="form-group-modal">
-                            <label class="form-label-modal">SKU Alat *</label>
-                            <input type="text" name="sku" class="form-input-modal" placeholder="Contoh: TENT-001-OR" required>
+                            <label class="form-label-modal">SKU Alat (otomatis)</label>
+                            <input type="text" name="sku" id="add_sku" class="form-input-modal" readonly placeholder="Pilih kategori">
                         </div>
                         <div class="form-group-modal">
                             <label class="form-label-modal">Kategori *</label>
-                            <select name="category_id" class="form-select-modal" required>
+                            <select name="category_id" id="add_category_id" class="form-select-modal" required onchange="updateAddSkuPreview()">
+                                <option value="" disabled selected>Pilih Kategori</option>
                                 @foreach ($categories as $cat)
-                                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                    <option value="{{ $cat->id }}">{{ $cat->name }} ({{ $cat->sku }})</option>
                                 @endforeach
                             </select>
                         </div>
@@ -526,14 +527,14 @@
 
                     <div class="form-row-grid-2">
                         <div class="form-group-modal">
-                            <label class="form-label-modal">SKU Alat *</label>
-                            <input type="text" name="sku" id="edit_sku" class="form-input-modal" required>
+                            <label class="form-label-modal">SKU Alat (otomatis)</label>
+                            <input type="text" name="sku" id="edit_sku" class="form-input-modal" readonly>
                         </div>
                         <div class="form-group-modal">
                             <label class="form-label-modal">Kategori *</label>
-                            <select name="category_id" id="edit_category_id" class="form-select-modal" required>
+                            <select name="category_id" id="edit_category_id" class="form-select-modal" required onchange="updateEditSkuPreview()">
                                 @foreach ($categories as $cat)
-                                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                    <option value="{{ $cat->id }}">{{ $cat->name }} ({{ $cat->sku }})</option>
                                 @endforeach
                             </select>
                         </div>
@@ -846,7 +847,24 @@
 
     <!--  Scripts  -->
     <script>
+        var categorySkus = @json($categories->mapWithKeys(fn ($category) => [(string) $category->id => $category->sku]));
+
+        function previewNextSku(categoryId) {
+            var categorySku = categorySkus[String(categoryId)] || '';
+            return categorySku ? categorySku + '-(otomatis)' : '';
+        }
+
+        function updateAddSkuPreview() {
+            document.getElementById('add_sku').value = previewNextSku(document.getElementById('add_category_id').value);
+        }
+
+        function updateEditSkuPreview() {
+            var categoryId = document.getElementById('edit_category_id').value;
+            document.getElementById('edit_sku').value = previewNextSku(categoryId);
+        }
+
         function openAddModal() {
+            updateAddSkuPreview();
             document.getElementById('addModal').classList.add('active');
         }
 

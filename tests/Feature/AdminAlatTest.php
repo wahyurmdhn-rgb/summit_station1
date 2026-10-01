@@ -11,6 +11,7 @@ use Tests\TestCase;
 class AdminAlatTest extends TestCase
 {
     use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -83,7 +84,6 @@ class AdminAlatTest extends TestCase
             'account_role' => 'admin',
         ])->post('/admin/alat', [
             'name' => 'Solar Camp Lantern',
-            'sku' => 'LANTERN-999',
             'category_id' => $category->id,
             'price_per_day' => 35000,
             'stock_total' => 20,
@@ -92,7 +92,7 @@ class AdminAlatTest extends TestCase
         ]);
 
         $response->assertRedirect('/admin/alat');
-        $this->assertDatabaseHas('products', ['sku' => 'LANTERN-999', 'name' => 'Solar Camp Lantern']);
+        $this->assertDatabaseHas('products', ['name' => 'Solar Camp Lantern']);
     }
 
     public function test_admin_can_update_alat(): void
@@ -103,9 +103,8 @@ class AdminAlatTest extends TestCase
             'account_id' => 1,
             'account_name' => 'Admin Summit',
             'account_role' => 'admin',
-        ])->put('/admin/alat/' . $product->id, [
+        ])->put('/admin/alat/'.$product->id, [
             'name' => 'Apex Ultralight V2 Pro Edit',
-            'sku' => $product->sku,
             'category_id' => $product->category_id,
             'price_per_day' => 275000,
             'stock_total' => 18,
@@ -126,7 +125,7 @@ class AdminAlatTest extends TestCase
             'account_id' => 1,
             'account_name' => 'Admin Summit',
             'account_role' => 'admin',
-        ])->patch('/admin/alat/' . $product->id . '/toggle-status');
+        ])->patch('/admin/alat/'.$product->id.'/toggle-status');
 
         $response->assertRedirect('/admin/alat');
         $this->assertDatabaseHas('products', ['id' => $product->id, 'is_active' => ! $initialStatus]);
@@ -148,7 +147,7 @@ class AdminAlatTest extends TestCase
             'account_id' => 1,
             'account_name' => 'Admin Summit',
             'account_role' => 'admin',
-        ])->delete('/admin/alat/' . $productToDelete->id);
+        ])->delete('/admin/alat/'.$productToDelete->id);
 
         $response->assertRedirect('/admin/alat');
         $this->assertDatabaseMissing('products', ['id' => $productToDelete->id]);
@@ -367,7 +366,7 @@ class AdminAlatTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Royal Camping Pkg');
-        $response->assertSee('PKT-' . $bundle->id);
+        $response->assertSee('PKT-'.$bundle->id);
         // Paket yang stoknya > 0 harus tampil sebagai AKTIF.
         $response->assertSee('AKTIF');
         // Total gabungan: setUp() (1) + 1 produk + 1 paket = 3.
@@ -467,7 +466,7 @@ class AdminAlatTest extends TestCase
             'account_id' => 1,
             'account_name' => 'Admin Summit',
             'account_role' => 'admin',
-        ])->patch('/admin/alat/bundle/' . $bundle->id . '/toggle-status');
+        ])->patch('/admin/alat/bundle/'.$bundle->id.'/toggle-status');
 
         $response->assertRedirect();
         $this->assertFalse($bundle->fresh()->is_active);
@@ -486,7 +485,7 @@ class AdminAlatTest extends TestCase
             'account_id' => 1,
             'account_name' => 'Admin Summit',
             'account_role' => 'admin',
-        ])->delete('/admin/alat/bundle/' . $bundle->id);
+        ])->delete('/admin/alat/bundle/'.$bundle->id);
 
         $response->assertRedirect();
         $this->assertDatabaseMissing('bundles', ['id' => $bundle->id]);
@@ -555,7 +554,7 @@ class AdminAlatTest extends TestCase
             'account_id' => 1,
             'account_name' => 'Admin Summit',
             'account_role' => 'admin',
-        ])->put('/admin/alat/bundle/' . $bundle->id, [
+        ])->put('/admin/alat/bundle/'.$bundle->id, [
             'name' => 'Update Pkg (Edited)',
             'description' => 'new desc',
             'price' => 150000,
@@ -598,7 +597,7 @@ class AdminAlatTest extends TestCase
             'account_id' => 1,
             'account_name' => 'Admin Summit',
             'account_role' => 'admin',
-        ])->put('/admin/alat/bundle/' . $bundle->id, [
+        ])->put('/admin/alat/bundle/'.$bundle->id, [
             'name' => 'Image Pkg',
             'price' => 90000,
             'image' => 'https://new.test/b.png',
@@ -621,7 +620,7 @@ class AdminAlatTest extends TestCase
             'account_id' => 1,
             'account_name' => 'Admin Summit',
             'account_role' => 'admin',
-        ])->put('/admin/alat/bundle/' . $bundle->id, [
+        ])->put('/admin/alat/bundle/'.$bundle->id, [
             'name' => '',
             'price' => -5,
         ]);
@@ -641,7 +640,7 @@ class AdminAlatTest extends TestCase
             'account_id' => 1,
             'account_name' => 'Admin Summit',
             'account_role' => 'admin',
-        ])->put('/admin/alat/bundle/' . $bundle->id, [
+        ])->put('/admin/alat/bundle/'.$bundle->id, [
             'name' => 'Existing Pkg',
             'price' => 80000,
         ]);

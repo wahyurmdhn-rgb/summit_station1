@@ -22,6 +22,19 @@ class HomePageTest extends TestCase
         $response->assertSee('Apa Kata Mereka?');
     }
 
+    public function test_contact_admin_uses_whatsapp_and_configured_instagram(): void
+    {
+        $response = $this->get('/contact-admin');
+
+        $response->assertOk();
+        $response->assertSee('WHATSAPP');
+        $response->assertSee('INSTAGRAM');
+        $response->assertSee('@summit_station');
+        $response->assertSee('https://www.instagram.com/summit_station/', false);
+        $response->assertDontSee('EMAIL RESMI');
+        $response->assertDontSee('support@summitstation.id');
+    }
+
     public function test_navbar_routes_are_accessible(): void
     {
         $this->get('/catalog')->assertStatus(200)->assertSee('Katalog');

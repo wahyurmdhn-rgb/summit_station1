@@ -18,6 +18,7 @@ use App\Notifications\RefundStatusNotification;
 use App\Services\AdminNotificationService;
 use App\Services\RentalNotificationService;
 use App\Services\SiteSettingsService;
+use App\Services\SkuService;
 use App\Support\ErrorReporter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -611,7 +612,6 @@ class AdminController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'sku' => ['required', 'string', 'max:32', 'unique:products,sku'],
             'category_id' => ['required', 'exists:categories,id'],
             'subtitle' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -648,7 +648,11 @@ class AdminController extends Controller
 
         $data['is_active'] = $request->has('is_active') ? (bool) $request->is_active : true;
 
-        Product::create($data);
+        DB::transaction(function () use (&$data) {
+            $category = Category::whereKey($data['category_id'])->lockForUpdate()->firstOrFail();
+            $data['sku'] = SkuService::generateProductSku($category);
+            Product::create($data);
+        });
 
         return redirect()->route('admin.alat')->with('status', 'Alat berhasil ditambahkan ke inventaris.');
     }
@@ -662,7 +666,6 @@ class AdminController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'sku' => ['required', 'string', 'max:32', 'unique:products,sku,'.$id],
             'category_id' => ['required', 'exists:categories,id'],
             'subtitle' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -691,7 +694,16 @@ class AdminController extends Controller
 
         $data['is_active'] = $request->has('is_active') ? (bool) $request->is_active : false;
 
-        $product->update($data);
+        DB::transaction(function () use ($product, &$data) {
+            if ((int) $product->category_id !== (int) $data['category_id'] || empty($product->sku)) {
+                $newCategory = Category::whereKey($data['category_id'])->lockForUpdate()->firstOrFail();
+                $data['sku'] = SkuService::generateProductSku($newCategory, $product->id);
+            } else {
+                $data['sku'] = $product->sku;
+            }
+
+            $product->update($data);
+        });
 
         return redirect()->route('admin.alat')->with('status', 'Data alat '.$product->name.' berhasil diperbarui.');
     }
@@ -735,6 +747,7 @@ class AdminController extends Controller
         $category = Category::create([
             'name' => trim($data['name']),
             'slug' => $this->uniqueCategorySlug(Str::slug(trim($data['name']))),
+            'sku' => SkuService::generateCategorySku(trim($data['name'])),
         ]);
 
         return redirect()->route('admin.alat')->with('status', "Kategori '{$category->name}' berhasil ditambahkan dan siap digunakan pada Alat/Produk.");

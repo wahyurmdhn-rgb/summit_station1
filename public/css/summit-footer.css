@@ -113,9 +113,24 @@
     transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-.footer-social-link:hover .footer-social-icon {
-    background: #9ce6a6;
-    color: #141b16;
+.footer-social-icon--instagram {
+    background: linear-gradient(135deg, #833ab4 0%, #c13584 45%, #e1306c 70%, #f77737 100%);
+    color: #ffffff;
+}
+
+.footer-social-icon--wa {
+    background: #25d366;
+    color: #ffffff;
+}
+
+.footer-social-link:hover .footer-social-icon--instagram {
+    background: linear-gradient(135deg, #9b4dca 0%, #d54b98 45%, #ef4d82 70%, #fb8a50 100%);
+    color: #ffffff;
+}
+
+.footer-social-link:hover .footer-social-icon--wa {
+    background: #37e477;
+    color: #ffffff;
 }
 
 .footer-social-icon svg {

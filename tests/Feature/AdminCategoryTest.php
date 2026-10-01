@@ -71,7 +71,7 @@ class AdminCategoryTest extends TestCase
         $cat = Category::create(['name' => 'Old Name', 'slug' => 'old-name']);
 
         $response = $this->withSession($this->adminSession())
-            ->put('/admin/alat/category/' . $cat->id, ['name' => 'New Name']);
+            ->put('/admin/alat/category/'.$cat->id, ['name' => 'New Name']);
 
         $response->assertRedirect('/admin/alat');
         $fresh = $cat->fresh();
@@ -85,7 +85,7 @@ class AdminCategoryTest extends TestCase
         $cat = Category::create(['name' => 'Editable', 'slug' => 'editable']);
 
         $response = $this->withSession($this->adminSession())
-            ->put('/admin/alat/category/' . $cat->id, ['name' => 'Taken']);
+            ->put('/admin/alat/category/'.$cat->id, ['name' => 'Taken']);
 
         $response->assertSessionHasErrors('name');
         $this->assertEquals('Editable', $cat->fresh()->name);
@@ -96,7 +96,7 @@ class AdminCategoryTest extends TestCase
         $cat = Category::create(['name' => 'Same', 'slug' => 'same']);
 
         $response = $this->withSession($this->adminSession())
-            ->put('/admin/alat/category/' . $cat->id, ['name' => 'Same']);
+            ->put('/admin/alat/category/'.$cat->id, ['name' => 'Same']);
 
         $response->assertSessionHasNoErrors();
         $this->assertEquals('Same', $cat->fresh()->name);
@@ -107,7 +107,7 @@ class AdminCategoryTest extends TestCase
         $cat = Category::create(['name' => 'Unused', 'slug' => 'unused']);
 
         $response = $this->withSession($this->adminSession())
-            ->delete('/admin/alat/category/' . $cat->id);
+            ->delete('/admin/alat/category/'.$cat->id);
 
         $response->assertRedirect('/admin/alat');
         $this->assertDatabaseMissing('categories', ['id' => $cat->id]);
@@ -127,7 +127,7 @@ class AdminCategoryTest extends TestCase
         ]);
 
         $response = $this->withSession($this->adminSession())
-            ->delete('/admin/alat/category/' . $cat->id);
+            ->delete('/admin/alat/category/'.$cat->id);
 
         $response->assertRedirect('/admin/alat');
         $response->assertSessionHasErrors('category');
@@ -146,7 +146,6 @@ class AdminCategoryTest extends TestCase
         $store = $this->withSession($this->adminSession())
             ->post('/admin/alat', [
                 'name' => 'Rain Jacket',
-                'sku' => 'APPRL-001',
                 'category_id' => $cat->id,
                 'price_per_day' => 45000,
                 'stock_total' => 10,
@@ -155,7 +154,7 @@ class AdminCategoryTest extends TestCase
             ]);
 
         $store->assertRedirect('/admin/alat');
-        $this->assertDatabaseHas('products', ['sku' => 'APPRL-001', 'category_id' => $cat->id]);
+        $this->assertDatabaseHas('products', ['sku' => 'APP-001', 'category_id' => $cat->id]);
     }
 
     public function test_category_change_reflected_on_product_and_admin_alat(): void
@@ -172,7 +171,7 @@ class AdminCategoryTest extends TestCase
         ]);
 
         $this->withSession($this->adminSession())
-            ->put('/admin/alat/category/' . $cat->id, ['name' => 'Slumber Gear']);
+            ->put('/admin/alat/category/'.$cat->id, ['name' => 'Slumber Gear']);
 
         $this->assertDatabaseHas('categories', ['id' => $cat->id, 'name' => 'Slumber Gear']);
 
