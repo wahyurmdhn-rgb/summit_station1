@@ -319,7 +319,12 @@
                     <!-- Continue Browsing & Clear Cart Row -->
                     <div style="display: flex; gap: 12px; align-items: center;">
                         <a href="{{ route('catalog') }}" class="continue-browsing-card" style="flex: 1;">
-                            <div class="icon-plus-circle">&plus;</div>
+                            <span class="icon-plus-circle" aria-hidden="true">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                            </span>
                             <span>Tambah alat lain dari katalog</span>
                         </a>
 
