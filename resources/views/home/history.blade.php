@@ -455,9 +455,9 @@
                                         <div class="reviewed-stars">
                                             @for ($s = 1; $s <= 5; $s++)
                                                 @if ($s <= $order->review->rating)
-                                                    â˜…
+                                                    &#9733;
                                                 @else
-                                                    <span class="star-empty">â˜…</span>
+                                                    <span class="star-empty">&#9733;</span>
                                                 @endif
                                             @endfor
                                         </div>
@@ -478,7 +478,7 @@
                     <!-- Return Alert Banner (if applicable) -->
                     @if (in_array($returnDisplayState['state'], ['due', 'overdue', 'waiting']))
                         <div class="order-card-alert alert-{{ $returnDisplayState['badge'] }}">
-                            <span class="alert-icon">{{ $returnDisplayState['state'] === 'overdue' ? 'ðŸš¨' : ($returnDisplayState['state'] === 'waiting' ? 'â³' : 'âš ï¸') }}</span>
+                            <span class="alert-icon" aria-hidden="true">{!! $returnDisplayState['state'] === 'overdue' ? '&#9888;' : ($returnDisplayState['state'] === 'waiting' ? '&#8987;' : '&#9888;') !!}</span>
                             <div class="alert-content">
                                 <strong>{{ $returnDisplayState['label'] }}</strong>
                                 <p>
@@ -1230,11 +1230,11 @@
                 <div class="review-stars-block">
                     <span class="review-sub-label" id="review-stars-label">Pilih Rating Anda</span>
                     <div id="star-rating-container" class="review-stars" role="radiogroup" aria-labelledby="review-stars-label">
-                        <button type="button" class="star-item" data-val="1" onclick="setRating(1, this)" aria-label="1 bintang - Sangat Tidak Puas" aria-pressed="false">â˜…</button>
-                        <button type="button" class="star-item" data-val="2" onclick="setRating(2, this)" aria-label="2 bintang - Tidak Puas" aria-pressed="false">â˜…</button>
-                        <button type="button" class="star-item" data-val="3" onclick="setRating(3, this)" aria-label="3 bintang - Cukup" aria-pressed="false">â˜…</button>
-                        <button type="button" class="star-item" data-val="4" onclick="setRating(4, this)" aria-label="4 bintang - Puas" aria-pressed="false">â˜…</button>
-                        <button type="button" class="star-item" data-val="5" onclick="setRating(5, this)" aria-label="5 bintang - Sangat Puas & Direkomendasikan" aria-pressed="false">â˜…</button>
+                        <button type="button" class="star-item" data-val="1" onclick="setRating(1, this)" aria-label="1 bintang - Sangat Tidak Puas" aria-pressed="false">&#9733;</button>
+                        <button type="button" class="star-item" data-val="2" onclick="setRating(2, this)" aria-label="2 bintang - Tidak Puas" aria-pressed="false">&#9733;</button>
+                        <button type="button" class="star-item" data-val="3" onclick="setRating(3, this)" aria-label="3 bintang - Cukup" aria-pressed="false">&#9733;</button>
+                        <button type="button" class="star-item" data-val="4" onclick="setRating(4, this)" aria-label="4 bintang - Puas" aria-pressed="false">&#9733;</button>
+                        <button type="button" class="star-item" data-val="5" onclick="setRating(5, this)" aria-label="5 bintang - Sangat Puas & Direkomendasikan" aria-pressed="false">&#9733;</button>
                     </div>
                     <p id="rating-label" class="review-rating-label" role="status" aria-live="polite"></p>
                 </div>
