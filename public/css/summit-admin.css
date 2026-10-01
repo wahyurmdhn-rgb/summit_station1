@@ -421,7 +421,6 @@ button.menu-link {
     gap: 8px;
     background: none;
     border: none;
-    cursor: pointer;
 }
 
 .admin-avatar {
@@ -440,12 +439,6 @@ button.menu-link {
 .admin-avatar svg {
     width: 18px;
     height: 18px;
-}
-
-.chevron-down {
-    width: 14px;
-    height: 14px;
-    color: #6b7280;
 }
 
 @keyframes admin-fade-in {

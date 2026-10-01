@@ -83,9 +83,6 @@
             </div>
             <span class="admin-profile-name">{{ session('account_name') ?? 'Admin' }}</span>
             <span class="admin-role-badge">ADMIN</span>
-            <svg class="chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
         </a>
     </div>
 </header>
