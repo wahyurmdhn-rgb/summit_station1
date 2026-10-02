@@ -123,7 +123,7 @@ class BookingProductConsistencyTest extends TestCase
         $catalogRes->assertSee(route('catalog.show', $prodE->id));
 
         // Authenticate as a static customer so booking forms (with hidden id inputs) render
-        $detailUser = User::create([
+        $detailUser = User::forceCreate([
             'name' => 'Detail Tester',
             'username' => 'detail_tester',
             'email' => 'detail.tester@summit.id',
@@ -196,7 +196,7 @@ class BookingProductConsistencyTest extends TestCase
         $resInvalidBundle->assertSee('Alat Tidak Ditemukan');
 
         // ─── TEST 10: Full Cart & Checkout Workflow Database Consistency ───
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Bima Sakti',
             'username' => 'bima_peak',
             'email' => 'bima@summit.id',

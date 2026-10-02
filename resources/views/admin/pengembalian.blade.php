@@ -188,7 +188,7 @@
                                     if ($itemCount > 1) {
                                         $productName .= ' (+' . ($itemCount - 1) . ' lainnya)';
                                     }
-                                    $productImage = $firstItem?->image ?? $product?->main_image ?? 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=300&q=80';
+                                    $productImage = $firstItem?->image ?? $product?->main_image ?? asset('images/placeholder.svg');
 
                                     $user = $order->user;
                                     $userName = $user?->name ?? 'Pelanggan';

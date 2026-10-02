@@ -95,7 +95,7 @@ class BundleStockAvailabilityTest extends TestCase
 
     public function test_detail_page_shows_habis_and_disables_booking_when_component_out_of_stock(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Detail Tester',
             'username' => 'detailtester',
             'email' => 'detail.tester@summit.id',
@@ -186,7 +186,7 @@ class BundleStockAvailabilityTest extends TestCase
 
     public function test_add_bundle_rejects_when_available_stock_is_zero(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Bundle Tester',
             'username' => 'bundletester',
             'email' => 'bundle.tester@summit.id',
@@ -212,7 +212,7 @@ class BundleStockAvailabilityTest extends TestCase
 
     public function test_payment_index_rejects_out_of_stock_bundle_in_cart(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Payment Tester',
             'username' => 'paymenttester',
             'email' => 'payment.tester@summit.id',
@@ -253,7 +253,7 @@ class BundleStockAvailabilityTest extends TestCase
 
     public function test_payment_process_does_not_create_order_for_out_of_stock_bundle(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Process Tester',
             'username' => 'processtester',
             'email' => 'process.tester@summit.id',

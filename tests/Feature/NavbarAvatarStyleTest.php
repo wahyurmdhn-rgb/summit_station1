@@ -13,7 +13,7 @@ class NavbarAvatarStyleTest extends TestCase
     public function test_navbar_avatar_displays_single_username_initial_and_profile_displays_username_initial(): void
     {
         // 1. User Fajar Pratama (@fajar_peaks)
-        $fajar = User::create([
+        $fajar = User::forceCreate([
             'name' => 'Fajar Pratama',
             'username' => 'fajar_peaks',
             'email' => 'fajar@summit.id',
@@ -42,7 +42,7 @@ class NavbarAvatarStyleTest extends TestCase
         $resFajarProfile->assertSee('<span class="user-avatar-initial">F</span>', false); // Navbar in Profile page
 
         // 2. User Wahyu Pratama (@wahyu)
-        $wahyu = User::create([
+        $wahyu = User::forceCreate([
             'name' => 'Wahyu Pratama',
             'username' => 'wahyu',
             'email' => 'wahyu@summit.id',
@@ -60,7 +60,7 @@ class NavbarAvatarStyleTest extends TestCase
         $resWahyu->assertSee('<span class="user-avatar-initial">W</span>', false);
 
         // 3. User Andi Setiawan (@andi)
-        $andi = User::create([
+        $andi = User::forceCreate([
             'name' => 'Andi Setiawan',
             'username' => 'andi',
             'email' => 'andi@summit.id',

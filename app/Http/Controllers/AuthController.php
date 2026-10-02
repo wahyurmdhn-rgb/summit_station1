@@ -106,6 +106,10 @@ class AuthController extends Controller
             return back()->withErrors(['email' => 'Email atau password admin salah.'])->onlyInput('email');
         }
 
+        if (isset($admin->status) && $admin->status !== 'active') {
+            return back()->withErrors(['email' => 'Akun administrator Anda sedang dinonaktifkan atau dibekukan.'])->onlyInput('email');
+        }
+
         session()->regenerate();
         session([
             'account_id' => $admin->getKey(),
@@ -129,7 +133,7 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:80'],
+            'username' => ['required', 'string', 'max:80', 'unique:users,username'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:30', 'regex:/^[0-9+\s\-]+$/'],
             'domicile' => ['required', 'string', 'max:120', 'in:Jakarta,Bogor,Depok,Tangerang,Bekasi'],
@@ -213,25 +217,26 @@ class AuthController extends Controller
             $consentPath = $file->storeAs('parent_consents', $filename);
         }
 
-        $user = User::create([
+        $user = new User([
             'name' => $data['name'],
             'username' => $data['username'],
             'email' => $data['email'],
             'phone' => $data['phone'],
             'domicile' => $data['domicile'],
             'date_of_birth' => $data['date_of_birth'],
-            'ktp_user_path' => $ktpUserPath,
-            'ktp_orang_tua_path' => $ktpOrtuPath,
-            'kartu_pelajar_path' => $kartuPelajarPath,
             'password' => $data['password'],
-            'status' => 'active',
-            'role' => 'customer',
-            'parent_consent_status' => $needsParentConsent ? 'submitted' : 'not_required',
             'parent_name' => $parentData['parent_name'] ?? null,
             'parent_relation' => $parentData['parent_relation'] ?? null,
             'parent_phone' => $parentData['parent_phone'] ?? null,
-            'parent_consent_path' => $consentPath,
         ]);
+        $user->ktp_user_path = $ktpUserPath;
+        $user->ktp_orang_tua_path = $ktpOrtuPath;
+        $user->kartu_pelajar_path = $kartuPelajarPath;
+        $user->status = 'active';
+        $user->role = 'customer';
+        $user->parent_consent_status = $needsParentConsent ? 'submitted' : 'not_required';
+        $user->parent_consent_path = $consentPath;
+        $user->save();
 
         session()->regenerate();
         session([

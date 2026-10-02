@@ -73,7 +73,7 @@
                     if ($itemsCount > 1) {
                         $productTitle .= ' (+' . ($itemsCount - 1) . ' item lainnya)';
                     }
-                    $productImage = $firstItem && $firstItem->image ? $firstItem->image : 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=300&q=80';
+                    $productImage = $firstItem && $firstItem->image ? $firstItem->image : asset('images/placeholder.svg');
                     $payment = $order->payments->first();
                     $successPayment = $order->payments->first(fn ($p) => $p->status === 'success');
                     $returnState = $order->returnState();
@@ -550,7 +550,7 @@
                                 <div class="breakdown-item-list">
                                     @foreach ($order->items as $item)
                                         <div class="breakdown-item-row">
-                                            <img src="{{ $item->image ?: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=100&q=80' }}" alt="{{ $item->name }}" class="breakdown-item-thumb">
+                                            <img src="{{ $item->image ?: asset('images/placeholder.svg') }}" alt="{{ $item->name }}" class="breakdown-item-thumb">
                                             <div class="breakdown-item-detail">
                                                 <h5>{{ $item->name }}</h5>
                                                 <div class="breakdown-item-sub">
@@ -665,7 +665,7 @@
                                         </p>
                                     </div>
                                     <div class="guide-contact-row">
-                                        <a href="https://wa.me/6282244556677" target="_blank" rel="noopener noreferrer" class="btn-wa-guide">
+                                        <a href="{{ $siteSettings['hotline_url'] ?? 'https://wa.me/6281123456789' }}" target="_blank" rel="noopener noreferrer" class="btn-wa-guide">
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                                             </svg>

@@ -197,7 +197,7 @@
                                     // Item produk pertama
                                     $firstItem = $order->items->first();
                                     $productName = $firstItem ? $firstItem->name : 'Paket Peralatan Outdoor';
-                                    $productImg = $firstItem?->image ?? ($firstItem?->product?->main_image ?? 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=150&q=80');
+                                    $productImg = $firstItem?->image ?? ($firstItem?->product?->main_image ?? asset('images/placeholder.svg'));
                                     $productGrade = $firstItem?->product?->grade ?? 'PRO-GRADE';
 
                                     // Durasi hari (inklusif: selisih tanggal kalender + 1)
@@ -216,7 +216,7 @@
                                             </div>
                                             <div class="customer-info-txt">
                                                 <span class="customer-name-bold">{{ $userName }}</span>
-                                                <span class="customer-email-muted">{{ $order->user?->email ?? 'no-email@example.com' }}</span>
+                                                <span class="customer-email-muted">{{ $order->user?->email ?? 'Email tidak tersedia' }}</span>
                                             </div>
                                         </div>
                                     </td>

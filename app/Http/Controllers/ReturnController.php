@@ -29,63 +29,72 @@ class ReturnController extends Controller
         }
 
         $userId = (int) session('account_id');
+        $uploadedPath = null;
 
-        return DB::transaction(function () use ($request, $order, $userId) {
-            $orderModel = Order::with(['user', 'returns'])->lockForUpdate()->find((int) $order);
+        try {
+            return DB::transaction(function () use ($request, $order, $userId, &$uploadedPath) {
+                $orderModel = Order::with(['user', 'returns'])->lockForUpdate()->find((int) $order);
 
-            if (! $orderModel) {
-                return back()->withErrors(['return' => 'Pesanan tidak ditemukan.']);
+                if (! $orderModel) {
+                    return back()->withErrors(['return' => 'Pesanan tidak ditemukan.']);
+                }
+
+                // SECURITY: user hanya boleh mengajukan pengembalian untuk booking miliknya.
+                if ((int) $orderModel->user_id !== $userId) {
+                    abort(403, 'Anda tidak memiliki izin untuk mengajukan pengembalian pada pesanan ini.');
+                }
+
+                // Hanya penyewaan yang sedang aktif berjalan.
+                if ($orderModel->status !== 'active') {
+                    return back()->withErrors(['return' => 'Pengembalian hanya dapat diajukan untuk penyewaan yang sedang aktif.']);
+                }
+
+                // Cegah pengajuan ganda selama masih diproses / sudah disetujui.
+                $hasOpenReturn = $orderModel->returns
+                    ->contains(fn ($r) => in_array($r->status, ['pending', 'approved']));
+                if ($hasOpenReturn) {
+                    return back()->withErrors(['return' => 'Pengajuan pengembalian untuk booking ini sudah dikirim dan sedang diproses.']);
+                }
+
+                $validated = $request->validate([
+                    'return_proof' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
+                ], [
+                    'return_proof.required' => 'Foto bukti pengembalian wajib diupload.',
+                    'return_proof.image' => 'File yang diunggah harus berupa gambar.',
+                    'return_proof.mimes' => 'Format foto tidak valid. Gunakan format JPG, JPEG, PNG, atau WEBP.',
+                    'return_proof.max' => 'Ukuran foto melebihi batas maksimal 5MB.',
+                ]);
+
+                $proofPath = $request->file('return_proof')->store('returns');
+                $uploadedPath = $proofPath;
+
+                ReturnRecord::create([
+                    'order_id' => $orderModel->id,
+                    'order_item_id' => null,
+                    'proof_path' => $proofPath,
+                    'status' => 'pending',
+                    'returned_at' => now(),
+                ]);
+
+                AdminNotificationService::notifyAdmins(
+                    'return',
+                    '🔔 Pengembalian Barang',
+                    "User {$orderModel->user?->name} telah mengajukan pengembalian barang untuk pesanan #{$orderModel->code} dan mengunggah foto bukti pengembalian.",
+                    '📦',
+                    route('admin.pengembalian'),
+                );
+
+                RentalNotificationService::notifyReturnSubmitted($orderModel);
+
+                return redirect()->route('history')
+                    ->with('status', 'Pengajuan pengembalian berhasil dikirim. Silakan bawa peralatan ke basecamp Summit Station untuk inspeksi.');
+            });
+        } catch (\Throwable $e) {
+            if ($uploadedPath && \Illuminate\Support\Facades\Storage::disk('local')->exists($uploadedPath)) {
+                \Illuminate\Support\Facades\Storage::disk('local')->delete($uploadedPath);
             }
-
-            // SECURITY: user hanya boleh mengajukan pengembalian untuk booking miliknya.
-            if ((int) $orderModel->user_id !== $userId) {
-                abort(403, 'Anda tidak memiliki izin untuk mengajukan pengembalian pada pesanan ini.');
-            }
-
-            // Hanya penyewaan yang sedang aktif berjalan.
-            if ($orderModel->status !== 'active') {
-                return back()->withErrors(['return' => 'Pengembalian hanya dapat diajukan untuk penyewaan yang sedang aktif.']);
-            }
-
-            // Cegah pengajuan ganda selama masih diproses / sudah disetujui.
-            $hasOpenReturn = $orderModel->returns
-                ->contains(fn ($r) => in_array($r->status, ['pending', 'approved']));
-            if ($hasOpenReturn) {
-                return back()->withErrors(['return' => 'Pengajuan pengembalian untuk booking ini sudah dikirim dan sedang diproses.']);
-            }
-
-            $validated = $request->validate([
-                'return_proof' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
-            ], [
-                'return_proof.required' => 'Foto bukti pengembalian wajib diupload.',
-                'return_proof.image' => 'File yang diunggah harus berupa gambar.',
-                'return_proof.mimes' => 'Format foto tidak valid. Gunakan format JPG, JPEG, PNG, atau WEBP.',
-                'return_proof.max' => 'Ukuran foto melebihi batas maksimal 5MB.',
-            ]);
-
-            $proofPath = $request->file('return_proof')->store('returns');
-
-            ReturnRecord::create([
-                'order_id' => $orderModel->id,
-                'order_item_id' => null,
-                'proof_path' => $proofPath,
-                'status' => 'pending',
-                'returned_at' => now(),
-            ]);
-
-            AdminNotificationService::notifyAdmins(
-                'return',
-                '🔔 Pengembalian Barang',
-                "User {$orderModel->user?->name} telah mengajukan pengembalian barang untuk pesanan #{$orderModel->code} dan mengunggah foto bukti pengembalian.",
-                '📦',
-                route('admin.pengembalian'),
-            );
-
-            RentalNotificationService::notifyReturnSubmitted($orderModel);
-
-            return redirect()->route('history')
-                ->with('status', 'Pengajuan pengembalian berhasil dikirim. Silakan bawa peralatan ke basecamp Summit Station untuk inspeksi.');
-        });
+            throw $e;
+        }
     }
 
     /**

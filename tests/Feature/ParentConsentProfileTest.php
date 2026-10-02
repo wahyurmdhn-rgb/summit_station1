@@ -26,7 +26,7 @@ class ParentConsentProfileTest extends TestCase
             'parent_consent_status' => 'not_required',
         ];
 
-        return User::create(array_merge($defaults, $overrides));
+        return User::forceCreate(array_merge($defaults, $overrides));
     }
 
     private function customerSession(User $user): array
@@ -170,6 +170,7 @@ class ParentConsentProfileTest extends TestCase
 
         $userA = $this->createUser([
             'name' => 'User A',
+            'username' => 'user_a_consent',
             'email' => 'consenta@example.com',
             'date_of_birth' => '2010-09-09',
             'parent_consent_status' => 'submitted',
@@ -177,6 +178,7 @@ class ParentConsentProfileTest extends TestCase
         ]);
         $userB = $this->createUser([
             'name' => 'User B',
+            'username' => 'user_b_consent',
             'email' => 'consentb@example.com',
             'date_of_birth' => '2010-09-09',
             'parent_consent_status' => 'submitted',

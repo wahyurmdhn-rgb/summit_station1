@@ -35,7 +35,7 @@ class RentalDurationCalendarTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::create([
+        $this->owner = User::forceCreate([
             'name' => 'Penyewa Kalender',
             'username' => 'penyewa_kalender',
             'email' => 'penyewa.kalender@summit.test',

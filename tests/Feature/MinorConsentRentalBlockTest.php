@@ -17,7 +17,7 @@ class MinorConsentRentalBlockTest extends TestCase
 
     private function makeMinor(array $overrides = []): User
     {
-        return User::create(array_merge([
+        return User::forceCreate(array_merge([
             'name' => 'Daffa Pratama',
             'username' => 'daffa_minor',
             'email' => 'daffa.minor@summit.test',
@@ -145,7 +145,7 @@ class MinorConsentRentalBlockTest extends TestCase
 
     public function test_adult_without_parent_consent_still_can_rent(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Budi Dewasa',
             'username' => 'budi_adult',
             'email' => 'budi.adult@summit.test',

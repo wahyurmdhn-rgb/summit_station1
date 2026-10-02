@@ -100,9 +100,6 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/admin/profile/password', [AdminController::class, 'updateAdminPassword'])->name('admin.profile.password');
 });
 
-// Reviews Customer Route
-Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
-
 // User Homepage (Beranda)
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -110,33 +107,6 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog');
 Route::get('/catalog/bundle/{id}', [CatalogController::class, 'showBundle'])->name('catalog.bundle');
 Route::get('/catalog/{id}', [CatalogController::class, 'show'])->name('catalog.show');
-
-// Cart Routes (requires customer authentication)
-Route::middleware(['customer_auth'])->group(function () {
-    Route::get('/cart', [CartController::class, 'index'])->name('cart');
-    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-    Route::post('/cart/add-bundle', [CartController::class, 'addBundle'])->name('cart.add-bundle');
-    Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
-    Route::post('/cart/select', [CartController::class, 'select'])->name('cart.select');
-    Route::post('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
-    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
-});
-
-// Payment Routes (requires customer authentication)
-Route::middleware(['customer_auth'])->group(function () {
-    Route::get('/payment', [PaymentController::class, 'index'])->name('payment');
-    Route::match(['get', 'post'], '/payment/qris', [PaymentController::class, 'qris'])->name('payment.qris');
-    Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
-});
-
-// Refund & Notification Routes (requires customer authentication)
-Route::middleware(['customer_auth'])->group(function () {
-    Route::post('/history/{order}/refund', [RefundController::class, 'store'])->name('refund.store');
-    Route::post('/history/{order}/return', [ReturnController::class, 'store'])->name('returns.submit');
-    Route::post('/history/{order}/pay-denda', [ReturnController::class, 'payDenda'])->name('returns.payDenda');
-    Route::post('/notifications/read-all', [RefundController::class, 'markAllRead'])->name('notifications.readAll');
-    Route::get('/notifications/{id}/open', [UserNotificationController::class, 'open'])->name('notifications.open');
-});
 
 // Auth Routes
 Route::get('/login', [AuthController::class, 'customerLoginForm'])->name('login');
@@ -147,11 +117,38 @@ Route::get('/register', [AuthController::class, 'registerForm'])->name('register
 Route::post('/register', [AuthController::class, 'register'])->name('register.store');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Member Portal & User Dashboard Routes
-Route::get('/history', [HomeController::class, 'history'])->name('history');
-Route::get('/profile', [HomeController::class, 'profile'])->name('profile');
-Route::post('/profile', [HomeController::class, 'updateProfile'])->name('profile.update');
-Route::post('/profile/password', [HomeController::class, 'updatePassword'])->name('profile.password');
+// Customer Authenticated Routes
+Route::middleware(['customer_auth'])->group(function () {
+    // Reviews Customer Route
+    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+
+    // Cart Routes
+    Route::get('/cart', [CartController::class, 'index'])->name('cart');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::post('/cart/add-bundle', [CartController::class, 'addBundle'])->name('cart.add-bundle');
+    Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
+    Route::post('/cart/select', [CartController::class, 'select'])->name('cart.select');
+    Route::post('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+
+    // Payment Routes
+    Route::get('/payment', [PaymentController::class, 'index'])->name('payment');
+    Route::match(['get', 'post'], '/payment/qris', [PaymentController::class, 'qris'])->name('payment.qris');
+    Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
+
+    // Refund & Notification Routes
+    Route::post('/history/{order}/refund', [RefundController::class, 'store'])->name('refund.store');
+    Route::post('/history/{order}/return', [ReturnController::class, 'store'])->name('returns.submit');
+    Route::post('/history/{order}/pay-denda', [ReturnController::class, 'payDenda'])->name('returns.payDenda');
+    Route::post('/notifications/read-all', [RefundController::class, 'markAllRead'])->name('notifications.readAll');
+    Route::get('/notifications/{id}/open', [UserNotificationController::class, 'open'])->name('notifications.open');
+
+    // Member Portal & User Dashboard Routes
+    Route::get('/history', [HomeController::class, 'history'])->name('history');
+    Route::get('/profile', [HomeController::class, 'profile'])->name('profile');
+    Route::post('/profile', [HomeController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/profile/password', [HomeController::class, 'updatePassword'])->name('profile.password');
+});
 
 // Public Information Pages
 Route::get('/store-location', function () {

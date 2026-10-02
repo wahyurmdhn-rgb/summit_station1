@@ -25,7 +25,7 @@ class AdminLogoutTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $this->user = User::create([
+        $this->user = User::forceCreate([
             'name' => 'Fajar Pratama',
             'username' => 'fajar_peaks',
             'email' => 'fajar@summit.id',

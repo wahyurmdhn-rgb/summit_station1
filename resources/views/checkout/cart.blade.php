@@ -158,6 +158,13 @@
             color: #1f2937;
             background: #fff;
             width: 100%;
+            /* Input tanggal punya lebar intrinsik; izinkan menyusut agar tidak
+               memaksa scroll horizontal di layar kecil. */
+            min-width: 0;
+        }
+        /* Kolom tengah (stepper + tanggal) boleh menyusut di dalam grid card. */
+        .stepper-subgroup {
+            min-width: 0;
         }
     </style>
 </head>
@@ -178,6 +185,13 @@
                 {{ session('status') }}
             </div>
         @endif
+
+        <div id="cart-notice"
+             role="status"
+             aria-live="polite"
+             hidden
+             style="display: none; margin-bottom: 20px; padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 700;">
+        </div>
 
         @if ($errors->any())
             <div style="margin-bottom: 20px; padding: 12px 16px; border-radius: 8px; background-color: #fee2e2; color: #991b1b; font-size: 13px; font-weight: 700;">
@@ -276,7 +290,7 @@
 
                             <div class="item-steppers-container">
                                 <!-- Rentang Tanggal Sewa (durasi dihitung otomatis) -->
-                                <div class="stepper-subgroup" style="min-width: 216px;">
+                                <div class="stepper-subgroup">
                                     <div class="item-date-box">
                                         <div class="item-date-row">
                                             <span class="item-date-label">Mulai</span>
@@ -499,6 +513,29 @@
             updateSelectSummary(selectedCount, Object.keys(cartItems).length);
         }
 
+        // ── NOTIFIKASI UI (pengganti alert() / console.error) ──
+        // Memakai palet warna yang sama dengan box status/error di atas agar
+        // tampilan tetap konsisten, tanpa mem-blocking interaksi user.
+        var noticeTimer = null;
+
+        function showCartNotice(message, type) {
+            var box = document.getElementById('cart-notice');
+            if (!box) return;
+
+            var isError = type === 'error';
+            box.textContent = message;
+            box.style.backgroundColor = isError ? '#fee2e2' : '#edf7ef';
+            box.style.color = isError ? '#991b1b' : '#175e30';
+            box.hidden = false;
+            box.style.display = 'block';
+
+            if (noticeTimer) clearTimeout(noticeTimer);
+            noticeTimer = setTimeout(function () {
+                box.style.display = 'none';
+                box.hidden = true;
+            }, 5000);
+        }
+
         // Perbarui hint "X dari Y barang dipilih", checkbox "Pilih Semua", dan tombol.
         function updateSelectSummary(selected, total) {
             var hint = document.getElementById('select-all-hint');
@@ -563,8 +600,8 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify(body)
-            }).catch(function (err) {
-                console.error('Error updating selection:', err);
+            }).catch(function () {
+                showCartNotice('Gagal menyimpan pilihan barang. Silakan coba lagi.', 'error');
             });
         }
 
@@ -654,12 +691,12 @@
                     if (data && data.success) {
                         savedState[itemId] = { days: it.days, qty: it.qty, start: it.start, end: it.end };
                     } else {
-                        if (data && data.message) alert(data.message);
+                        showCartNotice((data && data.message) ? data.message : 'Perubahan tidak dapat disimpan. Silakan coba lagi.', 'error');
                         revertItem(itemId);
                     }
                 })
-                .catch(function (err) {
-                    console.error('Error updating cart:', err);
+                .catch(function () {
+                    showCartNotice('Gagal terhubung ke server. Perubahan dikembalikan.', 'error');
                     revertItem(itemId);
                 });
         }

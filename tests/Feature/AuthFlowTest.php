@@ -244,7 +244,10 @@ class AuthFlowTest extends TestCase
 
         $fresh = $user->fresh();
         $this->assertEquals('customer', $fresh->role);
-        $this->assertNull(Admin::find($user->id));
+        // Tidak boleh ada akun admin yang dibuat dari akun customer ini.
+        // Dicek via email (bukan via id) karena tabel `admin` memakai
+        // primary key `id_admin` yang tidak berelasi dengan `users.id`.
+        $this->assertDatabaseMissing('admin', ['email' => $fresh->email]);
         $this->assertNotEquals('admin', session('account_role'));
     }
 

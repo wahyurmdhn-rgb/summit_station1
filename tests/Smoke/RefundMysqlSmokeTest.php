@@ -50,7 +50,7 @@ class RefundMysqlSmokeTest extends TestCase
 
     private function makeCustomer(string $name = 'Smoke Customer'): User
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => $name,
             'email' => 'smoke.customer.' . uniqid() . '@summit.test',
             'username' => 'smoke_' . uniqid(),

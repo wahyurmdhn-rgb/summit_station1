@@ -14,7 +14,7 @@ class ProductDetailPageTest extends TestCase
 
     public function test_user_can_access_product_detail_page(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Detail Member',
             'username' => 'detailmember',
             'email' => 'detail.member@summit.id',

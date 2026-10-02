@@ -17,7 +17,7 @@ class DeliveryMethodPaymentTest extends TestCase
 
     private function makeUser(): User
     {
-        return User::create([
+        return User::forceCreate([
             'name' => 'Delivery Tester',
             'username' => 'delivery_'.substr(uniqid(), -6),
             'email' => 'delivery'.uniqid().'@summit.id',

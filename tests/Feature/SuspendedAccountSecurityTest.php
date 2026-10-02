@@ -46,7 +46,7 @@ class SuspendedAccountSecurityTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->user = User::create([
+        $this->user = User::forceCreate([
             'name' => 'Randi Pratama',
             'username' => 'randi_peaks',
             'email' => 'randi@summit.id',
@@ -76,7 +76,8 @@ class SuspendedAccountSecurityTest extends TestCase
 
     public function test_suspended_user_cannot_login(): void
     {
-        $this->user->update(['status' => 'suspended']);
+        $this->user->status = 'suspended';
+        $this->user->save();
 
         $res = $this->post('/login', [
             'role' => 'customer',
@@ -89,7 +90,8 @@ class SuspendedAccountSecurityTest extends TestCase
 
     public function test_inactive_user_cannot_login(): void
     {
-        $this->user->update(['status' => 'inactive']);
+        $this->user->status = 'inactive';
+        $this->user->save();
 
         $res = $this->post('/login', [
             'role' => 'customer',
@@ -102,7 +104,8 @@ class SuspendedAccountSecurityTest extends TestCase
 
     public function test_logged_in_user_who_gets_suspended_is_blocked_from_profile_and_history(): void
     {
-        $this->user->update(['status' => 'suspended']);
+        $this->user->status = 'suspended';
+        $this->user->save();
 
         $profileRes = $this->withSession([
             'account_id' => $this->user->id,
@@ -122,7 +125,8 @@ class SuspendedAccountSecurityTest extends TestCase
 
     public function test_suspended_user_cannot_add_to_cart_or_bundle(): void
     {
-        $this->user->update(['status' => 'suspended']);
+        $this->user->status = 'suspended';
+        $this->user->save();
 
         $cartRes = $this->withSession([
             'account_id' => $this->user->id,
@@ -139,7 +143,8 @@ class SuspendedAccountSecurityTest extends TestCase
 
     public function test_suspended_user_cannot_access_checkout_or_payment(): void
     {
-        $this->user->update(['status' => 'suspended']);
+        $this->user->status = 'suspended';
+        $this->user->save();
 
         $paymentRes = $this->withSession([
             'account_id' => $this->user->id,
@@ -162,7 +167,8 @@ class SuspendedAccountSecurityTest extends TestCase
 
     public function test_suspended_user_cannot_submit_payment_or_create_order(): void
     {
-        $this->user->update(['status' => 'suspended']);
+        $this->user->status = 'suspended';
+        $this->user->save();
         $initialOrderCount = Order::count();
 
         $submitRes = $this->withSession([
@@ -189,7 +195,8 @@ class SuspendedAccountSecurityTest extends TestCase
 
     public function test_suspended_user_api_request_returns_403(): void
     {
-        $this->user->update(['status' => 'suspended']);
+        $this->user->status = 'suspended';
+        $this->user->save();
 
         $apiRes = $this->withSession([
             'account_id' => $this->user->id,
@@ -233,7 +240,8 @@ class SuspendedAccountSecurityTest extends TestCase
     public function test_unsuspended_user_can_login_again_and_use_features(): void
     {
         // 1. Set suspended
-        $this->user->update(['status' => 'suspended']);
+        $this->user->status = 'suspended';
+        $this->user->save();
 
         // Cannot login
         $this->post('/login', [
@@ -243,7 +251,8 @@ class SuspendedAccountSecurityTest extends TestCase
         ])->assertSessionHasErrors('email');
 
         // 2. Reactivate to active
-        $this->user->update(['status' => 'active']);
+        $this->user->status = 'active';
+        $this->user->save();
 
         // Can login now
         $this->post('/login', [
@@ -285,7 +294,8 @@ class SuspendedAccountSecurityTest extends TestCase
             'status' => 'completed',
         ]);
 
-        $this->user->update(['status' => 'suspended']);
+        $this->user->status = 'suspended';
+        $this->user->save();
 
         // Order still exists in database
         $this->assertDatabaseHas('orders', [

@@ -26,7 +26,7 @@ class ProfileRecentRentalTest extends TestCase
 
     public function test_profile_shows_latest_rental_for_user_with_history(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Rental Member',
             'username' => 'rentalmember',
             'email' => 'rental.member@summit.id',
@@ -105,7 +105,7 @@ class ProfileRecentRentalTest extends TestCase
 
     public function test_profile_shows_empty_state_for_user_without_history(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Fresh Member',
             'username' => 'freshmember',
             'email' => 'fresh.member@summit.id',

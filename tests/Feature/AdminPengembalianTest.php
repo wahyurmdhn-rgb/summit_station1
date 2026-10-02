@@ -43,7 +43,7 @@ class AdminPengembalianTest extends TestCase
             'reviews_count' => 10,
         ]);
 
-        $this->user = User::create([
+        $this->user = User::forceCreate([
             'name' => 'Alex Thompson',
             'email' => 'alex.t@example.com',
             'username' => 'alexth',

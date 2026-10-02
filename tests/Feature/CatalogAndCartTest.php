@@ -109,7 +109,7 @@ class CatalogAndCartTest extends TestCase
     {
         [$category1, $category2, $product1, $product2, $productOut] = $this->createSampleData();
 
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Cart Flow Member',
             'username' => 'cartflowmember',
             'email' => 'cart.flow@summit.id',
@@ -152,7 +152,7 @@ class CatalogAndCartTest extends TestCase
     {
         [$category1, $category2, $product1, $product2] = $this->createSampleData();
 
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Cart Manage Member',
             'username' => 'cartmanagemember',
             'email' => 'cart.manage@summit.id',
@@ -218,5 +218,50 @@ class CatalogAndCartTest extends TestCase
         $emptyCartResponse->assertStatus(200);
         $emptyCartResponse->assertSee('Keranjang masih kosong');
         $emptyCartResponse->assertSee('Lihat Katalog');
+    }
+
+    public function test_cannot_add_or_update_inactive_product_and_bundle_in_cart(): void
+    {
+        [$category1, $category2, $product1] = $this->createSampleData();
+
+        $user = User::forceCreate([
+            'name' => 'Cart Inactive Tester',
+            'username' => 'cartinactivetester',
+            'email' => 'cart.inactive@summit.id',
+            'password' => 'password',
+        ]);
+
+        $session = [
+            'account_id' => $user->id,
+            'account_name' => $user->name,
+            'account_role' => 'customer',
+        ];
+
+        $product1->update(['is_active' => false]);
+
+        // Add inactive product
+        $response = $this->withSession($session)->post('/cart/add', [
+            'product_id' => $product1->id,
+            'days' => 2,
+            'quantity' => 1,
+        ]);
+        $response->assertRedirect('/catalog');
+        $response->assertSessionHasErrors('error');
+        $this->assertEmpty(session('cart_items', []));
+
+        // Create bundle and inactivate it
+        $bundle = \App\Models\Bundle::create([
+            'name' => 'Paket Inaktif',
+            'price' => 200000,
+            'is_active' => false,
+        ]);
+
+        $bundleResponse = $this->withSession($session)->post('/cart/add-bundle', [
+            'bundle_id' => $bundle->id,
+            'days' => 2,
+            'quantity' => 1,
+        ]);
+        $bundleResponse->assertRedirect('/catalog');
+        $bundleResponse->assertSessionHasErrors('error');
     }
 }

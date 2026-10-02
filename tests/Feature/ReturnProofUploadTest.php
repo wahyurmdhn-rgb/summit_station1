@@ -60,7 +60,7 @@ class ReturnProofUploadTest extends TestCase
             'reviews_count' => 10,
         ]);
 
-        $this->user = User::create([
+        $this->user = User::forceCreate([
             'name' => 'Wahyu Pratama',
             'email' => 'wahyu@example.com',
             'username' => 'wahyu',
@@ -68,7 +68,7 @@ class ReturnProofUploadTest extends TestCase
             'domicile' => 'Jakarta',
         ]);
 
-        $this->otherUser = User::create([
+        $this->otherUser = User::forceCreate([
             'name' => 'Budi Santoso',
             'email' => 'budi@example.com',
             'username' => 'budi',

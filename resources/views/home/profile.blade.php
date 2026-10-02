@@ -244,7 +244,7 @@
                     $productTitle = $firstItem ? $firstItem->name : 'Penyewaan Peralatan';
                     $productImage = $firstItem && $firstItem->image
                         ? $firstItem->image
-                        : 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=160&q=80';
+                        : asset('images/placeholder.svg');
                 @endphp
                 <article class="cp-order">
                     <img class="cp-order-img" src="{{ $productImage }}" alt="{{ $productTitle }}">

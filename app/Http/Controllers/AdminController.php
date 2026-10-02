@@ -16,10 +16,12 @@ use App\Models\Review;
 use App\Models\User;
 use App\Notifications\RefundStatusNotification;
 use App\Services\AdminNotificationService;
+use App\Services\OrderStockService;
 use App\Services\RentalNotificationService;
 use App\Services\SiteSettingsService;
 use App\Services\SkuService;
 use App\Support\ErrorReporter;
+use App\Support\SessionPayload;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -162,7 +164,7 @@ class AdminController extends Controller
                 'rating' => (string) ($product->rating ?? '5.0'),
                 'progress' => $progress,
                 'progress_color' => $progress > 66 ? 'green' : ($progress > 33 ? 'brown' : 'dark'),
-                'image' => $product->main_image ?: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=600&q=80',
+                'image' => $product->main_image ?: asset('images/placeholder.svg'),
             ];
             $i++;
         }
@@ -178,7 +180,7 @@ class AdminController extends Controller
                 'rating' => '0.0',
                 'progress' => 0,
                 'progress_color' => $colorPool[($i++) % count($colorPool)] ?? 'green',
-                'image' => 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=600&q=80',
+                'image' => asset('images/placeholder.svg'),
             ];
         }
 
@@ -393,12 +395,12 @@ class AdminController extends Controller
                 'status' => $p->is_active ? ($stock > 0 ? 'aktif' : 'habis') : 'nonaktif',
                 'is_active' => (bool) $p->is_active,
                 'is_bundle' => false,
-                'image' => $p->main_image ?: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=150&q=80',
+                'image' => $p->main_image ?: asset('images/placeholder.svg'),
                 'model' => $p,
             ]);
         }
 
-        $bundlePlaceholderImg = 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=150&q=80';
+        $bundlePlaceholderImg = asset('images/placeholder.svg');
         foreach ($bundles as $b) {
             $stock = $b->availableStock();
             $items->push([
@@ -631,7 +633,7 @@ class AdminController extends Controller
         }
 
         if (empty($data['main_image'])) {
-            $data['main_image'] = 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=600&q=80';
+            $data['main_image'] = asset('images/placeholder.svg');
         }
 
         $data['condition'] = ! empty($data['condition']) ? $data['condition'] : 'Excellent';
@@ -874,53 +876,21 @@ class AdminController extends Controller
     }
 
     /**
-     * Kurangi stok persediaan (products) dan anggota Paket Sewa (bundles)
-     * untuk sebuah pesanan. Stok hanya dipakai SATU KALI ketika pesanan
-     * mencapai status yang "mengambil" stok (active).
-     *
-     * Idempoten: hanya memiliki efek bila barang benar-benar tersedia,
-     * sehingga aman dipanggil dari jalur admin mana pun (approve payment
-     * maupun konfirmasi penyewaan) tanpa double decrement.
-     */
-    private function decrementOrderStock(Order $order): void
-    {
-        foreach ($order->items as $item) {
-            if ($item->product && $item->product->stock_available >= $item->quantity) {
-                $item->product->decrement('stock_available', $item->quantity);
-            }
-            // Anggota Paket Sewa ikut berkurang.
-            if ($item->bundle) {
-                foreach ($item->bundle->products as $bundleProduct) {
-                    $needed = ($bundleProduct->pivot->quantity ?? 1) * ($item->quantity ?? 1);
-                    if ($bundleProduct->stock_available >= $needed) {
-                        $bundleProduct->decrement('stock_available', $needed);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Kembalikan stok persediaan (products) dan anggota Paket Sewa (bundles)
-     * yang telah dipakai, ketika pesanan meninggalkan status active
-     * (selesai / dibatalkan / pengembalian selesai).
+     * yang di-reserve order ini ke kolom `stock_available`.
      *
-     * $restoreUnlessMajorDamaged: bila true (alur pengembalian), produk yang
-     * terkena major_damage tidak dikembalikan stoknya karena butuh perawatan.
+     * Reservasi dibuat saat CHECKOUT (lihat PaymentController::reserveCartStock),
+     * jadi order berstatus `pending` pun sudah memegang stok. Karena itu method
+     * ini dipakai saat:
+     *   - pending  -> cancelled / expired  (melepas reservasi yang dipegang), dan
+     *   - active   -> cancelled / completed (stok benar-benar kembali ke gudang).
+     *
+     * Perhitungan berada di OrderStockService supaya jalur admin dan perintah
+     * `orders:expire-pending` tidak pernah berbeda.
      */
     private function incrementOrderStock(Order $order): void
     {
-        foreach ($order->items as $item) {
-            if ($item->product) {
-                $item->product->increment('stock_available', $item->quantity ?? 1);
-            }
-            if ($item->bundle) {
-                foreach ($item->bundle->products as $bundleProduct) {
-                    $needed = ($bundleProduct->pivot->quantity ?? 1) * ($item->quantity ?? 1);
-                    $bundleProduct->increment('stock_available', $needed);
-                }
-            }
-        }
+        app(OrderStockService::class)->releaseReservedStock($order);
     }
 
     /**
@@ -938,14 +908,11 @@ class AdminController extends Controller
                 return $order;
             }
 
-            $order->status = 'active';
-            $order->paid_at = now();
+            $order->status = 'active';            $order->paid_at = now();
             $order->save();
 
-            // Stok hanya berkurang SATU KALI, tepat saat memasuki status 'active'
-            // (dari pending).
-            $this->decrementOrderStock($order);
-
+            // Stok sudah di-reserve saat checkout (PaymentController::reserveCartStock),
+            // jadi di tahap ini TIDAK ada pengurangan lagi.
             RentalNotificationService::notifyAccepted($order);
 
             return $order;
@@ -962,17 +929,19 @@ class AdminController extends Controller
     public function rejectPenyewaan(Request $request, int $id): RedirectResponse
     {
         $order = DB::transaction(function () use ($request, $id) {
-            $order = Order::with(['items.product', 'items.bundle.products'])->findOrFail($id);
-            $wasActive = $order->status === 'active';
+            $order = Order::with(['items.product', 'items.bundle.products'])->lockForUpdate()->findOrFail($id);
+
+            // Order yang ditolak boleh berstatus pending (reservasi checkout yang
+            // dipegang) maupun active (barang benar-benar terpakai).
+            $wasHoldingStock = in_array($order->status, ['pending', 'active'], true);
+
             $order->status = 'cancelled';
             if ($reason = $request->input('reason')) {
                 $order->notes = ($order->notes ? $order->notes.' | ' : '').'Alasan penolakan: '.$reason;
             }
             $order->save();
 
-            // Jika pesanan yang terbatal sempat berstatus active, kembalikan stok
-            // (produk + anggota paket) yang telah dipakainya.
-            if ($wasActive) {
+            if ($wasHoldingStock) {
                 $this->incrementOrderStock($order);
             }
 
@@ -1179,20 +1148,24 @@ class AdminController extends Controller
             return redirect()->route('admin.pembayaran')->with('error', "Pembayaran {$payment->trx_code} tidak dapat disetujui (status: {$payment->status}).");
         }
 
+        // Order yang sudah dibatalkan (mis. kedaluwarsa otomatis dan stoknya
+        // dilepas) tidak boleh dihidupkan lagi lewat approval pembayaran.
+        if ($payment->order && $payment->order->status === 'cancelled') {
+            return redirect()->route('admin.pembayaran')
+                ->with('error', "Order {$payment->order->code} sudah dibatalkan (kemungkinan kedaluwarsa). Stoknya sudah dikembalikan, jadi pembayaran ini tidak dapat disetujui.");
+        }
+
         DB::transaction(function () use ($payment) {
             $payment->status = 'success';
             $payment->paid_at = now();
             $payment->save();
 
             if ($payment->order) {
-                $wasActive = $payment->order->status === 'active';
                 $payment->order->status = 'active';
                 $payment->order->paid_at = now();
                 $payment->order->save();
 
-                if (! $wasActive) {
-                    $this->decrementOrderStock($payment->order);
-                }
+                // Stok sudah di-reserve saat checkout, jadi tidak dikurangi lagi.
             }
         });
 
@@ -1230,14 +1203,16 @@ class AdminController extends Controller
             $payment->save();
 
             if ($payment->order) {
-                $wasActive = $payment->order->status === 'active';
+                // Baiknya dilepas baik untuk order pending (reservasi checkout)
+                // maupun order active (barang terpakai).
+                $wasHoldingStock = in_array($payment->order->status, ['pending', 'active'], true);
                 $payment->order->status = 'cancelled';
                 if ($reason = $request->input('reason')) {
                     $payment->order->notes = ($payment->order->notes ? $payment->order->notes.' | ' : '').'Penolakan pembayaran: '.$reason;
                 }
                 $payment->order->save();
 
-                if ($wasActive) {
+                if ($wasHoldingStock) {
                     $this->incrementOrderStock($payment->order);
                 }
             }
@@ -1949,7 +1924,8 @@ class AdminController extends Controller
      *
      * Auth aplikasi ini berbasis session kustom (session('account_id')), bukan
      * guard bawaan Laravel, sehingga kolom `sessions.user_id` selalu NULL.
-     * Data akun diambil dari payload session (base64(serialize(...))).
+     * Data akun dibaca dari payload session lewat App\Support\SessionPayload
+     * (decoder aman, tanpa object instantiation).
      *
      * @return int|null null bila session driver tidak bisa di-query (mis. file),
      *                  sehingga UI tidak menampilkan angka yang menyesatkan.
@@ -1974,11 +1950,7 @@ class AdminController extends Controller
             $accountIds = [];
 
             foreach ($rows as $row) {
-                $data = @unserialize(base64_decode((string) $row->payload));
-
-                if (! is_array($data)) {
-                    continue;
-                }
+                $data = SessionPayload::decode($row->payload);
 
                 if (($data['account_role'] ?? null) !== 'customer') {
                     continue;
@@ -2021,7 +1993,10 @@ class AdminController extends Controller
         }
         $validated['role'] = $validated['role'] ?? 'user';
 
-        User::create($validated);
+        $user = new User(collect($validated)->except(['status', 'role'])->all());
+        $user->status = $validated['status'];
+        $user->role = $validated['role'];
+        $user->save();
 
         return redirect()->route('admin.users')->with('success', "User '{$validated['name']}' berhasil ditambahkan.");
     }
@@ -2054,7 +2029,14 @@ class AdminController extends Controller
             $validated['role'] = 'user';
         }
 
-        $user->update($validated);
+        $user->fill(collect($validated)->except(['status', 'role'])->all());
+        if (array_key_exists('status', $validated)) {
+            $user->status = $validated['status'];
+        }
+        if (array_key_exists('role', $validated)) {
+            $user->role = $validated['role'];
+        }
+        $user->save();
 
         return redirect()->route('admin.users')->with('success', "Data user '{$user->name}' berhasil diperbarui.");
     }
@@ -2070,7 +2052,10 @@ class AdminController extends Controller
             'status' => 'required|string|in:active,inactive,suspended,pending,pending_verification',
         ]);
 
-        $user->update(['status' => $validated['status']]);
+        // `status` tidak lagi mass-assignable pada model User, jadi ditulis
+        // eksplisit di sini (hanya admin yang boleh mengubahnya).
+        $user->status = $validated['status'];
+        $user->save();
 
         $statusLabel = $user->status_label;
 

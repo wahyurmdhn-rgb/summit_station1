@@ -38,7 +38,7 @@ class AdminNotificationTest extends TestCase
             'password' => Hash::make('password123'),
         ]);
 
-        $this->user = User::create([
+        $this->user = User::forceCreate([
             'name' => 'Wahyu Pratama',
             'username' => 'wahyu',
             'email' => 'wahyu@summit.id',

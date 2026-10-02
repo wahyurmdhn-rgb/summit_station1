@@ -45,7 +45,7 @@ class LatePenaltyTest extends TestCase
             'stock_available' => 8,
         ]);
 
-        $this->user = User::create([
+        $this->user = User::forceCreate([
             'name' => 'Budi Santoso',
             'email' => 'budi@example.com',
             'username' => 'budis',

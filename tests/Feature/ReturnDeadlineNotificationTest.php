@@ -32,7 +32,7 @@ class ReturnDeadlineNotificationTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::create([
+        $this->owner = User::forceCreate([
             'name' => 'Penyewa Deadline',
             'username' => 'penyewa_deadline',
             'email' => 'penyewa.deadline@summit.test',
@@ -41,7 +41,7 @@ class ReturnDeadlineNotificationTest extends TestCase
             'status' => 'active',
         ]);
 
-        $this->otherUser = User::create([
+        $this->otherUser = User::forceCreate([
             'name' => 'Penyewa Lain',
             'username' => 'penyewa_lain',
             'email' => 'penyewa.lain@summit.test',

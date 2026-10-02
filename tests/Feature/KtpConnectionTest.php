@@ -27,7 +27,7 @@ class KtpConnectionTest extends TestCase
 
     private function createUser(string $name, string $email, ?string $ktpPath = null, ?string $dob = null): User
     {
-        return User::create([
+        return User::forceCreate([
             'name' => $name,
             'email' => $email,
             'username' => explode('@', $email)[0],
@@ -237,7 +237,7 @@ class KtpConnectionTest extends TestCase
         Storage::disk('local')->put('ktp_orang_tua/profil-minor.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='));
         Storage::disk('local')->put('kartu_pelajar/profil-minor.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='));
 
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Profil Minor',
             'email' => 'profilminor@example.com',
             'username' => 'profilminor',
@@ -285,7 +285,7 @@ class KtpConnectionTest extends TestCase
         Storage::disk('local')->put('ktp_orang_tua/admin-minor.png', 'x');
         Storage::disk('local')->put('kartu_pelajar/admin-minor.png', 'x');
 
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Admin Minor View',
             'email' => 'adminminorview@example.com',
             'username' => 'adminminorview',
@@ -346,7 +346,7 @@ class KtpConnectionTest extends TestCase
         Storage::disk('local')->put('kartu_pelajar/user-a.png', 'x');
         Storage::disk('local')->put('ktp_orang_tua/user-b.png', 'y');
 
-        $userA = User::create([
+        $userA = User::forceCreate([
             'name' => 'User Minor A',
             'email' => 'minor-a@example.com',
             'username' => 'minora',
@@ -359,7 +359,7 @@ class KtpConnectionTest extends TestCase
             'status' => 'active',
             'role' => 'customer',
         ]);
-        $userB = User::create([
+        $userB = User::forceCreate([
             'name' => 'User Minor B',
             'email' => 'minor-b@example.com',
             'username' => 'minorb',

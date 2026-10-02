@@ -14,7 +14,7 @@ class CartPageTest extends TestCase
 
     public function test_user_can_access_cart_page_with_items(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Cart Member',
             'username' => 'cartmember',
             'email' => 'cart.member@summit.id',
@@ -60,7 +60,7 @@ class CartPageTest extends TestCase
 
     public function test_user_can_add_item_to_cart(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Cart Member 2',
             'username' => 'cartmember2',
             'email' => 'cart.member2@summit.id',

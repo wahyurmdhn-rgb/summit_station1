@@ -30,7 +30,7 @@ class AdminUsersTest extends TestCase
 
     public function test_admin_can_access_users_page(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Aris Setiawan',
             'username' => 'aris_mountain',
             'email' => 'aris.s@trekking.com',
@@ -62,7 +62,7 @@ class AdminUsersTest extends TestCase
 
     public function test_admin_can_search_users(): void
     {
-        User::create([
+        User::forceCreate([
             'name' => 'Aris Setiawan',
             'username' => 'aris_mountain',
             'email' => 'aris.s@trekking.com',
@@ -71,7 +71,7 @@ class AdminUsersTest extends TestCase
             'password' => 'password',
         ]);
 
-        User::create([
+        User::forceCreate([
             'name' => 'Bambang Kurnia',
             'username' => 'bambang_k',
             'email' => 'bkurnia@web.com',
@@ -93,14 +93,14 @@ class AdminUsersTest extends TestCase
 
     public function test_admin_can_filter_users_by_status(): void
     {
-        User::create([
+        User::forceCreate([
             'name' => 'Aris Setiawan',
             'email' => 'aris.s@trekking.com',
             'status' => 'active',
             'password' => 'password',
         ]);
 
-        User::create([
+        User::forceCreate([
             'name' => 'Rina Melati',
             'email' => 'rina.mel@hike.co',
             'status' => 'suspended',
@@ -145,7 +145,7 @@ class AdminUsersTest extends TestCase
 
     public function test_admin_can_update_user(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Nama Lama',
             'email' => 'lama@summit.id',
             'username' => 'user_lama',
@@ -176,7 +176,7 @@ class AdminUsersTest extends TestCase
 
     public function test_admin_can_change_user_status(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Test Status User',
             'email' => 'status@summit.id',
             'status' => 'active',
@@ -200,7 +200,7 @@ class AdminUsersTest extends TestCase
 
     public function test_admin_can_soft_delete_user(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'User To Delete',
             'email' => 'delete@summit.id',
             'status' => 'active',
@@ -221,7 +221,7 @@ class AdminUsersTest extends TestCase
 
     public function test_admin_can_export_csv_users(): void
     {
-        User::create([
+        User::forceCreate([
             'name' => 'Export Explorer',
             'email' => 'export@summit.id',
             'username' => 'export_exp',

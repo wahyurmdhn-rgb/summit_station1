@@ -65,7 +65,7 @@ class BundleRatingMysqlSmokeTest extends TestCase
             'quantity' => 1,
         ]);
 
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Bundle Rater',
             'email' => 'bundle.rater.' . uniqid() . '@summit.test',
             'username' => 'bundle_rate_' . uniqid(),

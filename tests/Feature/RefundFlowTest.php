@@ -32,7 +32,7 @@ class RefundFlowTest extends TestCase
         ]);
         $this->adminId = $admin->id_admin;
 
-        $this->customer = User::create([
+        $this->customer = User::forceCreate([
             'name' => 'Customer Refund',
             'email' => 'refund.customer@example.com',
             'username' => 'refundcust',
@@ -127,7 +127,7 @@ class RefundFlowTest extends TestCase
 
     public function test_customer_cannot_submit_refund_for_other_users_order(): void
     {
-        $otherUser = User::create([
+        $otherUser = User::forceCreate([
             'name' => 'Other Customer',
             'email' => 'other.refund@example.com',
             'username' => 'otherrefund',

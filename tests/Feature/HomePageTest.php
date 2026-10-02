@@ -41,7 +41,7 @@ class HomePageTest extends TestCase
         $this->get('/store-location')->assertStatus(200)->assertSee('Lokasi Toko');
         $this->get('/contact-admin')->assertStatus(200)->assertSee('Hubungi Admin');
 
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Member User',
             'email' => 'member@summit.id',
             'password' => 'password',

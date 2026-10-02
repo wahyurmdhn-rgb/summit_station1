@@ -17,7 +17,18 @@ class User extends Authenticatable
     use HasFactory, Notifiable, SoftDeletes;
 
     /**
-     * The attributes that are mass assignable.
+     * Atribut yang boleh diisi lewat mass assignment dari request umum.
+     *
+     * Sengaja TIDAK termasuk kolom sensitif:
+     * - `status` / `role` -> menentukan akses & moderasi, hanya boleh diset
+     *   lewat kode server (AdminController/AuthController).
+     * - `parent_consent_status` dan `parent_consent_rejected_reason`
+     *   -> hasil verifikasi persetujuan orang tua/wali.
+     * - `ktp_user_path`, `ktp_orang_tua_path`, `kartu_pelajar_path`,
+     *   `parent_consent_path` -> path dokumen identitas privat.
+     *
+     * Kolom di atas hanya bisa diubah lewat penassignment eksplisit
+     * (`$user->status = ...`) atau `User::forceCreate()` untuk data internal.
      *
      * @var list<string>
      */
@@ -25,23 +36,42 @@ class User extends Authenticatable
         'name',
         'username',
         'email',
-        'domicile',
-        'ktp_user_path',
-        'ktp_orang_tua_path',
-        'kartu_pelajar_path',
         'phone',
-        'status',
-        'role',
-        'avatar_path',
+        'domicile',
         'password',
         'date_of_birth',
-        'parent_consent_status',
+        'avatar_path',
         'parent_name',
         'parent_relation',
         'parent_phone',
-        'parent_consent_path',
-        'parent_consent_rejected_reason',
     ];
+
+    /**
+     * Default `status` agar nilainya tidak pernah kosong walaupun kolom ini
+     * sudah tidak lagi bisa di-mass-assign dari request.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'status' => 'active',
+    ];
+
+    /**
+     * Buat user dari kode internal (seeder, command artisan, test fixture)
+     * yang memang perlu menulis kolom sensitif seperti `status` dan `role`.
+     *
+     * Jangan dipakai untuk data yang berasal dari request user.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public static function forceCreate(array $attributes): static
+    {
+        $user = new static;
+        $user->forceFill($attributes);
+        $user->save();
+
+        return $user;
+    }
 
     /**
      * The attributes that should be hidden for serialization.

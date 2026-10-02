@@ -185,8 +185,8 @@ class CartController extends Controller
         $quantity = max(1, (int) $request->input('quantity', 1));
 
         $product = Product::with('category')->find($productId);
-        if (! $product) {
-            return redirect()->route('catalog')->withErrors(['error' => 'Alat tidak ditemukan.']);
+        if (! $product || ! $product->is_active) {
+            return redirect()->route('catalog')->withErrors(['error' => 'Alat sudah tidak tersedia.']);
         }
 
         // Strict Stock Validation
@@ -213,7 +213,7 @@ class CartController extends Controller
             'price_per_day' => $pricePerDay,
             'subtotal' => $subtotal,
             'selected' => true,
-            'image' => $product->main_image ?: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=400&q=80',
+            'image' => $product->main_image ?: asset('images/placeholder.svg'),
         ];
 
         session(['cart_items' => $cart]);
@@ -247,7 +247,7 @@ class CartController extends Controller
         $quantity = max(1, (int) $request->input('quantity', 1));
 
         $bundle = Bundle::with('products')->find($bundleId);
-        if (! $bundle) {
+        if (! $bundle || ! $bundle->is_active) {
             return redirect()->route('catalog')->withErrors(['error' => 'Paket sewa tidak ditemukan.']);
         }
 
@@ -286,7 +286,7 @@ class CartController extends Controller
             'price_per_day' => $pricePerDay,
             'subtotal' => $subtotal,
             'selected' => true,
-            'image' => $bundle->image ?: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=400&q=80',
+            'image' => $bundle->image ?: asset('images/placeholder.svg'),
         ];
 
         session(['cart_items' => $cart]);

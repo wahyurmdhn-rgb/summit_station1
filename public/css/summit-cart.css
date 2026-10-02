@@ -24,6 +24,9 @@ body {
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Jaga agar tidak ada scroll horizontal di layar kecil (konsisten dengan
+       summit-admin.css dan summit-auth.css). */
+    overflow-x: hidden;
 }
 
 a {
@@ -562,6 +565,16 @@ a {
     .cart-item-card {
         grid-template-columns: 1fr auto auto;
     }
+
+    /* Kolom tanggal + stepper boleh menyusut; grid track 1fr/auto/auto punya
+       automatic minimum, jadi harus di-nol-kan agar tidak melebar. */
+    .cart-item-card > * {
+        min-width: 0;
+    }
+
+    .item-date-box {
+        min-width: 0;
+    }
 }
 
 @media (max-width: 720px) {
@@ -584,6 +597,10 @@ a {
 
     .item-subtotal-cell {
         justify-content: space-between;
+    }
+
+    .item-date-label {
+        width: 40px;
     }
 
     .cart-main-container {

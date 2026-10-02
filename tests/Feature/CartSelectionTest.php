@@ -20,7 +20,7 @@ class CartSelectionTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::create([
+        $this->user = User::forceCreate([
             'name' => 'Selection Tester',
             'username' => 'selectiontester',
             'email' => 'selection.tester@summit.id',

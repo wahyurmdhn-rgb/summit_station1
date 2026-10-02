@@ -49,7 +49,7 @@ class ReviewRatingSystemTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->userA = User::create([
+        $this->userA = User::forceCreate([
             'name' => 'Fajar Pratama',
             'username' => 'fajar_peaks',
             'email' => 'fajar@summit.id',
@@ -59,7 +59,7 @@ class ReviewRatingSystemTest extends TestCase
             'status' => 'active',
         ]);
 
-        $this->userB = User::create([
+        $this->userB = User::forceCreate([
             'name' => 'Dimas Explorer',
             'username' => 'dimas_exp',
             'email' => 'dimas@summit.id',
@@ -447,5 +447,37 @@ class ReviewRatingSystemTest extends TestCase
         $res2->assertSessionHas('success');
         $this->assertEquals(2, Review::where('product_id', $this->product->id)->count());
         $this->assertEquals(1, Review::where('order_id', $order2->id)->count());
+    }
+
+    public function test_user_cannot_review_product_not_belonging_to_order(): void
+    {
+        $otherProduct = Product::create([
+            'category_id' => $this->product->category_id,
+            'sku' => 'OTHER-PROD',
+            'name' => 'Unrelated Product',
+            'price_per_day' => 150000,
+            'stock_total' => 5,
+            'stock_available' => 5,
+            'is_active' => true,
+        ]);
+
+        $session = [
+            'account_id' => $this->userA->id,
+            'account_name' => $this->userA->name,
+            'account_role' => 'customer',
+        ];
+
+        $res = $this->withSession($session)->post('/reviews', [
+            'order_id' => $this->completedOrder->id,
+            'product_id' => $otherProduct->id,
+            'rating' => 5,
+            'comment' => 'Mencoba me-review produk yang tidak ada di order',
+        ]);
+
+        // Review target resolved to actual order product (not the spoofed otherProduct)
+        $this->assertDatabaseMissing('reviews', [
+            'product_id' => $otherProduct->id,
+            'order_id' => $this->completedOrder->id,
+        ]);
     }
 }

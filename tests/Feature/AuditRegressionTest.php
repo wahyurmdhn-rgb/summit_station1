@@ -12,12 +12,15 @@ use App\Models\Refund;
 use App\Models\ReturnRecord;
 use App\Models\User;
 use App\Services\AdminNotificationService;
+use App\Services\OrderStockService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Database\QueryException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -46,7 +49,7 @@ class AuditRegressionTest extends TestCase
         ]);
         $this->adminId = $admin->id_admin;
 
-        $this->customer = User::create([
+        $this->customer = User::forceCreate([
             'name' => 'Customer Audit',
             'email' => 'audit.customer@example.com',
             'username' => 'auditcust',
@@ -437,7 +440,7 @@ class AuditRegressionTest extends TestCase
     {
         config(['session.driver' => 'database']);
 
-        $other = User::create([
+        $other = User::forceCreate([
             'name' => 'Customer Kedua',
             'email' => 'audit.customer2@example.com',
             'username' => 'auditcust2',
@@ -520,7 +523,7 @@ class AuditRegressionTest extends TestCase
 
     public function test_update_user_normalizes_invalid_legacy_role(): void
     {
-        $legacy = User::create([
+        $legacy = User::forceCreate([
             'name' => 'Legacy Role',
             'email' => 'legacy.role@example.com',
             'username' => 'legacyrole',
@@ -603,6 +606,16 @@ class AuditRegressionTest extends TestCase
         $order = $this->makePaidOrder(['status' => 'completed']);
         $product = $this->makeProduct();
 
+        \App\Models\OrderItem::create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'name' => $product->name,
+            'quantity' => 1,
+            'days' => 1,
+            'unit_price' => 100000,
+            'subtotal' => 100000,
+        ]);
+
         $this->withSession($this->customerSession())
             ->post(route('reviews.store'), [
                 'order_id' => $order->id,
@@ -638,15 +651,34 @@ class AuditRegressionTest extends TestCase
     // 10. Aset & Vite
     // ---------------------------------------------------------------------
 
-    public function test_welcome_view_renders_without_vite_manifest(): void
+    public function test_welcome_view_is_removed_and_no_view_uses_vite_directive(): void
     {
+        // View bawaan Laravel tidak lagi dipakai: root -> HomeController@index.
+        $this->assertFileDoesNotExist(resource_path('views/welcome.blade.php'));
+
+        // Tidak ada manifest Vite yang di-build di repo ini.
         $this->assertFileDoesNotExist(public_path('build/manifest.json'));
 
-        $view = View::make('welcome');
+        // Semua aset dibangun lewat public/css + public/js, jadi tidak boleh ada
+        // satu pun view yang memakai direktif @vite (akan fatal tanpa manifest).
+        $offenders = [];
+        foreach (File::allFiles(resource_path('views')) as $file) {
+            if (str_ends_with($file->getFilename(), '.blade.php')
+                && str_contains((string) file_get_contents($file->getPathname()), '@vite')) {
+                $offenders[] = $file->getRelativePathname();
+            }
+        }
 
-        // Melempar error berarti ada @vite tanpa manifest yang terlindungi.
-        $view->render();
-        $this->assertTrue(true);
+        $this->assertSame([], $offenders, 'View masih memakai direktif @vite tanpa manifest.');
+    }
+
+    public function test_home_page_renders_without_vite_manifest(): void
+    {
+        // Halaman utama harus tetap bisa dirender tanpa build aset Vite.
+        $response = $this->get(route('home'));
+
+        $response->assertStatus(200);
+        $this->assertStringNotContainsString('@vite', $response->getContent());
     }
 
     public function test_asset_version_helper_is_stable_and_safe_for_missing_files(): void
@@ -888,5 +920,447 @@ class AuditRegressionTest extends TestCase
         $this->withSession($this->adminSession())
             ->get(route('payment'))
             ->assertForbidden();
+    }
+
+    // =====================================================================
+    // 16. Reservasi stok saat checkout (mencegah oversold)
+    // =====================================================================
+
+    private function fakeProof(): UploadedFile
+    {
+        return UploadedFile::fake()->createWithContent('bukti.png', base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
+        ));
+    }
+
+    private function cartWithProduct(Product $product, array $overrides = []): array
+    {
+        return array_merge([
+            'id' => $product->id,
+            'product_id' => $product->id,
+            'name' => $product->name,
+            'category' => 'Tents',
+            'subtitle' => 'Expedition',
+            'days' => 2,
+            'quantity' => 1,
+            'price_per_day' => 50000,
+            'subtotal' => 100000,
+            'image' => 'images/logo.png',
+            'selected' => true,
+        ], $overrides);
+    }
+
+    public function test_checkout_reserves_stock_immediately(): void
+    {
+        $product = $this->makeProduct(['stock_total' => 3, 'stock_available' => 3]);
+
+        $this->withSession($this->customerSession([
+            'payment_deadline' => time() + 900,
+            'cart_items' => [1 => $this->cartWithProduct($product, ['quantity' => 2])],
+        ]))
+            ->post(route('payment.process'), [
+                'payment_method' => 'bank_transfer',
+                'proof' => $this->fakeProof(),
+            ]);
+
+        $this->assertDatabaseHas('orders', ['status' => 'pending']);
+        // Reservasi terjadi di checkout, bukan menunggu admin.
+        $this->assertSame(1, (int) $product->fresh()->stock_available);
+    }
+
+    public function test_admin_approval_does_not_deduct_stock_a_second_time(): void
+    {
+        $product = $this->makeProduct(['stock_total' => 3, 'stock_available' => 3]);
+
+        $this->withSession($this->customerSession([
+            'payment_deadline' => time() + 900,
+            'cart_items' => [1 => $this->cartWithProduct($product, ['quantity' => 2])],
+        ]))
+            ->post(route('payment.process'), [
+                'payment_method' => 'bank_transfer',
+                'proof' => $this->fakeProof(),
+            ]);
+
+        $order = Order::where('status', 'pending')->firstOrFail();
+        $this->assertSame(1, (int) $product->fresh()->stock_available);
+
+        $this->withSession($this->adminSession())
+            ->post(route('admin.penyewaan.confirm', $order->id));
+
+        $this->assertSame('active', $order->fresh()->status);
+        // Masih 1: stok tidak boleh berkurang dua kali.
+        $this->assertSame(1, (int) $product->fresh()->stock_available);
+    }
+
+    public function test_second_checkout_for_last_unit_is_rejected(): void
+    {
+        $product = $this->makeProduct(['stock_total' => 1, 'stock_available' => 1]);
+
+        $this->withSession($this->customerSession([
+            'payment_deadline' => time() + 900,
+            'cart_items' => [1 => $this->cartWithProduct($product, ['quantity' => 1])],
+        ]))
+            ->post(route('payment.process'), [
+                'payment_method' => 'bank_transfer',
+                'proof' => $this->fakeProof(),
+            ]);
+
+        $this->assertDatabaseCount('orders', 1);
+        $this->assertSame(0, (int) $product->fresh()->stock_available);
+
+        // Pelanggan kedua: unit terakhir sudah di-reserve order pertama.
+        $this->withSession($this->customerSession([
+            'payment_deadline' => time() + 900,
+            'cart_items' => [1 => $this->cartWithProduct($product, ['quantity' => 1])],
+        ]))
+            ->post(route('payment.process'), [
+                'payment_method' => 'bank_transfer',
+                'proof' => $this->fakeProof(),
+            ]);
+
+        // Checkout kedua harus ditolak karena stok habis.
+        $this->assertDatabaseCount('orders', 1);
+        $this->assertSame(0, (int) $product->fresh()->stock_available);
+    }
+
+    public function test_shared_bundle_member_demand_is_aggregated_and_cannot_oversell(): void
+    {
+        // Satu produk dipakai dua paket, masing-masing butuh 1 unit, stok hanya 1.
+        $shared = $this->makeProduct(['stock_total' => 1, 'stock_available' => 1]);
+        $other = $this->makeProduct(['stock_total' => 5, 'stock_available' => 5]);
+
+        $bundleA = Bundle::create(['name' => 'Paket A', 'description' => 'A', 'price' => 90000, 'image' => 'images/logo.png', 'is_active' => true]);
+        $bundleB = Bundle::create(['name' => 'Paket B', 'description' => 'B', 'price' => 90000, 'image' => 'images/logo.png', 'is_active' => true]);
+        $bundleA->products()->attach([$shared->id => ['quantity' => 1], $other->id => ['quantity' => 1]]);
+        $bundleB->products()->attach([$shared->id => ['quantity' => 1], $other->id => ['quantity' => 1]]);
+
+        $cartItem = fn (Bundle $bundle) => [
+            'id' => $bundle->id,
+            'bundle_id' => $bundle->id,
+            'is_bundle' => true,
+            'name' => $bundle->name,
+            'category' => 'Bundles',
+            'subtitle' => 'Package',
+            'days' => 2,
+            'quantity' => 1,
+            'price_per_day' => 90000,
+            'subtotal' => 180000,
+            'image' => 'images/logo.png',
+            'selected' => true,
+        ];
+
+        // Kedua paket ditolak: total permintaan 2 unit untuk stok 1.
+        $this->withSession($this->customerSession([
+            'payment_deadline' => time() + 900,
+            'cart_items' => [1 => $cartItem($bundleA), 2 => $cartItem($bundleB)],
+        ]))
+            ->post(route('payment.process'), [
+                'payment_method' => 'bank_transfer',
+                'proof' => $this->fakeProof(),
+            ]);
+
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertSame(1, (int) $shared->fresh()->stock_available);
+    }
+
+    public function test_rejecting_a_pending_order_releases_reserved_stock(): void
+    {
+        $product = $this->makeProduct(['stock_total' => 2, 'stock_available' => 2]);
+
+        $this->withSession($this->customerSession([
+            'payment_deadline' => time() + 900,
+            'cart_items' => [1 => $this->cartWithProduct($product, ['quantity' => 2])],
+        ]))
+            ->post(route('payment.process'), [
+                'payment_method' => 'bank_transfer',
+                'proof' => $this->fakeProof(),
+            ]);
+
+        $this->assertSame(0, (int) $product->fresh()->stock_available);
+
+        $order = Order::where('status', 'pending')->firstOrFail();
+
+        $this->withSession($this->adminSession())
+            ->post(route('admin.penyewaan.reject', $order->id));
+
+        $this->assertSame('cancelled', $order->fresh()->status);
+        $this->assertSame(2, (int) $product->fresh()->stock_available, 'Reservasi pending harus dilepas saat ditolak.');
+    }
+
+    public function test_repeated_release_never_inflates_stock_above_stock_total(): void
+    {
+        $product = $this->makeProduct(['stock_total' => 2, 'stock_available' => 2]);
+
+        $this->withSession($this->customerSession([
+            'payment_deadline' => time() + 900,
+            'cart_items' => [1 => $this->cartWithProduct($product, ['quantity' => 2])],
+        ]))
+            ->post(route('payment.process'), [
+                'payment_method' => 'bank_transfer',
+                'proof' => $this->fakeProof(),
+            ]);
+
+        $order = Order::where('status', 'pending')->firstOrFail();
+        $this->assertSame(0, (int) $product->fresh()->stock_available);
+
+        $service = app(OrderStockService::class);
+
+        // Lepas berulang: hanya hasil pertama yang boleh mengembalikan stok,
+        // dan ketersediaannya tidak boleh melewati stock_total.
+        $service->releaseReservedStock($order);
+        $service->releaseReservedStock($order);
+        $service->releaseReservedStock($order);
+
+        $this->assertSame(2, (int) $product->fresh()->stock_available);
+    }
+
+    // =====================================================================
+    // 17. Order pending kedaluwarsa otomatis
+    // =====================================================================
+
+    public function test_stale_pending_order_is_cancelled_and_stock_released(): void
+    {
+        $product = $this->makeProduct(['stock_total' => 2, 'stock_available' => 2]);
+
+        $this->withSession($this->customerSession([
+            'payment_deadline' => time() + 900,
+            'cart_items' => [1 => $this->cartWithProduct($product, ['quantity' => 2])],
+        ]))
+            ->post(route('payment.process'), [
+                'payment_method' => 'bank_transfer',
+                'proof' => $this->fakeProof(),
+            ]);
+
+        $order = Order::where('status', 'pending')->firstOrFail();
+        $this->assertSame(0, (int) $product->fresh()->stock_available);
+
+        // Dipaksa jadi berumur 25 jam.
+        Order::whereKey($order->id)->update(['created_at' => now()->subHours(25)]);
+
+        $this->artisan('orders:expire-pending --hours=24')->assertSuccessful();
+
+        $this->assertSame('cancelled', $order->fresh()->status);
+        $this->assertSame(2, (int) $product->fresh()->stock_available, 'Stok harus kembali setelah order kedaluwarsa.');
+        $this->assertDatabaseHas('payments', ['order_id' => $order->id, 'status' => 'failed']);
+    }
+
+    public function test_recent_pending_order_is_not_expired(): void
+    {
+        $product = $this->makeProduct(['stock_total' => 2, 'stock_available' => 2]);
+
+        $this->withSession($this->customerSession([
+            'payment_deadline' => time() + 900,
+            'cart_items' => [1 => $this->cartWithProduct($product, ['quantity' => 2])],
+        ]))
+            ->post(route('payment.process'), [
+                'payment_method' => 'bank_transfer',
+                'proof' => $this->fakeProof(),
+            ]);
+
+        $order = Order::where('status', 'pending')->firstOrFail();
+
+        $this->artisan('orders:expire-pending --hours=24')->assertSuccessful();
+
+        $this->assertSame('pending', $order->fresh()->status);
+        $this->assertSame(0, (int) $product->fresh()->stock_available);
+    }
+
+    public function test_expired_cancelled_order_cannot_be_resurrected_by_payment_approval(): void
+    {
+        $product = $this->makeProduct(['stock_total' => 2, 'stock_available' => 2]);
+
+        $this->withSession($this->customerSession([
+            'payment_deadline' => time() + 900,
+            'cart_items' => [1 => $this->cartWithProduct($product, ['quantity' => 2])],
+        ]))
+            ->post(route('payment.process'), [
+                'payment_method' => 'bank_transfer',
+                'proof' => $this->fakeProof(),
+            ]);
+
+        $order = Order::where('status', 'pending')->firstOrFail();
+        $payment = Payment::where('order_id', $order->id)->firstOrFail();
+
+        // Dibuat 25 jam lalu; perintah yang harus membatalkannya.
+        Order::whereKey($order->id)->update(['created_at' => now()->subHours(25)]);
+
+        $this->artisan('orders:expire-pending --hours=24')->assertSuccessful();
+        $this->assertSame('cancelled', $order->fresh()->status);
+        $this->assertSame(2, (int) $product->fresh()->stock_available);
+
+        // Admin mencoba menyetujui pembayaran order yang sudah kedaluwarsa.
+        $this->withSession($this->adminSession())
+            ->post(route('admin.pembayaran.approve', $payment->id))
+            ->assertSessionHas('error');
+
+        $this->assertSame('cancelled', $order->fresh()->status);
+        $this->assertSame(2, (int) $product->fresh()->stock_available);
+    }
+
+    // =====================================================================
+    // 18. Konsistensi rentang tanggal di checkout
+    // =====================================================================
+
+    public function test_checkout_rejects_mixed_dated_and_undated_cart(): void
+    {
+        $product = $this->makeProduct(['stock_total' => 3, 'stock_available' => 3]);
+
+        $this->withSession($this->customerSession([
+            'payment_deadline' => time() + 900,
+            'cart_items' => [
+                1 => $this->cartWithProduct($product, [
+                    'rent_start' => '2026-10-10',
+                    'rent_end' => '2026-10-12',
+                ]),
+                // Item kedua tanpa tanggal -> tidak konsisten dengan item pertama.
+                2 => $this->cartWithProduct($product),
+            ],
+        ]))
+            ->post(route('payment.process'), [
+                'payment_method' => 'bank_transfer',
+                'proof' => $this->fakeProof(),
+            ]);
+
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertSame(3, (int) $product->fresh()->stock_available);
+    }
+
+    public function test_checkout_rejects_item_with_different_date_range(): void
+    {
+        $product = $this->makeProduct(['stock_total' => 3, 'stock_available' => 3]);
+
+        $this->withSession($this->customerSession([
+            'payment_deadline' => time() + 900,
+            'cart_items' => [
+                1 => $this->cartWithProduct($product, ['rent_start' => '2026-10-10', 'rent_end' => '2026-10-12']),
+                2 => $this->cartWithProduct($product, ['rent_start' => '2026-11-01', 'rent_end' => '2026-11-03']),
+            ],
+        ]))
+            ->post(route('payment.process'), [
+                'payment_method' => 'bank_transfer',
+                'proof' => $this->fakeProof(),
+            ]);
+
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_checkout_rejects_return_date_before_start_date(): void
+    {
+        $product = $this->makeProduct(['stock_total' => 3, 'stock_available' => 3]);
+
+        $this->withSession($this->customerSession([
+            'payment_deadline' => time() + 900,
+            'cart_items' => [
+                1 => $this->cartWithProduct($product, ['rent_start' => '2026-10-12', 'rent_end' => '2026-10-10']),
+            ],
+        ]))
+            ->post(route('payment.process'), [
+                'payment_method' => 'bank_transfer',
+                'proof' => $this->fakeProof(),
+            ]);
+
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_checkout_accepts_identical_date_range_and_stores_matching_days(): void
+    {
+        $product = $this->makeProduct(['stock_total' => 3, 'stock_available' => 3]);
+
+        $this->withSession($this->customerSession([
+            'payment_deadline' => time() + 900,
+            'cart_items' => [
+                1 => $this->cartWithProduct($product, ['rent_start' => '2026-10-10', 'rent_end' => '2026-10-12']),
+                2 => $this->cartWithProduct($product, ['rent_start' => '2026-10-10', 'rent_end' => '2026-10-12']),
+            ],
+        ]))
+            ->post(route('payment.process'), [
+                'payment_method' => 'bank_transfer',
+                'proof' => $this->fakeProof(),
+            ]);
+
+        $order = Order::firstOrFail();
+        $this->assertSame('2026-10-10', $order->rent_start->toDateString());
+        $this->assertSame('2026-10-12', $order->rent_end->toDateString());
+    }
+
+    public function test_order_total_uses_database_price_not_session_price(): void
+    {
+        $product = $this->makeProduct([
+            'stock_total' => 3,
+            'stock_available' => 3,
+            'price_per_day' => 50000,
+        ]);
+
+        // Session memalsukan harga 1 rupiah.
+        $this->withSession($this->customerSession([
+            'payment_deadline' => time() + 900,
+            'cart_items' => [1 => $this->cartWithProduct($product, [
+                'price_per_day' => 1,
+                'quantity' => 2,
+                'days' => 2,
+            ])],
+        ]))
+            ->post(route('payment.process'), [
+                'payment_method' => 'bank_transfer',
+                'proof' => $this->fakeProof(),
+            ]);
+
+        $order = Order::firstOrFail();
+        $item = $order->items()->firstOrFail();
+
+        $this->assertSame(50000, (int) $item->unit_price);
+        // 50000 x 2 hari x 2 unit = 200.000 (+ 25.000 biaya layanan)
+        $this->assertSame(200000, (int) $order->subtotal);
+        $this->assertSame(225000, (int) $order->total);
+    }
+
+    // =====================================================================
+    // 19. Revalidasi session admin
+    // =====================================================================
+
+    public function test_admin_session_is_rejected_after_account_is_deactivated(): void
+    {
+        $this->withSession($this->adminSession())
+            ->get(route('admin.dashboard'))
+            ->assertStatus(200);
+
+        Admin::whereKey($this->adminId)->update(['status' => 'inactive']);
+
+        $this->withSession($this->adminSession())
+            ->get(route('admin.dashboard'))
+            ->assertRedirect(route('admin.login'));
+    }
+
+    public function test_admin_status_column_is_not_null_and_defaults_to_active(): void
+    {
+        // `status` tidak boleh bisa NULL: null berarti "tidak aktif" menurut
+        // EnsureAdmin, jadi kolomnya wajib NOT NULL dengan default 'active'.
+        $this->assertTrue(
+            Schema::hasColumn('admin', 'status'),
+            'Kolom admin.status harus ada.'
+        );
+
+        $this->expectException(QueryException::class);
+        DB::table('admin')->where('id_admin', $this->adminId)->update(['status' => null]);
+    }
+
+    public function test_admin_record_created_without_status_defaults_to_active(): void
+    {
+        $fresh = Admin::create([
+            'name' => 'Tanpa Status',
+            'email' => 'tanpa.status@summit.test',
+            'password' => 'password',
+        ]);
+
+        $this->assertSame('active', $fresh->fresh()->status);
+    }
+
+    public function test_admin_session_is_rejected_when_record_is_deleted(): void
+    {
+        Admin::whereKey($this->adminId)->delete();
+
+        $this->withSession($this->adminSession())
+            ->get(route('admin.dashboard'))
+            ->assertRedirect(route('admin.login'));
     }
 }

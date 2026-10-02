@@ -20,7 +20,7 @@ class CartQuantityLimitTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::create([
+        $this->user = User::forceCreate([
             'name' => 'Limit Tester',
             'username' => 'limittester',
             'email' => 'limit.tester@summit.id',

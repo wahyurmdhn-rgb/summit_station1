@@ -151,7 +151,7 @@ class ReviewController extends Controller
 
         $isBundleOrder = $firstItem && $firstItem->bundle_id && ! $firstItem->product_id;
 
-        if (! $isBundleOrder && $requestedProductId && Product::find((int) $requestedProductId)) {
+        if (! $isBundleOrder && $requestedProductId && $firstItem && (int) $firstItem->product_id === (int) $requestedProductId) {
             return ['product_id' => (int) $requestedProductId, 'bundle_id' => null];
         }
 

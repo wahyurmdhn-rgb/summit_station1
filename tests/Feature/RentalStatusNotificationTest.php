@@ -34,7 +34,7 @@ class RentalStatusNotificationTest extends TestCase
             'password' => Hash::make('password123'),
         ]);
 
-        $this->owner = User::create([
+        $this->owner = User::forceCreate([
             'name' => 'Pemilik Booking',
             'username' => 'pemilik',
             'email' => 'pemilik@summit.test',
@@ -43,7 +43,7 @@ class RentalStatusNotificationTest extends TestCase
             'status' => 'active',
         ]);
 
-        $this->otherUser = User::create([
+        $this->otherUser = User::forceCreate([
             'name' => 'User Lain',
             'username' => 'userlain',
             'email' => 'userlain@summit.test',

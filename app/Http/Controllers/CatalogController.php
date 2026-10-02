@@ -138,7 +138,7 @@ class CatalogController extends Controller
                 'price' => (int) $p->price_per_day,
                 'stock_available' => (int) $p->stock_available,
                 'in_stock' => (int) $p->stock_available > 0,
-                'image' => $p->main_image ?: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=600&q=80',
+                'image' => $p->main_image ?: asset('images/placeholder.svg'),
             ];
         });
 
@@ -171,9 +171,19 @@ class CatalogController extends Controller
             ]);
         }
 
+        // Produk nonaktif tidak boleh ditampilkan/dibeli lagi lewat direct URL.
+        if (! $dbProduct->is_active) {
+            return view('products.not_found', [
+                'searchedId' => $id,
+                'isBundle' => false,
+            ]);
+        }
+
+        $placeholder = asset('images/placeholder.svg');
+
         $thumbnails = $dbProduct->images->pluck('url')->filter()->values()->toArray();
         if (empty($thumbnails)) {
-            $thumbnails = [$dbProduct->main_image ?: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=1000&q=80'];
+            $thumbnails = [$dbProduct->main_image ?: $placeholder];
         }
 
         $rawSpecs = is_array($dbProduct->specs) ? $dbProduct->specs : [];
@@ -262,7 +272,7 @@ class CatalogController extends Controller
             'description' => $dbProduct->description ?? 'Peralatan standar ekspedisi profesional yang siap digunakan untuk berbagai medan petualangan alam bebas.',
             'specs' => $specs,
             'price' => (int) $dbProduct->price_per_day,
-            'main_image' => $dbProduct->main_image ?: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=1000&q=80',
+            'main_image' => $dbProduct->main_image ?: $placeholder,
             'thumbnails' => $thumbnails,
             'features' => $features,
         ];
@@ -284,8 +294,22 @@ class CatalogController extends Controller
             ]);
         }
 
-        $thumbnails = [$bundle->image ?: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=1000&q=80'];
-        foreach ($bundle->products as $p) {
+        // Paket nonaktif tidak boleh ditampilkan/dibeli lagi lewat direct URL.
+        if (! $bundle->is_active) {
+            return view('products.not_found', [
+                'searchedId' => "Bundle #{$id}",
+                'isBundle' => true,
+            ]);
+        }
+
+        $placeholder = asset('images/placeholder.svg');
+
+        // Anggota paket yang sudah nonaktif disembunyikan dari detail paket
+        // supaya user tidak melihat barang yang tidak bisa disewa.
+        $activeProducts = $bundle->products->filter(fn ($p) => (bool) $p->is_active)->values();
+
+        $thumbnails = [$bundle->image ?: $placeholder];
+        foreach ($activeProducts as $p) {
             if ($p->main_image) {
                 $thumbnails[] = $p->main_image;
             }
@@ -294,7 +318,7 @@ class CatalogController extends Controller
 
         $specs = [
             'TIPE' => 'Paket Hemat Lengkap',
-            'ITEM TERMASUK' => $bundle->products->count() . ' Jenis Alat',
+            'ITEM TERMASUK' => $activeProducts->count().' Jenis Alat',
             'KONDISI' => 'Tersanitasi Kelas Pro',
             'HEMAT' => 'Hemat hingga 30%',
         ];
@@ -360,10 +384,10 @@ class CatalogController extends Controller
             'description' => $bundle->description,
             'specs' => $specs,
             'price' => (int) $bundle->price,
-            'main_image' => $bundle->image ?: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=1000&q=80',
+            'main_image' => $bundle->image ?: $placeholder,
             'thumbnails' => $thumbnails,
             'features' => $features,
-            'bundle_items' => $bundle->products,
+            'bundle_items' => $activeProducts,
         ];
 
         return view('products.show', [

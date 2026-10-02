@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+    <rect width="400" height="300" fill="#14181f"/>
+    <path d="M50 250 L160 110 L220 180 L280 90 L370 250 Z" fill="#242c38" opacity="0.8"/>
+    <path d="M120 250 L200 140 L260 210 L300 160 L360 250 Z" fill="#2e3846" opacity="0.9"/>
+    <circle cx="310" cy="80" r="24" fill="#3b4759"/>
+    <text x="50%" y="275" text-anchor="middle" fill="#8b9bb4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" letter-spacing="1.5">SUMMIT STATION</text>
+</svg>

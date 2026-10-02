@@ -46,7 +46,6 @@ class AppServiceProvider extends ServiceProvider
             'products.*',
             'checkout.*',
             'layouts.*',
-            'welcome',
             'auth.*',
             'components.*',
             'admin.*',

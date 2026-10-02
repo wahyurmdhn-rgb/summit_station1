@@ -14,7 +14,7 @@ class PaymentPageTest extends TestCase
 
     public function test_user_can_access_payment_page(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Payment Member',
             'username' => 'paymentmember',
             'email' => 'payment.member@summit.id',
@@ -66,7 +66,7 @@ class PaymentPageTest extends TestCase
 
     public function test_cart_links_to_payment(): void
     {
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => 'Payment Member 2',
             'username' => 'paymentmember2',
             'email' => 'payment.member2@summit.id',
@@ -105,5 +105,71 @@ class PaymentPageTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Ajukan Peminjaman');
         $response->assertSee(route('payment'), false);
+    }
+
+    public function test_payment_index_recomputes_price_from_database_and_rejects_inactive(): void
+    {
+        $user = User::forceCreate([
+            'name' => 'Payment Member 3',
+            'username' => 'paymentmember3',
+            'email' => 'payment.member3@summit.id',
+            'password' => 'password',
+        ]);
+        $category = Category::create(['name' => 'Tents', 'slug' => 'tents']);
+        $product = Product::create([
+            'category_id' => $category->id,
+            'sku' => 'SS-TEN-003',
+            'name' => 'Alpine Shield X',
+            'price_per_day' => 100000,
+            'stock_total' => 5,
+            'stock_available' => 5,
+            'is_active' => true,
+        ]);
+
+        // Manipulated cart subtotal in session (claiming 10,000 instead of 100,000 * 3)
+        $response = $this->withSession([
+            'account_id' => $user->id,
+            'account_name' => $user->name,
+            'account_role' => 'customer',
+            'cart_items' => [
+                $product->id => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'category' => 'Tents',
+                    'subtitle' => 'Expedition',
+                    'days' => 3,
+                    'quantity' => 1,
+                    'price_per_day' => 10000,
+                    'subtotal' => 30000,
+                    'image' => 'tent.jpg',
+                ]
+            ]
+        ])->get('/payment');
+
+        $response->assertStatus(200);
+        // Base rental recalculated from DB: 100,000 * 3 * 1 = 300,000; Total = 325,000
+        $response->assertSee('Rp 300.000');
+        $response->assertSee('Rp 325.000');
+
+        // When product is inactive, payment page redirects to cart with error
+        $product->update(['is_active' => false]);
+        $inactiveResponse = $this->withSession([
+            'account_id' => $user->id,
+            'account_name' => $user->name,
+            'account_role' => 'customer',
+            'cart_items' => [
+                $product->id => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'category' => 'Tents',
+                    'days' => 3,
+                    'quantity' => 1,
+                    'price_per_day' => 100000,
+                    'subtotal' => 300000,
+                ]
+            ]
+        ])->get('/payment');
+
+        $inactiveResponse->assertRedirect('/cart');
     }
 }
