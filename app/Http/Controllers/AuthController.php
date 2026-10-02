@@ -106,7 +106,10 @@ class AuthController extends Controller
             return back()->withErrors(['email' => 'Email atau password admin salah.'])->onlyInput('email');
         }
 
-        if (isset($admin->status) && $admin->status !== 'active') {
+        // Fail-closed dan konsisten dengan EnsureAdmin: status harus benar-benar
+        // 'active'. Kalau NULL lolos di sini, middleware akan menolaknya
+        // sehingga user terjebak redirect login/login tanpa henti.
+        if ($admin->status !== 'active') {
             return back()->withErrors(['email' => 'Akun administrator Anda sedang dinonaktifkan atau dibekukan.'])->onlyInput('email');
         }
 
