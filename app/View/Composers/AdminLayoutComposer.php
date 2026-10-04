@@ -27,6 +27,14 @@ class AdminLayoutComposer
             $view->with('adminNotifications', $notifications);
             $view->with('adminUnreadCount', $unreadCount);
             $view->with('adminSidebar', AdminNotificationService::sidebarBadgeCounts());
+
+            // Signature diturunkan dari notifikasi yang sudah diambil di atas,
+            // sehingga tidak menambah query pada setiap request. Dipakai navbar
+            // untuk mendeteksi perubahan lewat polling tanpa memuat ulang halaman.
+            $view->with(
+                'adminNotifSignature',
+                AdminNotificationService::notificationSignature($notifications, $unreadCount)
+            );
         }
     }
 }

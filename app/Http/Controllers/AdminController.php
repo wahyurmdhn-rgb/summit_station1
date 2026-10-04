@@ -22,6 +22,7 @@ use App\Services\SiteSettingsService;
 use App\Services\SkuService;
 use App\Support\ErrorReporter;
 use App\Support\SessionPayload;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -257,6 +258,38 @@ class AdminController extends Controller
         }
 
         return redirect()->back();
+    }
+
+    /**
+     * Polling ringan untuk lonceng notifikasi pada navbar admin.
+     *
+     * Dipakai sebagai fallback realtime karena project ini tidak memakai
+     * WebSocket/Echo/Livewire. Endpoint ini read-only: tidak menandai apa pun
+     * sebagai dibaca dan tidak menghapus notifikasi.
+     *
+     * Biaya default (tanpa `items`): 1 query aggregate unread + 1 query untuk
+     * 8 notifikasi terbaru. HTML dropdown hanya dirender saat klien meminta
+     * (`?items=1`), yaitu ketika status berubah atau dropdown dibuka.
+     */
+    public function pollNotifications(Request $request): JsonResponse
+    {
+        abort_unless(session('account_role') === 'admin' && session('account_id'), 403);
+
+        [$notifications, $unreadCount] = AdminNotificationService::notificationsForCurrentAdmin();
+
+        $payload = [
+            'unread_count' => $unreadCount,
+            'signature' => AdminNotificationService::notificationSignature($notifications, $unreadCount),
+        ];
+
+        if ($request->boolean('items')) {
+            $payload['html'] = view('admin.partials.notification-dropdown', [
+                'adminNotifications' => $notifications,
+                'adminUnreadCount' => $unreadCount,
+            ])->render();
+        }
+
+        return response()->json($payload);
     }
 
     /**
@@ -1903,6 +1936,16 @@ class AdminController extends Controller
         // Pilihan filter wilayah dibatasi hanya untuk 5 wilayah utama Jabodetabek
         $domiciles = $allowedDomiciles;
 
+        // Fokus user tertentu (dipakai notifikasi "User Baru Mendaftar" agar
+        // admin langsung diarahkan ke baris pengguna yang baru mendaftar).
+        // Tidak menambah query halaman ini pada kondisi normal: pengecekan
+        // hanya dilakukan bila parameter `user` memang dikirim.
+        $focusUserId = 0;
+        $requestedUserId = (int) $request->input('user', 0);
+        if ($requestedUserId > 0 && User::whereKey($requestedUserId)->exists()) {
+            $focusUserId = $requestedUserId;
+        }
+
         return view('admin.users', compact(
             'users',
             'totalMembers',
@@ -1915,6 +1958,7 @@ class AdminController extends Controller
             'domicileFilter',
             'consentFilter',
             'domiciles',
+            'focusUserId',
             'perPage'
         ));
     }

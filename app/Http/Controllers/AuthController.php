@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Admin;
 use App\Models\User;
+use App\Services\AdminNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -240,6 +241,13 @@ class AuthController extends Controller
         $user->parent_consent_status = $needsParentConsent ? 'submitted' : 'not_required';
         $user->parent_consent_path = $consentPath;
         $user->save();
+
+        // Notifikasi admin "User Baru Mendaftar".
+        // Dipanggil HANYA di sini — setelah user benar-benar tersimpan — sehingga
+        // registrasi yang gagal validasi (dan user yang tidak jadi dibuat) tidak
+        // pernah menghasilkan notifikasi. Notifikasi ditulis di backend, bukan
+        // dari frontend, sehingga tetap tercatat walau halaman tidak dibuka.
+        AdminNotificationService::notifyNewUserRegistered($user);
 
         session()->regenerate();
         session([

@@ -91,6 +91,9 @@ Route::middleware(['admin'])->group(function () {
 
     // Admin Activity Notifications
     Route::get('/admin/notifikasi', [AdminController::class, 'notifications'])->name('admin.notifications.index');
+    // WAJIB didaftarkan sebelum route {id} agar "poll" tidak tertangkap
+    // sebagai parameter id notifikasi.
+    Route::get('/admin/notifications/poll', [AdminController::class, 'pollNotifications'])->name('admin.notifications.poll');
     Route::get('/admin/notifications/{id}', [AdminController::class, 'openNotification'])->name('admin.notifications.open');
     Route::post('/admin/notifications/read-all', [AdminController::class, 'markAllNotificationsRead'])->name('admin.notifications.readAll');
 

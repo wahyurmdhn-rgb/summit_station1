@@ -7,7 +7,9 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\ReturnRecord;
+use App\Models\User;
 use App\Notifications\AdminActivityNotification;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 
 /**
@@ -23,25 +25,87 @@ use Illuminate\Support\Collection;
 class AdminNotificationService
 {
     /**
+     * Tipe notifikasi untuk user yang baru selesai mendaftar akun.
+     *
+     * Dipakai juga oleh halaman /admin/users untuk mengenali baris pengguna
+     * yang perlu disorot ketika notifikasi dibuka.
+     */
+    public const TYPE_USER_REGISTERED = 'user_registered';
+
+    /**
+     * Jumlah notifikasi terbaru yang ditampilkan pada dropdown lonceng.
+     */
+    public const DROPDOWN_LIMIT = 8;
+
+    /**
      * Kirim satu notifikasi aktivitas ke seluruh akun admin (channel database).
+     *
+     * @param  array<string, mixed>  $meta  Data pendukung pada payload notifikasi, mis. user_id/username.
      */
     public static function notifyAdmins(
         string $type,
         string $title,
         string $body,
         string $icon = '🔔',
-        ?string $url = null
+        ?string $url = null,
+        array $meta = []
     ): void {
         $admins = Admin::all();
         if ($admins->isEmpty()) {
             return;
         }
 
-        $notification = new AdminActivityNotification($type, $title, $body, $icon, $url);
+        $notification = new AdminActivityNotification($type, $title, $body, $icon, $url, $meta);
 
         foreach ($admins as $admin) {
             $admin->notify($notification);
         }
+    }
+
+    /**
+     * Kabari seluruh admin ketika ada user baru yang berhasil mendaftar.
+     *
+     * Hanya dipanggil SETELAH user benar-benar tersimpan di database, sehingga
+     * registrasi yang gagal tidak pernah menghasilkan notifikasi.
+     *
+     * Notifikasi diarahkan ke halaman manajemen pengguna (/admin/users) dengan
+     * parameter `user` supaya baris pengguna baru dapat disorot.
+     */
+    public static function notifyNewUserRegistered(User $user): void
+    {
+        $name = trim((string) ($user->name ?: $user->username));
+        if ($name === '') {
+            $name = 'Pengguna baru';
+        }
+
+        $username = trim((string) $user->username);
+        $identity = $username !== '' ? $username : (string) $user->email;
+
+        $body = "{$name} baru saja membuat akun di Summit Station.";
+
+        if ($username !== '' && $user->name !== $username) {
+            $body = "{$name} (@{$username}) baru saja membuat akun di Summit Station.";
+        }
+
+        // User di bawah umur wajib menunggu verifikasi persetujuan orang tua.
+        if ($user->parent_consent_status === 'submitted') {
+            $body .= ' Menunggu verifikasi persetujuan orang tua/wali.';
+        }
+
+        self::notifyAdmins(
+            self::TYPE_USER_REGISTERED,
+            '👤 User Baru Mendaftar',
+            $body,
+            '👤',
+            route('admin.users', ['user' => $user->getKey()]),
+            [
+                'user_id' => $user->getKey(),
+                'user_name' => $user->name,
+                'username' => $username !== '' ? $username : null,
+                'email' => $user->email,
+                'identity' => $identity,
+            ]
+        );
     }
 
     /**
@@ -69,6 +133,10 @@ class AdminNotificationService
 
     /**
      * Ambil notifikasi admin terbaru + jumlah belum dibaca untuk admin yang sedang login.
+     *
+     * Dipakai oleh View Composer (render awal halaman admin) maupun endpoint
+     * polling, sehingga badge & dropdown selalu memakai sumber data yang sama.
+     *
      * @return array{0: Collection, 1: int}
      */
     public static function notificationsForCurrentAdmin(): array
@@ -80,10 +148,32 @@ class AdminNotificationService
             $admin = Admin::find(session('account_id'));
             if ($admin) {
                 $unreadCount = (int) $admin->unreadNotifications()->count();
-                $notifications = $admin->notifications()->latest()->limit(8)->get();
+                $notifications = $admin->notifications()->latest()->limit(self::DROPDOWN_LIMIT)->get();
             }
         }
 
         return [$notifications, $unreadCount];
+    }
+
+    /**
+     * Tanda ringkas (signature) dari kondisi notifikasi admin yang sedang login.
+     *
+     * Diturunkan dari data yang SUDAH diambil notificationsForCurrentAdmin(),
+     * sehingga tidak menambah query sama sekali. Dipakai oleh polling navbar
+     * untuk mendeteksi notifikasi baru / perubahan status baca tanpa memuat
+     * ulang seluruh halaman.
+     *
+     * Signature berubah bila:
+     *  - ada notifikasi baru (kombinasi id item terbaru berubah), atau
+     *  - ada notifikasi yang berubah status read/unread.
+     */
+    public static function notificationSignature(Collection|EloquentCollection $notifications, int $unreadCount): string
+    {
+        $items = $notifications
+            ->take(self::DROPDOWN_LIMIT)
+            ->map(fn ($notif) => $notif->getKey().':'.($notif->read_at ? 'r' : 'u'))
+            ->implode(',');
+
+        return $unreadCount.'#'.$items;
     }
 }

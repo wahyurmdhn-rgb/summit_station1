@@ -308,7 +308,7 @@
                                             'dob' => $user->date_of_birth_formatted,
                                         ];
                                     @endphp
-                                    <tr class="user-table-row">
+                                    <tr class="user-table-row{{ (int) ($focusUserId ?? 0) === (int) $user->id ? ' user-row-focused' : '' }}" id="user-row-{{ $user->id }}">
                                         <!-- 7. USER PROFILE -->
                                         <td>
                                             <div class="user-profile-cell" onclick="openDetailModal({{ json_encode($userData) }})" style="cursor: pointer;" title="Lihat Detail User">
@@ -1186,5 +1186,18 @@
             document.getElementById('ktpViewerImg').removeAttribute('src');
         }
     </script>
+
+    {{-- Notifikasi "User Baru Mendaftar" mengarahkan admin ke baris user
+         tersebut. Baris hanya digulirkan ke viewport bila memang ada di
+         halaman ini; bila tidak, tabel tetap apa adanya. --}}
+    @if ((int) ($focusUserId ?? 0) > 0)
+        <script>
+            (function () {
+                var row = document.getElementById('user-row-{{ (int) $focusUserId }}');
+                if (!row || typeof row.scrollIntoView !== 'function') { return; }
+                row.scrollIntoView({ block: 'center' });
+            })();
+        </script>
+    @endif
 </body>
 </html>

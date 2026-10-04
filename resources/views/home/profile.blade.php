@@ -69,7 +69,7 @@
             </div>
         @endif
 
-        {{-- â•â•â• PROFIL AKUN â•â•â• --}}
+        {{-- ─── PROFIL AKUN ─── --}}
         <section class="cp-hero">
             <div class="cp-avatar-block">
                 <div class="cp-avatar">
@@ -142,7 +142,7 @@
             </div>
         </section>
 
-        {{-- â•â•â• AKTIVITAS RENTAL â•â•â• --}}
+        {{-- ─── AKTIVITAS RENTAL ─── --}}
         <section class="cp-section cp-activity">
             <div class="cp-section-head">
                 <div class="cp-section-title">
@@ -190,7 +190,7 @@
             </div>
         </section>
 
-        {{-- â•â•â• INFORMASI PRIBADI â•â•â• --}}
+        {{-- ─── INFORMASI PRIBADI ─── --}}
         <section class="cp-section cp-info-section">
             <div class="cp-section-head">
                 <div class="cp-section-title">
@@ -224,7 +224,7 @@
             </div>
         </section>
 
-        {{-- â•â•â• PENYEWAAN TERAKHIR â•â•â• --}}
+        {{-- ─── PENYEWAAN TERAKHIR ─── --}}
         <section class="cp-section cp-recent">
             <div class="cp-section-head">
                 <div class="cp-section-title">
@@ -275,7 +275,7 @@
             @endif
         </section>
 
-        {{-- â•â•â• DOKUMEN VERIFIKASI â•â•â• --}}
+        {{-- ─── DOKUMEN VERIFIKASI ─── --}}
         <section class="cp-section cp-docs-section">
             <div class="cp-section-head">
                 <div class="cp-section-title">
@@ -414,7 +414,7 @@
             </div>
         </section>
 
-        {{-- â•â•â• AKSES CEPAT â•â•â• --}}
+        {{-- ─── AKSES CEPAT ─── --}}
         <section class="cp-section cp-quick-section">
             <div class="cp-section-head">
                 <div class="cp-section-title">
@@ -457,7 +457,7 @@
     <!-- Footer -->
     @include('partials.footer', ['footerContext' => 'user'])
 
-    {{-- â•â•â• MODAL EDIT PROFIL â•â•â• --}}
+    {{-- ─── MODAL EDIT PROFIL ─── --}}
     <div id="editProfileModal" class="user-modal-overlay" onclick="closeEditProfileModal(event)">
         <div class="user-modal-card" onclick="event.stopPropagation()">
             <div class="user-modal-head">
@@ -495,7 +495,7 @@
         </div>
     </div>
 
-    {{-- â•â•â• MODAL UBAH PASSWORD â•â•â• --}}
+    {{-- ─── MODAL UBAH PASSWORD ─── --}}
     <div id="passwordModal" class="user-modal-overlay" onclick="closePasswordModal(event)">
         <div class="user-modal-card" onclick="event.stopPropagation()">
             <div class="user-modal-head">
@@ -525,7 +525,7 @@
         </div>
     </div>
 
-    {{-- â•â•â• MODAL PRATINJAU PDF / SURAT PERSETUJUAN â•â•â• --}}
+    {{-- ─── MODAL PRATINJAU PDF / SURAT PERSETUJUAN ─── --}}
     <div id="pdfModal" class="user-modal-overlay" onclick="closePdfModal(event)">
         <div class="user-modal-pdf" onclick="event.stopPropagation()">
             <div class="user-modal-pdf-head">
@@ -537,7 +537,7 @@
                     </svg>
                     <div>
                         <h3>Surat Persetujuan Orang Tua</h3>
-                        <p>Pratinjau berkas â€” gunakan kontrol pembesaran browser untuk memperbesar/memperkecil.</p>
+                        <p>Pratinjau berkas — gunakan kontrol pembesaran browser untuk memperbesar/memperkecil.</p>
                     </div>
                 </div>
                 <button type="button" class="user-modal-pdf-close" onclick="closePdfModal(null, true)" aria-label="Tutup pratinjau PDF" title="Tutup">
@@ -556,7 +556,7 @@
         </div>
     </div>
 
-    {{-- â•â•â• MODAL PERBESAR KTP â•â•â• --}}
+    {{-- ─── MODAL PERBESAR KTP ─── --}}
     <div id="ktpModal" class="user-modal-overlay" onclick="closeKtpModal(event)">
         <div class="user-modal-zoom" onclick="event.stopPropagation()">
             <img id="ktpModalImg" src="" alt="Foto KTP">

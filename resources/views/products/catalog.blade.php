@@ -317,7 +317,7 @@
 
                                     @if (isset($item['rating']))
                                         <div class="badge-rating">
-                                            <span class="star-gold">â˜…</span>
+                                            <span class="star-gold">★</span>
                                             <span>{{ $item['rating'] }}</span>
                                         </div>
                                     @endif

@@ -502,7 +502,7 @@
                         </svg>
                     </div>
                     <div class="completion-text">
-                        <strong>âœ“ Terima kasih sudah membaca Syarat &amp; Ketentuan</strong>
+                        <strong>✓ Terima kasih sudah membaca Syarat &amp; Ketentuan</strong>
                         <span>Silakan centang persetujuan di bawah untuk melanjutkan pendaftaran.</span>
                     </div>
                 </div>
@@ -536,7 +536,7 @@
                 Gulir ke bawah untuk membaca seluruh poin
             </small>
         </article>
-        <small class="modal-copy">Â© 2026 SUMMIT STATION EXPEDITION GEAR. HAK CIPTA DILINDUNGI.</small>
+        <small class="modal-copy">© 2026 SUMMIT STATION EXPEDITION GEAR. HAK CIPTA DILINDUNGI.</small>
     </div>
 </section>
 
@@ -769,7 +769,7 @@
                     <div class="pdf-toolbar" aria-label="Kontrol tampilan PDF">
                         <span class="pdf-toolbar-label">Preview dokumen</span>
                         <div class="pdf-toolbar-controls">
-                            <button type="button" class="pdf-ctl-btn" data-pdf-zoom-out title="Perkecil" aria-label="Perkecil">âˆ’</button>
+                            <button type="button" class="pdf-ctl-btn" data-pdf-zoom-out title="Perkecil" aria-label="Perkecil">−</button>
                             <span class="pdf-zoom-label" data-pdf-zoom-label>100%</span>
                             <button type="button" class="pdf-ctl-btn" data-pdf-zoom-in title="Perbesar" aria-label="Perbesar">+</button>
                             <button type="button" class="pdf-ctl-btn" data-pdf-fullscreen title="Layar penuh" aria-label="Layar penuh">

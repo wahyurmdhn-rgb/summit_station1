@@ -4080,6 +4080,17 @@ button.menu-link {
     background-color: #fbfdfb;
 }
 
+/* Baris pengguna yang menjadi tujuan notifikasi "User Baru Mendaftar".
+   Hanya penanda visual — tidak mengubah ukuran, spasi, atau layout tabel. */
+.user-table-row.user-row-focused {
+    background-color: #f0fdf4;
+    box-shadow: inset 3px 0 0 #16a34a;
+}
+
+.user-table-row.user-row-focused:hover {
+    background-color: #dcfce7;
+}
+
 .user-custom-table tbody td {
     padding: 14px 20px;
     vertical-align: middle;
